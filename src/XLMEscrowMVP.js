@@ -11,24 +11,81 @@ function XLMEscrowMVP() {
   };
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>XLM Transaction Protection MVP</h1>
-      <div>
+    <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
+      <h1 style={{ fontSize: '1.8rem', marginBottom: '1rem' }}>XLM Transaction Protection MVP</h1>
+
+      {/* Payment Button */}
+      <a
+        href="https://pay.seobot.online/xlmguard"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <button
+          style={{
+            backgroundColor: "#2563eb",
+            color: "white",
+            padding: "12px 24px",
+            borderRadius: "8px",
+            fontSize: "1rem",
+            fontWeight: "bold",
+            marginBottom: "1.5rem",
+            cursor: "pointer"
+          }}
+        >
+          💳 Pay $25 for XLM Transaction Protection
+        </button>
+      </a>
+
+      <div style={{ marginBottom: '1rem' }}>
         <label>Wallet Address</label>
-        <input value={walletAddress} onChange={(e) => setWalletAddress(e.target.value)} />
+        <input
+          style={{ display: 'block', width: '100%', padding: '8px', marginTop: '4px' }}
+          value={walletAddress}
+          onChange={(e) => setWalletAddress(e.target.value)}
+        />
       </div>
-      <div>
+
+      <div style={{ marginBottom: '1rem' }}>
         <label>Memo</label>
-        <input value={memo} onChange={(e) => setMemo(e.target.value)} />
+        <input
+          style={{ display: 'block', width: '100%', padding: '8px', marginTop: '4px' }}
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+        />
       </div>
-      <div>
+
+      <div style={{ marginBottom: '1rem' }}>
         <label>Contract Details</label>
-        <textarea value={contractDetails} onChange={(e) => setContractDetails(e.target.value)} />
+        <textarea
+          style={{ display: 'block', width: '100%', padding: '8px', marginTop: '4px' }}
+          value={contractDetails}
+          onChange={(e) => setContractDetails(e.target.value)}
+        />
       </div>
-      <button onClick={handleSubmit}>Submit</button>
-      {submitted && <p>Transaction submitted!</p>}
+
+      <button
+        onClick={handleSubmit}
+        style={{
+          backgroundColor: '#10b981',
+          color: 'white',
+          padding: '10px 20px',
+          borderRadius: '6px',
+          fontWeight: 'bold',
+          fontSize: '1rem',
+          cursor: 'pointer'
+        }}
+      >
+        Submit
+      </button>
+
+      {submitted && (
+        <p style={{ marginTop: '1rem', color: '#10b981', fontWeight: 'bold' }}>
+          ✅ Transaction submitted!
+        </p>
+      )}
     </div>
   );
 }
 
 export default XLMEscrowMVP;
+
