@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import logo from '../public/logo.png';
 
 function XLMGuardHomePage() {
   const [form, setForm] = useState({
@@ -23,7 +22,7 @@ function XLMGuardHomePage() {
   return (
     <div style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
       <header style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
-        <img src={logo} alt="XLMGuard Logo" style={{ height: '60px', marginRight: '1rem' }} />
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '60px', marginRight: '1rem' }} />
         <h1>XLMGuard</h1>
       </header>
 
