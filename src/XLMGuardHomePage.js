@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import logo from '../public/logo.png';
+
 
 function XLMGuardHomePage() {
   const [form, setForm] = useState({
