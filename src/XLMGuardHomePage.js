@@ -8,6 +8,8 @@ function XLMGuardHomePage() {
    email: '',
    submitted: false
  });
+ 
+// Trigger rebuild on Vercel
 
  const handleChange = (e) => {
    setForm({ ...form, [e.target.name]: e.target.value });
