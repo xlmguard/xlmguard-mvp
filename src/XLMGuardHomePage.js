@@ -35,7 +35,7 @@ function XLMGuardHomePage() {
           </button>
         </a>
       </section>
-
+ 
       <section style={{ marginTop: '2rem' }}>
         <h3>Submit Transaction for Protection</h3>
         <form onSubmit={handleSubmit}>
