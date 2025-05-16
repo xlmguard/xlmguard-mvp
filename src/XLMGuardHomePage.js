@@ -18,6 +18,8 @@ import { db } from "./firebase";
  const handleChange = (e) => {
    setForm({ ...form, [e.target.name]: e.target.value });
  };
+ 
+console.log("Submitting form to Firestore...");
 
  const handleSubmit = async (e) => {
   e.preventDefault();
