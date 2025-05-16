@@ -8,6 +8,10 @@ function XLMGuardHomePage() {
    email: '',
    submitted: false
  });
+
+import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db } from "./firebase";
+
  
 // Trigger rebuild on Vercel
 
@@ -15,10 +19,26 @@ function XLMGuardHomePage() {
    setForm({ ...form, [e.target.name]: e.target.value });
  };
 
- const handleSubmit = (e) => {
-   e.preventDefault();
-   setForm({ ...form, submitted: true });
- };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await addDoc(collection(db, "submissions"), {
+      wallet: form.wallet,
+      memo: form.memo,
+      contract: form.contract,
+      payment: form.payment,
+      email: form.email,
+      submittedAt: serverTimestamp(),
+      status: "pending"
+    });
+    setForm({ ...form, submitted: true });
+    alert("✅ Submission saved to Firestore!");
+  } catch (err) {
+    console.error("Error saving submission:", err);
+    alert("❌ Failed to submit. Please try again.");
+  }
+};
+
 
  return (
    <div style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
