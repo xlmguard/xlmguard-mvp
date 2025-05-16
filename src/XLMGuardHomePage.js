@@ -9,17 +9,14 @@ function XLMGuardHomePage() {
    submitted: false
  });
 
-
  const handleChange = (e) => {
    setForm({ ...form, [e.target.name]: e.target.value });
  };
-
 
  const handleSubmit = (e) => {
    e.preventDefault();
    setForm({ ...form, submitted: true });
  };
-
 
  return (
    <div style={{ fontFamily: 'sans-serif', padding: '2rem' }}>
@@ -27,7 +24,6 @@ function XLMGuardHomePage() {
        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '60px', marginRight: '1rem' }} />
        <h1>XLMGuard</h1>
      </header>
-
 
      <section>
        <h2>Protect Your XLM Transactions with Confidence</h2>
@@ -94,8 +90,4 @@ function XLMGuardHomePage() {
  );
 }
 
-
 export default XLMGuardHomePage;
-
-
-
