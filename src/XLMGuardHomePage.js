@@ -139,8 +139,6 @@ function XLMGuardHomePage() {
         </p>
       </section>
       <AdminDashboard />
-
-  
     </div>
   );
 }
