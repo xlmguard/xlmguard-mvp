@@ -1,3 +1,4 @@
+// All imports MUST be at the top
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
@@ -28,7 +29,7 @@ function XLMGuardHomePage() {
         payment: form.payment,
         email: form.email,
         submittedAt: serverTimestamp(),
-        status: "pending"
+        status: "pending",
       });
 
       setForm({ ...form, submitted: true });
@@ -49,18 +50,22 @@ function XLMGuardHomePage() {
       <section>
         <h2>Protect Your XLM Transactions with Confidence</h2>
         <p>Fast, flat-fee protection for Stellar payments.</p>
-        <a href="https://pay.seobot.online/xlmguard" target="_blank" rel="noopener noreferrer">
-          <button style={{
-            backgroundColor: "#2563eb",
-            color: "white",
-            padding: "10px 20px",
-            borderRadius: "8px",
-            fontSize: "1rem",
-            fontWeight: "bold",
-            border: "none",
-            cursor: "pointer",
-            marginBottom: "2rem"
-          }}>
+        <a
+          href="https://pay.seobot.online/xlmguard"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <button
+            style={{
+              backgroundColor: "#2563eb",
+              color: "white",
+              padding: "10px 20px",
+              borderRadius: "8px",
+              border: "none",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
+          >
             💳 Pay $25 for Protection
           </button>
         </a>
@@ -69,36 +74,60 @@ function XLMGuardHomePage() {
       <section style={{ marginTop: '2rem' }}>
         <h3>Submit Transaction for Protection</h3>
         <form onSubmit={handleSubmit}>
-          <input name="wallet" placeholder="Wallet Address" onChange={handleChange} required style={inputStyle} />
-          <input name="memo" placeholder="Memo" onChange={handleChange} required style={inputStyle} />
-          <textarea name="contract" placeholder="Contract Details" onChange={handleChange} required style={inputStyle} />
-          <input name="payment" placeholder="Payment Confirmation Code" onChange={handleChange} required style={inputStyle} />
-          <input name="email" placeholder="Your Email" onChange={handleChange} required style={inputStyle} />
-          <button type="submit" style={submitStyle}>Submit</button>
+          <input
+            name="wallet"
+            placeholder="Wallet Address"
+            onChange={handleChange}
+            required
+            style={{ display: 'block', margin: '0.5rem 0', padding: '8px', width: '100%' }}
+          />
+          <input
+            name="memo"
+            placeholder="Memo"
+            onChange={handleChange}
+            required
+            style={{ display: 'block', margin: '0.5rem 0', padding: '8px', width: '100%' }}
+          />
+          <textarea
+            name="contract"
+            placeholder="Contract Details"
+            onChange={handleChange}
+            required
+            style={{ display: 'block', margin: '0.5rem 0', padding: '8px', width: '100%' }}
+          />
+          <input
+            name="payment"
+            placeholder="Payment Confirmation Code"
+            onChange={handleChange}
+            required
+            style={{ display: 'block', margin: '0.5rem 0', padding: '8px', width: '100%' }}
+          />
+          <input
+            name="email"
+            placeholder="Your Email"
+            onChange={handleChange}
+            required
+            style={{ display: 'block', margin: '0.5rem 0', padding: '8px', width: '100%' }}
+          />
+
+          <button
+            type="submit"
+            style={{
+              backgroundColor: "#10b981",
+              color: "white",
+              padding: "10px 20px",
+              border: "none",
+              borderRadius: "6px",
+              fontWeight: "bold",
+              cursor: "pointer"
+            }}
+          >
+            Submit
+          </button>
         </form>
       </section>
     </div>
   );
 }
-
-const inputStyle = {
-  display: 'block',
-  margin: '0.5rem 0',
-  padding: '8px',
-  width: '100%',
-  fontSize: '1rem'
-};
-
-const submitStyle = {
-  marginTop: '1rem',
-  padding: '10px 20px',
-  backgroundColor: '#10b981',
-  color: 'white',
-  border: 'none',
-  borderRadius: '6px',
-  fontWeight: 'bold',
-  fontSize: '1rem',
-  cursor: 'pointer'
-};
 
 export default XLMGuardHomePage;
