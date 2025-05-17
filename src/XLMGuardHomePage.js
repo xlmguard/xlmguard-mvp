@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-function XLMGuardHomePage() {
- const [form, setForm] = useState({
-   wallet: '',
-   memo: '',
-   contract: '',
-   payment: '',
-   email: '',
-   submitted: false
- });
-
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "./firebase";
+
+function XLMGuardHomePage() {
+  const [form, setForm] = useState({
+    wallet: '',
+    memo: '',
+    contract: '',
+    payment: '',
+    email: '',
+    submitted: false
+  });
+
 
  
 // Trigger rebuild on Vercel
