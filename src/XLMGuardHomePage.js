@@ -1,4 +1,3 @@
-// All imports MUST be at the top
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
