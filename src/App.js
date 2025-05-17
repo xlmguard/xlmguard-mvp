@@ -1,12 +1,8 @@
 import React from 'react';
-import XLMGuardHomePage from './XLMGuardHomePage';
+import XLMEscrowMVP from './XLMEscrowMVP';
 
 function App() {
-  return (
-    <div>
-      <XLMGuardHomePage />
-    </div>
-  );
+  return <XLMEscrowMVP />;
 }
 
 export default App;
