@@ -1,6 +1,4 @@
 import React, { useState } from 'react';
-import LoginForm from './LoginForm';
-import RegisterForm from './RegisterForm';
 import XLMGuardHomePage from './XLMGuardHomePage';
 
 function App() {
