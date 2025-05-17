@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from './firebase';
+import AdminDashboard from './AdminDashboard';
 
 function XLMGuardHomePage() {
   const [form, setForm] = useState({
@@ -137,6 +138,8 @@ function XLMGuardHomePage() {
           small businesses, and private transactions.
         </p>
       </section>
+      <AdminDashboard />
+
     </div>
   );
 }
