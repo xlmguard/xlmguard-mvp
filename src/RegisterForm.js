@@ -2,6 +2,8 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { app } from './firebase'; // assuming 'app' is exported from firebase.js
+<h1>🔥 LIVE VERSION — REGISTER NOW</h1>
+
 
 const RegisterForm = () => {
   const [email, setEmail] = useState('');
