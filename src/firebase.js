@@ -15,6 +15,8 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+const db = getFirestore(app); // ✅ You forgot this line!
+
   
 // ✅ This is the correct and only export line
 export { app, db};
