@@ -17,5 +17,5 @@ const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
   
 // ✅ This is the correct and only export line
-export { app, db };
+export { app };
 
