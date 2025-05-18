@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword, getAuth } from 'firebase/auth';
 import { app } from './firebase'; // assuming 'app' is exported from firebase.js
-<h1>🔥 LIVE VERSION — REGISTER NOW</h1>
 
 
 const RegisterForm = () => {
@@ -24,6 +23,7 @@ const RegisterForm = () => {
 
   return (
     <div style={{ padding: '2rem' }}>
+      <h1>🔥 LIVE VERSION — REGISTER NOW</h1>
       <h2>Register for XLMGuard</h2>
       <form onSubmit={handleRegister}>
         <input
