@@ -47,7 +47,7 @@ const RegisterForm = () => {
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </form>
     </div>
-  );
+   );
 };
 
 export default RegisterForm;
