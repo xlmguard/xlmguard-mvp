@@ -1,6 +1,7 @@
 // src/firebase.js
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { getAnalytics } from "firebase/analytics";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3hxvl6JGceZhOwiaH1O7pNo92pWMeEuQ",
@@ -12,12 +13,9 @@ const firebaseConfig = {
   measurementId: "G-3SFLTB94BV"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 const analytics = getAnalytics(app);
-const db = getFirestore(app); // ✅ You forgot this line!
-  
 
-  
-// ✅ This is the correct and only export line
-export { app, db};
+// ✅ Only export each name ONCE
+export { app, db, analytics };
