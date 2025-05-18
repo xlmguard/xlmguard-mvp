@@ -19,7 +19,7 @@ function App() {
         <Route path="/admin" element={<AdminDashboard />} />
       </Routes>
     </Router>
-  );
+  );   
 }
     
 export default App;
