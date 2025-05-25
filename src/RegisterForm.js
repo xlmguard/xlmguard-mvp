@@ -8,12 +8,13 @@ import { getFirestore, collection, doc, setDoc, getDoc } from "firebase/firestor
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC3hxvl6JGceZhOwiaH1O7pNo92pWMeEuQ",
+  authDomain: "xlmguard.firebaseapp.com",
+  projectId: "xlmguard",
+  storageBucket: "xlmguard.firebasestorage.app",
+  messagingSenderId: "369260793839",
+  appId: "1:369260793839:web:0aa74cbe7a3d3dfbb3701a",
+  measurementId: "G-3SFLTB94BV"
 };
 
 const app = initializeApp(firebaseConfig);
