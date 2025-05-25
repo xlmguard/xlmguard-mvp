@@ -49,8 +49,10 @@ const Login = () => {
   const handleRegister = async () => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      alert("Registration successful. You can now log in.");
-      setIsRegistering(false);
+setEmail("");
+setPassword("");
+setIsRegistering(false);
+alert("✅ Registration successful! You can now log in.");
     } catch (error) {
       alert("Registration failed: " + error.message);
     }
@@ -111,5 +113,6 @@ export default function App() {
     </Router>
   );
 }
+
 
 
