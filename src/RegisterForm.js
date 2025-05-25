@@ -18,7 +18,7 @@ const RegisterForm = () => {
       // Redirect to payment or login
     } catch (err) {
       setError(err.message);
-    }
+     }
   };
 
   return (
