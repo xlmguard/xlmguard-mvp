@@ -1,5 +1,6 @@
 // src/RegisterForm.js
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -52,7 +53,7 @@ const Login = () => {
 setEmail("");
 setPassword("");
 setIsRegistering(false);
-alert("✅ Registration successful! You can now log in.");
+navigate("/login");
     } catch (error) {
       alert("Registration failed: " + error.message);
     }
@@ -113,6 +114,7 @@ export default function App() {
     </Router>
   );
 }
+
 
 
 
