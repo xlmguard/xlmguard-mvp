@@ -1,6 +1,5 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -50,23 +49,30 @@ const Login = () => {
   };
 
   return (
-    <div className="p-6 max-w-sm mx-auto text-center">
-      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" onError={(e) => { e.target.style.display = 'none'; document.getElementById('logo-fallback').style.display = 'block'; }} />
-      <div id="logo-fallback" style={{ display: 'none' }} className="text-red-500 mb-4">⚠️ Logo failed to load</div>
-      <h2 className="text-xl font-semibold mb-4">{isRegistering ? "Register" : "Login"}</h2>
-      <input className="block border p-2 w-full mb-2" placeholder="Email" onChange={e => setEmail(e.target.value)} />
-      <input className="block border p-2 w-full mb-2" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
-      {isRegistering ? (
-        <>
-          <button className="bg-green-600 text-white px-4 py-2 w-full" onClick={handleRegister}>Register</button>
-          <p className="text-sm mt-2">Already have an account? <button className="text-blue-600 underline" onClick={() => setIsRegistering(false)}>Log In</button></p>
-        </>
-      ) : (
-        <>
-          <button className="bg-blue-600 text-white px-4 py-2 w-full" onClick={handleLogin}>Login</button>
-          <p className="text-sm mt-2">Need an account? <button className="text-blue-600 underline" onClick={() => setIsRegistering(true)}>Register</button></p>
-        </>
-      )}
+    <div className="flex flex-col md:flex-row items-center justify-center min-h-screen p-6 gap-8">
+      <div className="w-full md:w-1/2 text-center md:text-left">
+        <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto md:mx-0 mb-4 w-32" />
+        <div className="text-sm text-gray-700 max-w-md mx-auto md:mx-0">
+          <p className="mb-2">XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
+          <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
+        </div>
+      </div>
+      <div className="w-full md:w-1/2 max-w-sm">
+        <h2 className="text-xl font-semibold mb-4 text-center">{isRegistering ? "Register" : "Login"}</h2>
+        <input className="block border p-2 w-full mb-2" placeholder="Email" onChange={e => setEmail(e.target.value)} />
+        <input className="block border p-2 w-full mb-2" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
+        {isRegistering ? (
+          <>
+            <button className="bg-green-600 text-white px-4 py-2 w-full" onClick={handleRegister}>Register</button>
+            <p className="text-sm mt-2 text-center">Already have an account? <button className="text-blue-600 underline" onClick={() => setIsRegistering(false)}>Log In</button></p>
+          </>
+        ) : (
+          <>
+            <button className="bg-blue-600 text-white px-4 py-2 w-full" onClick={handleLogin}>Login</button>
+            <p className="text-sm mt-2 text-center">Need an account? <button className="text-blue-600 underline" onClick={() => setIsRegistering(true)}>Register</button></p>
+          </>
+        )}
+      </div>
     </div>
   );
 };
@@ -75,7 +81,7 @@ const Dashboard = () => {
   const auth = getAuth();
   return (
     <div className="p-6 space-y-4 text-center max-w-xl mx-auto">
-      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto w-28 mb-4" />
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto w-16 mb-4" />
       <h1 className="text-2xl font-bold text-center">XLMGuard Dashboard</h1>
       <p className="text-sm text-gray-500">Signed in as: {auth.currentUser?.email}</p>
       <ul className="space-y-2">
@@ -156,4 +162,5 @@ export default function App() {
     </Routes>
   );
 }
+
 
