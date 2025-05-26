@@ -52,7 +52,7 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen p-6 gap-8">
       <div className="w-full md:w-1/2 text-center md:text-left">
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '120px', marginBottom: '1rem' }} className="mx-auto md:mx-0" />
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px'$1 }} className="mx-auto md:mx-0" />
         <div style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5' }}>
           <p style={{ marginBottom: '0.75rem' }}>XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
           <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
@@ -163,6 +163,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
