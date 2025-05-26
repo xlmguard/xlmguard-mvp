@@ -1,5 +1,6 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -51,8 +52,8 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen p-6 gap-8">
       <div className="w-full md:w-1/2 text-center md:text-left">
-        <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto md:mx-0 mb-4 w-32" />
-        <div className="text-sm text-gray-700 max-w-md mx-auto md:mx-0">
+        <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto md:mx-0 mb-4 w-8" />
+        <div className="text-sm text-gray-700 max-w-md mx-auto md:mx-0 font-sans leading-relaxed tracking-wide">
           <p className="mb-2">XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
           <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
         </div>
@@ -162,5 +163,6 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
