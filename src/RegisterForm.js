@@ -2,7 +2,7 @@
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
-import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
+import { Routes, Route, useNavigate, Link } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, doc, setDoc, getDoc } from "firebase/firestore";
 import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
@@ -59,7 +59,8 @@ navigate("/");
   };
 
   return (
-    <div className="p-6 max-w-sm mx-auto">
+    <div className="p-6 max-w-sm mx-auto text-center">
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" />
       <h2 className="text-xl font-semibold mb-4">{isRegistering ? "Register" : "Login"}</h2>
       <input className="block border p-2 w-full mb-2" placeholder="Email" onChange={e => setEmail(e.target.value)} />
       <input className="block border p-2 w-full mb-2" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
@@ -150,19 +151,18 @@ export default function App() {
   }, []);
 
   return (
-    <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={user ? <Dashboard /> : <Login />} />
-        <Route path="/register" element={user ? <RegisterTransaction /> : <Login />} />
-        <Route path="/seller/verify" element={user ? <SellerVerify /> : <Login />} />
-        <Route path="/seller/fulfill/:txId" element={user ? <SubmitFulfillment /> : <Login />} />
-        <Route path="/buyer/feedback/:txId" element={user ? <BuyerFeedback /> : <Login />} />
-        <Route path="/confirmation" element={<TransactionConfirmation />} />
-      </Routes>
-    </Router>
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={user ? <Dashboard /> : <Login />} />
+      <Route path="/register" element={user ? <RegisterTransaction /> : <Login />} />
+      <Route path="/seller/verify" element={user ? <SellerVerify /> : <Login />} />
+      <Route path="/seller/fulfill/:txId" element={user ? <SubmitFulfillment /> : <Login />} />
+      <Route path="/buyer/feedback/:txId" element={user ? <BuyerFeedback /> : <Login />} />
+      <Route path="/confirmation" element={<TransactionConfirmation />} />
+    </Routes>
   );
 }
+
 
 
 
