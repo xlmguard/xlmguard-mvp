@@ -1,5 +1,6 @@
 // src/RegisterForm.js
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -60,7 +61,8 @@ navigate("/");
 
   return (
     <div className="p-6 max-w-sm mx-auto text-center">
-      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" />
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" onError={(e) => { e.target.style.display = 'none'; document.getElementById('logo-fallback').style.display = 'block'; }} />
+      <div id="logo-fallback" style={{ display: 'none' }} className="text-red-500 mb-4">⚠️ Logo failed to load</div>
       <h2 className="text-xl font-semibold mb-4">{isRegistering ? "Register" : "Login"}</h2>
       <input className="block border p-2 w-full mb-2" placeholder="Email" onChange={e => setEmail(e.target.value)} />
       <input className="block border p-2 w-full mb-2" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
