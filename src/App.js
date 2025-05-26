@@ -1,5 +1,6 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -21,16 +22,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-const RegistrationSuccess = () => {
-  const navigate = useNavigate();
-  return (
-    <div>
-      <p>🎉 Registration successful! You can now log in.</p>
-      <button onClick={() => navigate('/login')}>Go to Login</button>
-    </div>
-  );
-};
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,17 +40,19 @@ const Login = () => {
   const handleRegister = async () => {
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-setEmail("");
-setPassword("");
-setIsRegistering(false);
-navigate("/");
+      setEmail("");
+      setPassword("");
+      setIsRegistering(false);
+      navigate("/");
     } catch (error) {
       alert("Registration failed: " + error.message);
     }
   };
 
   return (
-    <div className="p-6 max-w-sm mx-auto">
+    <div className="p-6 max-w-sm mx-auto text-center">
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" onError={(e) => { e.target.style.display = 'none'; document.getElementById('logo-fallback').style.display = 'block'; }} />
+      <div id="logo-fallback" style={{ display: 'none' }} className="text-red-500 mb-4">⚠️ Logo failed to load</div>
       <h2 className="text-xl font-semibold mb-4">{isRegistering ? "Register" : "Login"}</h2>
       <input className="block border p-2 w-full mb-2" placeholder="Email" onChange={e => setEmail(e.target.value)} />
       <input className="block border p-2 w-full mb-2" type="password" placeholder="Password" onChange={e => setPassword(e.target.value)} />
@@ -81,8 +74,9 @@ navigate("/");
 const Dashboard = () => {
   const auth = getAuth();
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">XLMGuard Dashboard</h1>
+    <div className="p-6 space-y-4 text-center max-w-xl mx-auto">
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto w-28 mb-4" />
+      <h1 className="text-2xl font-bold text-center">XLMGuard Dashboard</h1>
       <p className="text-sm text-gray-500">Signed in as: {auth.currentUser?.email}</p>
       <ul className="space-y-2">
         <li><button onClick={() => { auth.signOut(); window.location.href = '/'; }} className="text-red-600 underline">Logout</button></li>
@@ -130,6 +124,7 @@ const RegisterTransaction = () => {
     </div>
   );
 };
+
 const SellerVerify = () => <div className="p-6">[SellerVerify Component Placeholder]</div>;
 const SubmitFulfillment = () => <div className="p-6">[SubmitFulfillment Component Placeholder]</div>;
 const BuyerFeedback = () => <div className="p-6">[BuyerFeedback Component Placeholder]</div>;
@@ -161,3 +156,4 @@ export default function App() {
     </Routes>
   );
 }
+
