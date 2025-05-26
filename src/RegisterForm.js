@@ -1,6 +1,5 @@
 // src/RegisterForm.js
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -84,8 +83,9 @@ navigate("/");
 const Dashboard = () => {
   const auth = getAuth();
   return (
-    <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">XLMGuard Dashboard</h1>
+    <div className="p-6 space-y-4 text-center max-w-xl mx-auto">
+      <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto w-28 mb-4" onError={(e) => { e.target.style.display = 'none'; }} />
+      <h1 className="text-2xl font-bold text-center">XLMGuard Dashboard</h1>
       <p className="text-sm text-gray-500">Signed in as: {auth.currentUser?.email}</p>
       <ul className="space-y-2">
         <li><button onClick={() => { auth.signOut(); window.location.href = '/'; }} className="text-red-600 underline">Logout</button></li>
@@ -164,6 +164,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
