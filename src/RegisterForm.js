@@ -1,5 +1,6 @@
 // src/RegisterForm.js
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+
 import React, { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useNavigate, Link } from "react-router-dom";
 import { initializeApp } from "firebase/app";
@@ -79,18 +80,21 @@ navigate("/");
 
 const Dashboard = () => {
   const auth = getAuth();
-  <div className="p-6 space-y-4">
-    <h1 className=\"text-2xl font-bold\">XLMGuard Dashboard</h1>
-    <p className=\"text-sm text-gray-500\">Signed in as: {auth.currentUser?.email}</p>
-    <ul className=\"space-y-2\">
-      <li><button onClick={() => { auth.signOut(); window.location.href = '/'; }} className=\"text-red-600 underline\">Logout</button></li>
-      <li><Link to="/register" className="text-blue-600">Register a Transaction (Buyer)</Link></li>
-      <li><Link to="/seller/verify" className="text-blue-600">Verify Payment (Seller)</Link></li>
-    </ul>
-  </div>
-);
+  return (
+    <div className="p-6 space-y-4">
+      <h1 className="text-2xl font-bold">XLMGuard Dashboard</h1>
+      <p className="text-sm text-gray-500">Signed in as: {auth.currentUser?.email}</p>
+      <ul className="space-y-2">
+        <li><button onClick={() => { auth.signOut(); window.location.href = '/'; }} className="text-red-600 underline">Logout</button></li>
+        <li><Link to="/register" className="text-blue-600">Register a Transaction (Buyer)</Link></li>
+        <li><Link to="/seller/verify" className="text-blue-600">Verify Payment (Seller)</Link></li>
+      </ul>
+    </div>
+  );
+};
 
 const RegisterTransaction = () => {
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     buyer: auth.currentUser?.email || '',
     seller: '',
@@ -159,6 +163,7 @@ export default function App() {
     </Router>
   );
 }
+
 
 
 
