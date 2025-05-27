@@ -144,11 +144,13 @@ const BuyerFeedback = () => <div className="p-6">[BuyerFeedback Component Placeh
 
 const StartProtection = () => {
   const navigate = useNavigate();
+  const [txHash, setTxHash] = useState("");
+
   return (
     <div className="p-6 max-w-xl mx-auto space-y-4 text-left">
       <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px' }} className="mb-4" />
       <h2 className="text-2xl font-bold">Start Protection</h2>
-      <p className="text-sm text-gray-700">Before registering your transaction, please send a flat fee payment to one of the addresses below. After payment, click "I’ve Paid" to continue.</p>
+      <p className="text-sm text-gray-700">Before registering your transaction, please send a flat fee payment to one of the addresses below. After payment, enter your transaction hash and click "I’ve Paid" to continue.</p>
       <div className="border p-4 rounded bg-gray-50">
         <h3 className="font-semibold">XLM Payment (2.0 XLM flat fee)</h3>
         <img src="https://api.qrserver.com/v1/create-qr-code/?data=GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL%3Fmemo%3D1095582935&size=150x150" alt="XLM QR Code" className="my-2" />
@@ -161,12 +163,23 @@ const StartProtection = () => {
         <p><strong>Address:</strong> rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J</p>
         <p><strong>Memo:</strong> 1952896539</p>
       </div>
+      <input
+        className="block border p-2 w-full mt-4"
+        placeholder="Paste your XLM or XRP Transaction Hash"
+        value={txHash}
+        onChange={(e) => setTxHash(e.target.value)}
+      />
       <button
         className="bg-green-600 text-white px-4 py-2 mt-4"
         onClick={async () => {
   const userRef = doc(db, 'users', auth.currentUser.uid);
-  await setDoc(userRef, { hasPaid: true }, { merge: true });
+  if (!txHash || txHash.length < 10) {
+    alert('❌ Please enter a valid transaction hash before continuing.');
+    return;
+  }
+  await setDoc(userRef, { hasPaid: true, txHash }, { merge: true });
   alert('✅ Payment confirmed! You can now register your transaction.');
+  window.location.href = '/register';
   navigate('/register');
 }}
     >
@@ -212,6 +225,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
