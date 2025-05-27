@@ -1,7 +1,6 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -53,7 +52,7 @@ const Login = () => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-center min-h-screen p-6 gap-8">
       <div className="w-full md:w-1/2 text-center md:text-left">
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px'$1 }} className="mx-auto md:mx-0" />
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px' }} className="mx-auto md:mx-0" />
         <div style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5' }}>
   <p style={{ marginBottom: '0.75rem' }}>XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
   <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
@@ -62,7 +61,6 @@ const Login = () => {
   <p><strong>[한국어 - Korean]</strong> 블록체인 기반의 거래 보호 서비스입니다.</p>
   <p><strong>[日本語 - Japanese]</strong> XLMGuardは信頼性の高い取引保護を提供します。</p>
   <p><strong>[Bahasa Indonesia]</strong> Layanan perlindungan transaksi berbasis blockchain.</p>
-  $1
   <p><strong>[Português - Brasil]</strong> Serviço de proteção de transações baseado em blockchain.</p>
 </div>
       </div>
@@ -169,7 +167,6 @@ const StartProtection = () => {
   const userRef = doc(db, 'users', auth.currentUser.uid);
   await setDoc(userRef, { hasPaid: true }, { merge: true });
   alert('✅ Payment confirmed! You can now register your transaction.');
-  alert('✅ Payment confirmed! You can now register your transaction.');
   navigate('/register');
 }}
 
@@ -216,6 +213,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
