@@ -1,6 +1,7 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, Link } from "react-router-dom";
@@ -168,6 +169,7 @@ const StartProtection = () => {
   const userRef = doc(db, 'users', auth.currentUser.uid);
   await setDoc(userRef, { hasPaid: true }, { merge: true });
   alert('✅ Payment confirmed! You can now register your transaction.');
+  alert('✅ Payment confirmed! You can now register your transaction.');
   navigate('/register');
 }}
 
@@ -214,6 +216,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
