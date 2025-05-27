@@ -54,9 +54,16 @@ const Login = () => {
       <div className="w-full md:w-1/2 text-center md:text-left">
         <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px'$1 }} className="mx-auto md:mx-0" />
         <div style={{ fontFamily: 'sans-serif', fontSize: '14px', lineHeight: '1.5' }}>
-          <p style={{ marginBottom: '0.75rem' }}>XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
-          <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
-        </div>
+  <p style={{ marginBottom: '0.75rem' }}>XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled.</p>
+  <p>It ensures transparency and trust by linking contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.</p>
+  <hr className="my-4" />
+  <p><strong>[English]</strong> Protects global transactions with blockchain trust.</p>
+  <p><strong>[한국어 - Korean]</strong> 블록체인 기반의 거래 보호 서비스입니다.</p>
+  <p><strong>[日本語 - Japanese]</strong> XLMGuardは信頼性の高い取引保護を提供します。</p>
+  <p><strong>[Bahasa Indonesia]</strong> Layanan perlindungan transaksi berbasis blockchain.</p>
+  $1
+  <p><strong>[Português - Brasil]</strong> Serviço de proteção de transações baseado em blockchain.</p>
+</div>
       </div>
       <div className="w-full md:w-1/2 max-w-sm">
         <h2 className="text-xl font-semibold mb-4 text-center">{isRegistering ? "Register" : "Login"}</h2>
@@ -82,7 +89,7 @@ const Dashboard = () => {
   const auth = getAuth();
   return (
     <div className="p-6 space-y-4 text-center max-w-xl mx-auto">
-      <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '120px' }} className="mx-auto mb-4" />
+      <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px' }} className="mx-auto mb-4" />
       <h1 className="text-2xl font-bold text-center">XLMGuard Dashboard</h1>
       <p className="text-sm text-gray-500">Signed in as: {auth.currentUser?.email}</p>
       <ul className="space-y-2">
@@ -136,6 +143,41 @@ const SellerVerify = () => <div className="p-6">[SellerVerify Component Placehol
 const SubmitFulfillment = () => <div className="p-6">[SubmitFulfillment Component Placeholder]</div>;
 const BuyerFeedback = () => <div className="p-6">[BuyerFeedback Component Placeholder]</div>;
 
+const StartProtection = () => {
+  const navigate = useNavigate();
+  return (
+    <div className="p-6 max-w-xl mx-auto space-y-4 text-left">
+      <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '240px' }} className="mb-4" />
+      <h2 className="text-2xl font-bold">Start Protection</h2>
+      <p className="text-sm text-gray-700">Before registering your transaction, please send a flat fee payment to one of the addresses below. After payment, click "I’ve Paid" to continue.</p>
+      <div className="border p-4 rounded bg-gray-50">
+        <h3 className="font-semibold">XLM Payment (2.0 XLM flat fee)</h3>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL%3Fmemo%3D1095582935&size=150x150" alt="XLM QR Code" className="my-2" />
+        <p><strong>Address:</strong> GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL</p>
+        <p><strong>Memo:</strong> 1095582935</p>
+      </div>
+      <div className="border p-4 rounded bg-gray-50">
+        <h3 className="font-semibold">XRP Payment (1.0 XRP flat fee)</h3>
+        <img src="https://api.qrserver.com/v1/create-qr-code/?data=rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J%3Fmemo%3D1952896539&size=150x150" alt="XRP QR Code" className="my-2" />
+        <p><strong>Address:</strong> rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J</p>
+        <p><strong>Memo:</strong> 1952896539</p>
+      </div>
+      <button
+        className="bg-green-600 text-white px-4 py-2 mt-4"
+        onClick={async () => {
+  const userRef = doc(db, 'users', auth.currentUser.uid);
+  await setDoc(userRef, { hasPaid: true }, { merge: true });
+  alert('✅ Payment confirmed! You can now register your transaction.');
+  navigate('/register');
+}}
+
+  }}      >
+        I’ve Paid, Continue
+      </button>
+    </div>
+  );
+};
+
 const TransactionConfirmation = () => (
   <div className="p-6 max-w-lg mx-auto text-center">
     <h2 className="text-xl font-bold mb-4">✅ Transaction Submitted</h2>
@@ -146,8 +188,16 @@ const TransactionConfirmation = () => (
 
 export default function App() {
   const [user, setUser] = useState(null);
+  const [hasPaid, setHasPaid] = useState(false);
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, setUser);
+    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+      setUser(currentUser);
+      if (currentUser) {
+        const docRef = doc(db, "users", currentUser.uid);
+        const snap = await getDoc(docRef);
+        setHasPaid(snap.exists() && snap.data().hasPaid === true);
+      }
+    });
     return () => unsubscribe();
   }, []);
 
@@ -155,14 +205,16 @@ export default function App() {
     <Routes>
       <Route path="/login" element={<Login />} />
       <Route path="/" element={user ? <Dashboard /> : <Login />} />
-      <Route path="/register" element={user ? <RegisterTransaction /> : <Login />} />
+      <Route path="/register" element={user ? (hasPaid ? <RegisterTransaction /> : <StartProtection />) : <Login />} />
       <Route path="/seller/verify" element={user ? <SellerVerify /> : <Login />} />
       <Route path="/seller/fulfill/:txId" element={user ? <SubmitFulfillment /> : <Login />} />
       <Route path="/buyer/feedback/:txId" element={user ? <BuyerFeedback /> : <Login />} />
       <Route path="/confirmation" element={<TransactionConfirmation />} />
+      <Route path="/start" element={<StartProtection />} />
     </Routes>
   );
 }
+
 
 
 
