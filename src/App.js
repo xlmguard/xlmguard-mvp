@@ -169,8 +169,7 @@ const StartProtection = () => {
   alert('✅ Payment confirmed! You can now register your transaction.');
   navigate('/register');
 }}
-
-  }}      >
+    >
         I’ve Paid, Continue
       </button>
     </div>
@@ -213,6 +212,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
