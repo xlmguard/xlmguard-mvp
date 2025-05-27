@@ -138,7 +138,71 @@ const RegisterTransaction = () => {
   );
 };
 
-const SellerVerify = () => <div className="p-6">[SellerVerify Component Placeholder]</div>;
+const SellerVerify = () => {
+  const [txId, setTxId] = useState("");
+  const [txData, setTxData] = useState(null);
+  const [error, setError] = useState("");
+
+  const handleVerify = async () => {
+    try {
+      const docRef = doc(db, "transactions", txId);
+      const snap = await getDoc(docRef);
+      if (snap.exists()) {
+        const data = snap.data();
+        setTxData({ ...data, id: snap.id });
+        setError("");
+      } else {
+        setTxData(null);
+        setError("Transaction not found.");
+      }
+    } catch (err) {
+      setError("Error verifying transaction: " + err.message);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-xl mx-auto space-y-4">
+      <h2 className="text-xl font-bold">Seller Payment Verification</h2>
+      <input
+        className="block border p-2 w-full"
+        placeholder="Enter Transaction ID (TXID)"
+        value={txId}
+        onChange={(e) => setTxId(e.target.value)}
+      />
+      <button className="bg-blue-600 text-white px-4 py-2" onClick={handleVerify}>Verify Payment</button>
+      {error && <p className="text-red-600">{error}</p>}
+      {txData && (
+        <div className="border p-4 bg-gray-50 rounded">
+          <p><strong>Buyer:</strong> {txData.buyer_id}</p>
+          <p><strong>Seller:</strong> {txData.seller_id}</p>
+          <p><strong>Amount:</strong> {txData.amount}</p>
+          <p><strong>Status:</strong> {txData.payment_status}</p>
+          <p><strong>Terms:</strong> {txData.contract_terms}</p>
+        <button
+            className="bg-green-600 text-white px-4 py-2 mt-4"
+            onClick={async () => {
+              try {
+                await setDoc(doc(db, "transactions", txData.id), {
+                ...txData,
+                fulfilled_at: new Date().toISOString(),
+                buyer_feedback: "",
+                dispute_flag: false,
+                fulfilled_at: new Date().toISOString(),
+                  payment_status: "fulfilled"
+                });
+                alert("✅ Transaction marked as fulfilled. Buyer will be notified.");
+              } catch (err) {
+                alert("❌ Error marking as fulfilled: " + err.message);
+              }
+            }}
+          >
+            Mark as Fulfilled
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
 const SubmitFulfillment = () => <div className="p-6">[SubmitFulfillment Component Placeholder]</div>;
 const BuyerFeedback = () => <div className="p-6">[BuyerFeedback Component Placeholder]</div>;
 
@@ -225,6 +289,7 @@ export default function App() {
     </Routes>
   );
 }
+
 
 
 
