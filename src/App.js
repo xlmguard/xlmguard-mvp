@@ -67,8 +67,8 @@ const RegisterTransaction = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          service_id: "service_id: "service_xyi5n7d",
-          template_id: "template_notify_seller",
+          service_id: "service_xyi5n7d",
+          template_id: "template_pixnkqs",
           user_id: "user_xlmguard123",
           template_params: {
             seller_email: form.seller,
@@ -166,6 +166,7 @@ const SellerVerify = () => {
     </div>
   );
 };
+
 
 
 
