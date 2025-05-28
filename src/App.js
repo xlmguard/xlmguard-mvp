@@ -2,8 +2,6 @@
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-
 import React, { useState, useEffect } from "react";
 import { Routes, Route, useNavigate, useLocation, Link, useSearchParams } from "react-router-dom";
 import { initializeApp } from "firebase/app";
@@ -69,7 +67,7 @@ const RegisterTransaction = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          service_id: "service_xlmguard",
+          service_id: "service_id: "service_xyi5n7d",
           template_id: "template_notify_seller",
           user_id: "user_xlmguard123",
           template_params: {
@@ -138,7 +136,7 @@ const SellerVerify = () => {
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          service_id: "service_xlmguard",
+          service_id: "service_xyi5n7d",
           template_id: "template_notify_buyer",
           user_id: "user_xlmguard123",
           template_params: {
@@ -168,6 +166,7 @@ const SellerVerify = () => {
     </div>
   );
 };
+
 
 
 
