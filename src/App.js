@@ -72,6 +72,7 @@ const RegisterTransaction = () => {
         created_at: new Date().toISOString()
       });
 
+      console.log("📤 Attempting to send seller email via EmailJS");
       await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
         seller_email: form.seller,
         buyer_email: form.buyer,
@@ -133,6 +134,7 @@ const SellerVerify = () => {
         fulfilled_at: serverTimestamp()
       });
 
+      console.log("📤 Attempting to send buyer email via EmailJS");
       await emailjs.send("service_xyi5n7d", "template_9ry4lu4", {
         buyer_email: buyerEmail,
         txid: txId,
@@ -161,6 +163,7 @@ const SellerVerify = () => {
     </div>
   );
 };
+
 
 
 
