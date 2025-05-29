@@ -29,7 +29,6 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
 
-// ✅ Your real EmailJS public key
 const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
 
 const TransactionConfirmation = ({ txId }) => {
@@ -72,14 +71,17 @@ const RegisterTransaction = () => {
         created_at: new Date().toISOString()
       });
 
-      await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
+      await emailjs.send("service_xyi5n7d", "template_notify_seller", {
         seller_email: form.seller,
         buyer_email: form.buyer,
         txid: form.txId,
         amount: form.amount,
         terms: form.terms,
         link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
-      }, EMAILJS_PUBLIC_KEY);
+      }, EMAILJS_PUBLIC_KEY).then(
+        res => console.log("Seller email sent", res),
+        err => console.error("EmailJS error", err)
+      );
 
       navigate("/confirmation", { state: { txId: form.txId } });
     } catch (error) {
@@ -106,6 +108,7 @@ const SellerVerify = () => {
   const [transaction, setTransaction] = useState(null);
 
   useEffect(() => {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
     const loadTransaction = async () => {
       const docRef = doc(db, "transactions", txId);
       const docSnap = await getDoc(docRef);
@@ -134,7 +137,10 @@ const SellerVerify = () => {
         buyer_email: buyerEmail,
         txid: txId,
         link: `https://xlmguard.com/dashboard?txid=${txId}`
-      }, EMAILJS_PUBLIC_KEY);
+      }, EMAILJS_PUBLIC_KEY).then(
+        res => console.log("Buyer email sent", res),
+        err => console.error("EmailJS error", err)
+      );
 
       alert("✅ Transaction marked as fulfilled.");
     } catch (err) {
@@ -167,6 +173,7 @@ const App = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    emailjs.init(EMAILJS_PUBLIC_KEY);
     const unsub = onAuthStateChanged(auth, (firebaseUser) => {
       setUser(firebaseUser);
     });
@@ -230,6 +237,7 @@ const LoginForm = () => {
 };
 
 export default App;
+
 
 
 
