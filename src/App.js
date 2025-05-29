@@ -3,10 +3,17 @@
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
 
 import React, { useState, useEffect } from "react";
-import { Routes, Route, useNavigate, useLocation, Link, useSearchParams } from "react-router-dom";
+import {
+  Routes, Route, useNavigate, useLocation, Link, useSearchParams
+} from "react-router-dom";
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp } from "firebase/firestore";
-import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } from "firebase/auth";
+import {
+  getFirestore, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp
+} from "firebase/firestore";
+import {
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged
+} from "firebase/auth";
+import emailjs from "@emailjs/browser";
 
 const firebaseConfig = {
   apiKey: "AIzaSyC3hxvl6JGceZhOwiaH1O7pNo92pWMeEuQ",
@@ -21,6 +28,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
+
+// ✅ Your real EmailJS public key
+const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
 
 const TransactionConfirmation = ({ txId }) => {
   const copyToClipboard = () => {
@@ -50,6 +60,7 @@ const RegisterTransaction = () => {
     terms: ''
   });
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
   const handleSubmit = async () => {
     try {
       await setDoc(doc(db, "transactions", form.txId), {
@@ -61,25 +72,14 @@ const RegisterTransaction = () => {
         created_at: new Date().toISOString()
       });
 
-      await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          service_id: "service_xyi5n7d",
-          template_id: "template_pixnkqs",
-          user_id: "user_xlmguard123",
-          template_params: {
-            seller_email: form.seller,
-            buyer_email: form.buyer,
-            txid: form.txId,
-            amount: form.amount,
-            terms: form.terms,
-            link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
-          }
-        })
-      });
+      await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
+        seller_email: form.seller,
+        buyer_email: form.buyer,
+        txid: form.txId,
+        amount: form.amount,
+        terms: form.terms,
+        link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
+      }, EMAILJS_PUBLIC_KEY);
 
       navigate("/confirmation", { state: { txId: form.txId } });
     } catch (error) {
@@ -130,22 +130,11 @@ const SellerVerify = () => {
         fulfilled_at: serverTimestamp()
       });
 
-      await fetch("https://api.emailjs.com/api/v1.0/email/send", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          service_id: "service_xyi5n7d",
-          template_id: "template_notify_buyer",
-          user_id: "user_xlmguard123",
-          template_params: {
-            buyer_email: buyerEmail,
-            txid: txId,
-            link: `https://xlmguard.com/dashboard?txid=${txId}`
-          }
-        })
-      });
+      await emailjs.send("service_xyi5n7d", "template_notify_buyer", {
+        buyer_email: buyerEmail,
+        txid: txId,
+        link: `https://xlmguard.com/dashboard?txid=${txId}`
+      }, EMAILJS_PUBLIC_KEY);
 
       alert("✅ Transaction marked as fulfilled.");
     } catch (err) {
@@ -166,6 +155,82 @@ const SellerVerify = () => {
     </div>
   );
 };
+
+const TransactionConfirmationPage = () => {
+  const location = useLocation();
+  const txId = location.state?.txId;
+  return <TransactionConfirmation txId={txId} />;
+};
+
+const App = () => {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleLogout = () => {
+    auth.signOut();
+    navigate("/");
+  };
+
+  return (
+    <Routes>
+      <Route path="/" element={
+        user ? (
+          <div className="p-6 max-w-xl mx-auto">
+            <h1 className="text-2xl font-bold mb-2">XLMGuard Dashboard</h1>
+            <p className="mb-4">Signed in as: {user.email}</p>
+            <button onClick={handleLogout} className="mb-4 text-red-600 underline">Logout</button>
+            <ul className="space-y-2">
+              <li><Link className="text-blue-600 underline" to="/register">Register a Transaction (Buyer)</Link></li>
+              <li><Link className="text-blue-600 underline" to="/seller/verify">Verify Payment (Seller)</Link></li>
+            </ul>
+          </div>
+        ) : (
+          <LoginForm />
+        )
+      } />
+      <Route path="/register" element={<RegisterTransaction />} />
+      <Route path="/confirmation" element={<TransactionConfirmationPage />} />
+      <Route path="/seller/verify" element={<SellerVerify />} />
+    </Routes>
+  );
+};
+
+const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/");
+    } catch (error) {
+      alert("Login failed: " + error.message);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-sm mx-auto space-y-4">
+      <h2 className="text-xl font-bold">Login</h2>
+      <input className="block border p-2 w-full" type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
+      <input className="block border p-2 w-full" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
+      <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-2">Login</button>
+      <p className="text-center">
+        New user? <Link to="/register" className="text-blue-600 underline">Register</Link>
+      </p>
+    </div>
+  );
+};
+
+export default App;
+
 
 
 
