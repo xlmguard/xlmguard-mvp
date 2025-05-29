@@ -30,6 +30,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
+emailjs.init(EMAILJS_PUBLIC_KEY); // Init globally
 
 const TransactionConfirmation = ({ txId }) => {
   const copyToClipboard = () => {
@@ -71,7 +72,7 @@ const RegisterTransaction = () => {
         created_at: new Date().toISOString()
       });
 
-      await emailjs.send("service_xyi5n7d", "template_notify_seller", {
+      await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
         seller_email: form.seller,
         buyer_email: form.buyer,
         txid: form.txId,
@@ -79,8 +80,8 @@ const RegisterTransaction = () => {
         terms: form.terms,
         link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
       }, EMAILJS_PUBLIC_KEY).then(
-        res => console.log("Seller email sent", res),
-        err => console.error("EmailJS error", err)
+        res => console.log("✅ Seller email sent", res),
+        err => console.error("❌ EmailJS error", err)
       );
 
       navigate("/confirmation", { state: { txId: form.txId } });
@@ -108,7 +109,6 @@ const SellerVerify = () => {
   const [transaction, setTransaction] = useState(null);
 
   useEffect(() => {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
     const loadTransaction = async () => {
       const docRef = doc(db, "transactions", txId);
       const docSnap = await getDoc(docRef);
@@ -133,13 +133,13 @@ const SellerVerify = () => {
         fulfilled_at: serverTimestamp()
       });
 
-      await emailjs.send("service_xyi5n7d", "template_notify_buyer", {
+      await emailjs.send("service_xyi5n7d", "template_9ry4lu4", {
         buyer_email: buyerEmail,
         txid: txId,
         link: `https://xlmguard.com/dashboard?txid=${txId}`
       }, EMAILJS_PUBLIC_KEY).then(
-        res => console.log("Buyer email sent", res),
-        err => console.error("EmailJS error", err)
+        res => console.log("✅ Buyer email sent", res),
+        err => console.error("❌ EmailJS error", err)
       );
 
       alert("✅ Transaction marked as fulfilled.");
@@ -162,81 +162,6 @@ const SellerVerify = () => {
   );
 };
 
-const TransactionConfirmationPage = () => {
-  const location = useLocation();
-  const txId = location.state?.txId;
-  return <TransactionConfirmation txId={txId} />;
-};
-
-const App = () => {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    emailjs.init(EMAILJS_PUBLIC_KEY);
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-    });
-    return () => unsub();
-  }, []);
-
-  const handleLogout = () => {
-    auth.signOut();
-    navigate("/");
-  };
-
-  return (
-    <Routes>
-      <Route path="/" element={
-        user ? (
-          <div className="p-6 max-w-xl mx-auto">
-            <h1 className="text-2xl font-bold mb-2">XLMGuard Dashboard</h1>
-            <p className="mb-4">Signed in as: {user.email}</p>
-            <button onClick={handleLogout} className="mb-4 text-red-600 underline">Logout</button>
-            <ul className="space-y-2">
-              <li><Link className="text-blue-600 underline" to="/register">Register a Transaction (Buyer)</Link></li>
-              <li><Link className="text-blue-600 underline" to="/seller/verify">Verify Payment (Seller)</Link></li>
-            </ul>
-          </div>
-        ) : (
-          <LoginForm />
-        )
-      } />
-      <Route path="/register" element={<RegisterTransaction />} />
-      <Route path="/confirmation" element={<TransactionConfirmationPage />} />
-      <Route path="/seller/verify" element={<SellerVerify />} />
-    </Routes>
-  );
-};
-
-const LoginForm = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const navigate = useNavigate();
-
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
-    } catch (error) {
-      alert("Login failed: " + error.message);
-    }
-  };
-
-  return (
-    <div className="p-6 max-w-sm mx-auto space-y-4">
-      <h2 className="text-xl font-bold">Login</h2>
-      <input className="block border p-2 w-full" type="email" placeholder="Email" onChange={(e) => setEmail(e.target.value)} />
-      <input className="block border p-2 w-full" type="password" placeholder="Password" onChange={(e) => setPassword(e.target.value)} />
-      <button onClick={handleLogin} className="bg-blue-600 text-white px-4 py-2">Login</button>
-      <p className="text-center">
-        New user? <Link to="/register" className="text-blue-600 underline">Register</Link>
-      </p>
-    </div>
-  );
-};
-
-export default App;
 
 
 
