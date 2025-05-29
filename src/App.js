@@ -30,7 +30,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
-emailjs.init(EMAILJS_PUBLIC_KEY); // Init globally
+emailjs.init(EMAILJS_PUBLIC_KEY);
 
 const Navigation = () => (
   <nav className="bg-gray-100 p-4 flex gap-6 justify-center text-sm">
@@ -43,18 +43,10 @@ const Navigation = () => (
 
 const HomePage = () => (
   <div className="p-8 text-center">
-    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-6 w-24 h-24" />
-    <h1 className="text-2xl font-bold mb-4">Welcome to XLMGuard</h1>
-    <p className="mb-6">Secure your XLM/XRP escrow transactions with seller verification and buyer protection. Fast. Simple. Trusted.</p>
-    <p className="mb-2 text-sm italic">🌍 Supports global commerce in multiple languages:</p>
-    <ul className="text-xs">
-      <li><strong>[English]</strong> Protects global transactions with blockchain trust.</li>
-      <li><strong>[Español]</strong> Protege transacciones globales con confianza blockchain.</li>
-      <li><strong>[Português]</strong> Protege transações globais com confiança blockchain.</li>
-      <li><strong>[Deutsch]</strong> Schützt globale Transaktionen mit Blockchain-Vertrauen.</li>
-      <li><strong>[中文]</strong> 利用区块链信任保护全球交易。</li>
-    </ul>
-    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded mt-4 inline-block">Register Transaction</Link>
+    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" />
+    <h1 className="text-2xl font-bold mb-2">Welcome to XLMGuard</h1>
+    <p className="mb-6 text-sm">Secure your XLM/XRP escrow transactions with seller verification and buyer protection. Fast. Simple. Trusted.</p>
+    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded">Register Transaction</Link>
   </div>
 );
 
@@ -101,7 +93,6 @@ const RegisterTransaction = () => {
         created_at: new Date().toISOString()
       });
 
-      console.log("📤 Attempting to send seller email via EmailJS");
       await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
         seller_email: form.seller,
         buyer_email: form.buyer,
@@ -109,7 +100,7 @@ const RegisterTransaction = () => {
         amount: form.amount,
         terms: form.terms,
         link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
-      });
+      }, EMAILJS_PUBLIC_KEY);
 
       navigate(`/confirmation?txid=${form.txId}`);
     } catch (error) {
@@ -160,12 +151,11 @@ const SellerVerify = () => {
         fulfilled_at: serverTimestamp()
       });
 
-      console.log("📤 Attempting to send buyer email via EmailJS");
       await emailjs.send("service_xyi5n7d", "template_9ry4lu4", {
         buyer_email: buyerEmail,
         txid: txId,
         link: `https://xlmguard.com/dashboard?txid=${txId}`
-      });
+      }, EMAILJS_PUBLIC_KEY);
 
       alert("✅ Transaction marked as fulfilled.");
     } catch (err) {
@@ -200,6 +190,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
