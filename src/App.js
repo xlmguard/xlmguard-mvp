@@ -34,10 +34,20 @@ emailjs.init(EMAILJS_PUBLIC_KEY); // Init globally
 
 const Navigation = () => (
   <nav className="bg-gray-100 p-4 flex gap-6 justify-center text-sm">
-    <Link to="/">Register</Link>
+    <Link to="/">Home</Link>
+    <Link to="/register">Register</Link>
     <Link to="/confirmation?txid=test123">Confirmation</Link>
     <Link to="/seller/verify?txid=test123">Seller Verify</Link>
   </nav>
+);
+
+const HomePage = () => (
+  <div className="p-8 text-center">
+    <img src="/logo192.png" alt="XLMGuard Logo" className="mx-auto mb-6 w-24 h-24" />
+    <h1 className="text-2xl font-bold mb-4">Welcome to XLMGuard</h1>
+    <p className="mb-6">Secure your XLM/XRP escrow transactions with seller verification and buyer protection. Fast. Simple. Trusted.</p>
+    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded">Register Transaction</Link>
+  </div>
 );
 
 const TransactionConfirmation = () => {
@@ -180,13 +190,15 @@ export default function App() {
     <>
       <Navigation />
       <Routes>
-        <Route path="/" element={<RegisterTransaction />} />
+        <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={<RegisterTransaction />} />
         <Route path="/confirmation" element={<TransactionConfirmation />} />
         <Route path="/seller/verify" element={<SellerVerify />} />
       </Routes>
     </>
   );
 }
+
 
 
 
