@@ -43,10 +43,18 @@ const Navigation = () => (
 
 const HomePage = () => (
   <div className="p-8 text-center">
-    <img src="/logo192.png" alt="XLMGuard Logo" className="mx-auto mb-6 w-24 h-24" />
+    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-6 w-24 h-24" />
     <h1 className="text-2xl font-bold mb-4">Welcome to XLMGuard</h1>
     <p className="mb-6">Secure your XLM/XRP escrow transactions with seller verification and buyer protection. Fast. Simple. Trusted.</p>
-    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded">Register Transaction</Link>
+    <p className="mb-2 text-sm italic">🌍 Supports global commerce in multiple languages:</p>
+    <ul className="text-xs">
+      <li><strong>[English]</strong> Protects global transactions with blockchain trust.</li>
+      <li><strong>[Español]</strong> Protege transacciones globales con confianza blockchain.</li>
+      <li><strong>[Português]</strong> Protege transações globais com confiança blockchain.</li>
+      <li><strong>[Deutsch]</strong> Schützt globale Transaktionen mit Blockchain-Vertrauen.</li>
+      <li><strong>[中文]</strong> 利用区块链信任保护全球交易。</li>
+    </ul>
+    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded mt-4 inline-block">Register Transaction</Link>
   </div>
 );
 
@@ -101,10 +109,7 @@ const RegisterTransaction = () => {
         amount: form.amount,
         terms: form.terms,
         link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
-      }, EMAILJS_PUBLIC_KEY).then(
-        res => console.log("✅ Seller email sent", res),
-        err => console.error("❌ EmailJS error", err)
-      );
+      });
 
       navigate(`/confirmation?txid=${form.txId}`);
     } catch (error) {
@@ -160,10 +165,7 @@ const SellerVerify = () => {
         buyer_email: buyerEmail,
         txid: txId,
         link: `https://xlmguard.com/dashboard?txid=${txId}`
-      }, EMAILJS_PUBLIC_KEY).then(
-        res => console.log("✅ Buyer email sent", res),
-        err => console.error("❌ EmailJS error", err)
-      );
+      });
 
       alert("✅ Transaction marked as fulfilled.");
     } catch (err) {
@@ -198,6 +200,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
