@@ -162,7 +162,9 @@ const SellerVerify = () => {
       <button className="bg-green-600 text-white px-4 py-2" onClick={markFulfilled}>Mark as Fulfilled</button>
     </div>
   );
-  export default function App() {
+};
+
+export default function App() {
   return (
     <Routes>
       <Route path="/" element={<RegisterTransaction />} />
@@ -172,7 +174,6 @@ const SellerVerify = () => {
   );
 }
 
-};
 
 
 
