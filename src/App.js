@@ -32,7 +32,18 @@ const auth = getAuth(app);
 const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
 emailjs.init(EMAILJS_PUBLIC_KEY); // Init globally
 
-const TransactionConfirmation = ({ txId }) => {
+const Navigation = () => (
+  <nav className="bg-gray-100 p-4 flex gap-6 justify-center text-sm">
+    <Link to="/">Register</Link>
+    <Link to="/confirmation?txid=test123">Confirmation</Link>
+    <Link to="/seller/verify?txid=test123">Seller Verify</Link>
+  </nav>
+);
+
+const TransactionConfirmation = () => {
+  const [params] = useSearchParams();
+  const txId = params.get("txid") || "Unknown";
+
   const copyToClipboard = () => {
     navigator.clipboard.writeText(txId);
     alert("Transaction ID copied to clipboard");
@@ -85,7 +96,7 @@ const RegisterTransaction = () => {
         err => console.error("❌ EmailJS error", err)
       );
 
-      navigate("/confirmation", { state: { txId: form.txId } });
+      navigate(`/confirmation?txid=${form.txId}`);
     } catch (error) {
       alert("Error saving transaction: " + error.message);
     }
@@ -166,13 +177,17 @@ const SellerVerify = () => {
 
 export default function App() {
   return (
-    <Routes>
-      <Route path="/" element={<RegisterTransaction />} />
-      <Route path="/confirmation" element={<TransactionConfirmation />} />
-      <Route path="/seller/verify" element={<SellerVerify />} />
-    </Routes>
+    <>
+      <Navigation />
+      <Routes>
+        <Route path="/" element={<RegisterTransaction />} />
+        <Route path="/confirmation" element={<TransactionConfirmation />} />
+        <Route path="/seller/verify" element={<SellerVerify />} />
+      </Routes>
+    </>
   );
 }
+
 
 
 
