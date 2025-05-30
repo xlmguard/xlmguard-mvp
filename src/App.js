@@ -1,4 +1,4 @@
-// Restored App.js code for XLMGuard.com from May 18, 2025 version (with confirmed logic and corrected import paths)
+// Restored App.js code for XLMGuard.com from May 26, 2025 version (compatible with updated RegisterPage component)
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import HomePage from './HomePage';
-import RegisterPage from './RegisterPage';
+import RegisterPage from './RegisterForm-1';
 import LoginPage from './LoginPage';
 import PaymentPage from './PaymentPage';
 import SubmissionForm from './SubmissionForm';
@@ -20,16 +20,11 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async currentUser => {
       if (currentUser) {
-        const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-        if (userDoc.exists()) {
-          const paidStatus = userDoc.data().hasPaid || false;
-          console.log("✅ FRESH BUILD CONFIRMATION | hasPaid:", paidStatus);
-          setHasPaid(paidStatus);
-        } else {
-          setHasPaid(false);
-        }
+        const snap = await getDoc(doc(db, "users", currentUser.uid));
+        const paid = snap.exists() && snap.data().hasPaid;
+        setHasPaid(paid);
         setUser(currentUser);
       } else {
         setUser(null);
@@ -38,7 +33,7 @@ function App() {
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
   if (loading) return <div>Loading...</div>;
@@ -47,9 +42,9 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={user ? <Navigate to={hasPaid ? "/submit" : "/payment"} /> : <RegisterPage />} />
-        <Route path="/login" element={user ? <Navigate to={hasPaid ? "/submit" : "/payment"} /> : <LoginPage />} />
-        <Route path="/payment" element={user ? (!hasPaid ? <PaymentPage /> : <Navigate to="/submit" />) : <Navigate to="/login" />} />
+        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
+        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to={user ? '/submit' : '/login'} />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -60,6 +55,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
