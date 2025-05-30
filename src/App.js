@@ -1,18 +1,18 @@
-// Restored App.js code for XLMGuard.com from May 18, 2025 version (with confirmed logic)
+// Restored App.js code for XLMGuard.com from May 18, 2025 version (with confirmed logic and corrected import paths)
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import HomePage from './pages/HomePage';
-import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
-import PaymentPage from './pages/PaymentPage';
-import SubmissionForm from './pages/SubmissionForm';
-import Dashboard from './pages/Dashboard';
-import AdminLogin from './pages/AdminLogin';
-import AdminPanel from './pages/AdminPanel';
+import HomePage from './HomePage';
+import RegisterPage from './RegisterPage';
+import LoginPage from './LoginPage';
+import PaymentPage from './PaymentPage';
+import SubmissionForm from './SubmissionForm';
+import Dashboard from './Dashboard';
+import AdminLogin from './AdminLogin';
+import AdminPanel from './AdminPanel';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -60,5 +60,6 @@ function App() {
 }
 
 export default App;
+
 
 
