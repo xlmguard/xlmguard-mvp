@@ -188,7 +188,7 @@ export default function App() {
         <Route path="/seller/verify" element={<SellerVerify />} />
       </Routes>
     </>
-  );
+   );
 }
 
 
