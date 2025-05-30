@@ -138,7 +138,7 @@ const SellerVerify = () => {
       }
     };
     if (txId) loadTransaction();
-  }, [txId]);
+     }, [txId]);
 
   const markFulfilled = async () => {
     try {
