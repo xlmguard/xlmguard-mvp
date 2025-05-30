@@ -1,4 +1,4 @@
-// Restored App.js code for XLMGuard.com from May 18, 2025 version
+// Restored App.js code for XLMGuard.com from May 18, 2025 version (with confirmed logic)
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -24,7 +24,9 @@ function App() {
       if (currentUser) {
         const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
         if (userDoc.exists()) {
-          setHasPaid(userDoc.data().hasPaid || false);
+          const paidStatus = userDoc.data().hasPaid || false;
+          console.log("🚀 XLMGuard App.js - May 18 version running | hasPaid:", paidStatus);
+          setHasPaid(paidStatus);
         } else {
           setHasPaid(false);
         }
@@ -58,6 +60,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
