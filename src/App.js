@@ -42,7 +42,7 @@ const Navigation = ({ user, logout }) => (
 
 const HomePage = () => (
   <div style={{ padding: '2rem', textAlign: 'center' }}>
-    <img src="/logo.png" alt="XLMGuard Logo" style={{ margin: '0 auto 1rem', width: '100px' }} />
+    <img src="/logo.png" alt="XLMGuard Logo" style={{ margin: '0 auto 1rem', width: '105px' }} />
     <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Welcome to XLMGuard</h1>
     <p style={{ fontSize: '0.9rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
       XLMGuard.com is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled. We link contract terms, payment status, shipment data, and dispute flags to ensure secure cross-border commerce with XLM & XRP.
@@ -111,9 +111,11 @@ const PayGate = ({ user }) => {
       <h2>Pay for Protection Service</h2>
       <p>Send XLM or XRP to the following wallet and memo:</p>
       <p><b>XLM:</b> GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL</p>
-      <p><b>Memo:</b> 1095582935</p>
+      <p><b>Memo:</b> <code>#1095582935</code></p>
       <p><b>XRP:</b> rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J</p>
-      <p><b>Memo:</b> 1952896539</p>
+      <p><b>Memo:</b> <code>#1952896539</code></p>
+      <p>After sending, enter TXID below and click continue:</p>
+      <input type="text" placeholder="TXID (Transaction ID)" style={{ width: '300px', padding: '0.5rem', marginBottom: '1rem' }} /><br />
       <button onClick={handlePaidClick}>I've Paid – Continue</button>
     </div>
   );
@@ -155,6 +157,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
