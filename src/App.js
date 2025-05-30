@@ -1,4 +1,3 @@
-
 // XLMGuard Buyer & Seller Dashboard (Updated UI + Multilingual + Payment Flow)
 
 import React, { useState, useEffect } from "react";
@@ -7,7 +6,7 @@ import {
 } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
-  getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp
+  getFirestore, doc, setDoc, getDoc, updateDoc
 } from "firebase/firestore";
 import {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut
@@ -158,6 +157,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
