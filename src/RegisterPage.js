@@ -16,14 +16,16 @@ function RegisterPage() {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      // Create Firestore record with hasPaid = false
+      // Add Firestore record
       await setDoc(doc(db, 'users', user.uid), { hasPaid: false });
 
-      // Sign out to force login flow
+      // Force sign out
       await signOut(auth);
 
-      // Redirect to login
-      navigate('/login');
+      // Slight delay before navigation to ensure Firebase resets
+      setTimeout(() => {
+        navigate('/login');
+      }, 500);
     } catch (err) {
       setError(err.message);
     }
@@ -55,4 +57,5 @@ function RegisterPage() {
 }
 
 export default RegisterPage;
+
 
