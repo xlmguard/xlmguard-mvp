@@ -1,8 +1,8 @@
-// Reverting App.js to known-good version from May 30, 2025 (before break)
+// Reverting App.js to known-good version from May 30, 2025 (with post-registration logout fix)
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import HomePage from './HomePage';
@@ -31,7 +31,7 @@ function App() {
         } else {
           await setDoc(userRef, { hasPaid: false });
           setHasPaid(false);
-         }
+        }
 
         setUser(currentUser);
       } else {
@@ -50,7 +50,7 @@ function App() {
     <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
+        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
         <Route path="/login" element={!user ? <LoginPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
         <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to={user ? '/submit' : '/login'} />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
@@ -63,6 +63,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
