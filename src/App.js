@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import HomePage from './HomePage';
 import RegisterPage from './RegisterPage';
@@ -22,16 +22,24 @@ function App() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async currentUser => {
       if (currentUser) {
-        const snap = await getDoc(doc(db, "users", currentUser.uid));
-        const paid = snap.exists() && snap.data().hasPaid;
-        setHasPaid(paid);
+        const userRef = doc(db, "users", currentUser.uid);
+        const snap = await getDoc(userRef);
+
+        if (snap.exists()) {
+          const paid = snap.data().hasPaid || false;
+          setHasPaid(paid);
+        } else {
+          await setDoc(userRef, { hasPaid: false });
+          setHasPaid(false);
+        }
+
         setUser(currentUser);
       } else {
         setUser(null);
         setHasPaid(false);
       }
       setLoading(false);
-    } );
+    });
 
     return () => unsub();
   }, []);
@@ -51,10 +59,11 @@ function App() {
         <Route path="/admin-panel" element={<AdminPanel />} />
       </Routes>
     </Router>
-    );
+  );
 }
 
 export default App;
+
 
 
 
