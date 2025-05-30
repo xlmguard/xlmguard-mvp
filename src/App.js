@@ -31,23 +31,23 @@ const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
 const Navigation = ({ user, logout }) => (
-  <nav className="bg-gray-100 p-2 flex gap-4 justify-center text-xs fixed bottom-0 w-full border-t">
-    <Link to="/">Home</Link>
-    {!user && <Link to="/login">Login/Register</Link>}
-    {user && <Link to="/pay">Pay</Link>}
-    {user && <Link to="/register">Submit TX</Link>}
-    {user && <button onClick={logout}>Logout</button>}
+  <nav style={{ position: 'fixed', bottom: 0, width: '100%', backgroundColor: '#f9f9f9', padding: '0.5rem', borderTop: '1px solid #ccc', textAlign: 'center' }}>
+    <Link to="/" style={{ margin: '0 10px' }}>Home</Link>
+    {!user && <Link to="/login" style={{ margin: '0 10px' }}>Login/Register</Link>}
+    {user && <Link to="/pay" style={{ margin: '0 10px' }}>Pay</Link>}
+    {user && <Link to="/register" style={{ margin: '0 10px' }}>Submit TX</Link>}
+    {user && <button onClick={logout} style={{ margin: '0 10px' }}>Logout</button>}
   </nav>
 );
 
 const HomePage = () => (
-  <div className="p-8 text-center">
-    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-24" />
-    <h1 className="text-3xl font-bold mb-2">Welcome to XLMGuard</h1>
-    <p className="mb-6 text-sm max-w-xl mx-auto">
-      XLMGuard is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled. We link contract terms, payment status, shipment data, and dispute flags — making it ideal for global digital commerce using XLM and XRP transactions.
+  <div style={{ padding: '2rem', textAlign: 'center' }}>
+    <img src="/logo.png" alt="XLMGuard Logo" style={{ margin: '0 auto 1rem', width: '100px' }} />
+    <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '1rem' }}>Welcome to XLMGuard</h1>
+    <p style={{ fontSize: '0.9rem', maxWidth: '600px', margin: '0 auto 2rem' }}>
+      XLMGuard.com is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled. We link contract terms, payment status, shipment data, and dispute flags to ensure secure cross-border commerce with XLM & XRP.
     </p>
-    <div className="text-xs max-w-md mx-auto text-left">
+    <div style={{ fontSize: '0.75rem', maxWidth: '500px', margin: '0 auto', textAlign: 'left' }}>
       <p><b>[Español]</b> Protege las transacciones globales con confianza blockchain.</p>
       <p><b>[Português]</b> Protege transações globais com confiança em blockchain.</p>
       <p><b>[Français]</b> Protégez les transactions mondiales avec la confiance de la blockchain.</p>
@@ -57,16 +57,85 @@ const HomePage = () => (
   </div>
 );
 
-// [Rest of the code remains unchanged. No need to duplicate unless there are other update requests.]
+const Login = ({ onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleLogin = async () => {
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+      onLogin();
+      navigate("/pay");
+    } catch (err) {
+      alert("Login error: " + err.message);
+    }
+  };
+
+  const handleRegister = async () => {
+    try {
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", cred.user.uid), {
+        hasPaid: false
+      });
+      onLogin();
+      navigate("/pay");
+    } catch (err) {
+      alert("Registration error: " + err.message);
+    }
+  };
+
+  return (
+    <div style={{ textAlign: 'center', marginTop: '2rem' }}>
+      <h2>Login or Register</h2>
+      <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" /><br />
+      <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" /><br />
+      <button onClick={handleLogin}>Login</button>
+      <button onClick={handleRegister}>Register</button>
+    </div>
+  );
+};
+
+const PayGate = ({ user }) => {
+  const navigate = useNavigate();
+
+  const handlePaidClick = async () => {
+    await updateDoc(doc(db, "users", user.uid), {
+      hasPaid: true
+    });
+    navigate("/register");
+  };
+
+  return (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <h2>Pay for Protection Service</h2>
+      <p>Send XLM or XRP to the following wallet and memo:</p>
+      <p><b>XLM:</b> GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL</p>
+      <p><b>Memo:</b> 1095582935</p>
+      <p><b>XRP:</b> rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J</p>
+      <p><b>Memo:</b> 1952896539</p>
+      <button onClick={handlePaidClick}>I've Paid – Continue</button>
+    </div>
+  );
+};
 
 export default function App() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, setUser);
+    const unsub = onAuthStateChanged(auth, async currentUser => {
+      if (currentUser) {
+        const snap = await getDoc(doc(db, "users", currentUser.uid));
+        const hasPaid = snap.exists() && snap.data().hasPaid;
+        setUser(hasPaid ? currentUser : null);
+        if (!hasPaid) navigate("/pay");
+      } else {
+        setUser(null);
+      }
+    });
     return () => unsub();
-  }, []);
+  }, [navigate]);
 
   const logout = () => {
     signOut(auth);
@@ -80,15 +149,13 @@ export default function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<Login onLogin={() => {}} />} />
-        <Route path="/register-user" element={<RegisterUser />} />
         <Route path="/pay" element={<PayGate user={user} />} />
-        {user && <Route path="/register" element={<RegisterTransaction />} />}
-        <Route path="/confirmation" element={<TransactionConfirmation />} />
-        <Route path="/seller/verify" element={<SellerVerify />} />
+        {user && <Route path="/register" element={<div>Transaction registration page coming next.</div>} />}
       </Routes>
     </>
   );
 }
+
 
 
 
