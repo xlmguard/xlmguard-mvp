@@ -124,20 +124,21 @@ const PayGate = ({ user }) => {
 export default function App() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async currentUser => {
       if (currentUser) {
         const snap = await getDoc(doc(db, "users", currentUser.uid));
         const hasPaid = snap.exists() && snap.data().hasPaid;
-        setUser(hasPaid ? currentUser : null);
-        if (!hasPaid) navigate("/pay");
+        setUser(currentUser);
+        if (!hasPaid && location.pathname !== "/pay") navigate("/pay");
       } else {
         setUser(null);
       }
     });
     return () => unsub();
-  }, [navigate]);
+  }, [navigate, location]);
 
   const logout = () => {
     signOut(auth);
@@ -157,6 +158,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
