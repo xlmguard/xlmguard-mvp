@@ -8,7 +8,7 @@ import { initializeApp } from "firebase/app";
 import {
   getFirestore, doc, setDoc, getDoc, updateDoc
 } from "firebase/firestore";
-import {
+import  {
   getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut
 } from "firebase/auth";
 import emailjs from "@emailjs/browser";
