@@ -51,7 +51,7 @@ function App() {
         <Route path="/admin-panel" element={<AdminPanel />} />
       </Routes>
     </Router>
-  );
+   );
 }
 
 export default App;
