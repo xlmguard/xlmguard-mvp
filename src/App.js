@@ -31,7 +31,7 @@ function App() {
         } else {
           await setDoc(userRef, { hasPaid: false });
           setHasPaid(false);
-        }
+         }
 
         setUser(currentUser);
       } else {
