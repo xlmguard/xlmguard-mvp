@@ -1,4 +1,4 @@
-// Restored App.js code for XLMGuard.com from May 26, 2025 version (corrected to use RegisterForm.js)
+// Reverting App.js to known-good version from May 30, 2025 (before break)
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -6,7 +6,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import HomePage from './HomePage';
-import RegisterPage from './RegisterForm';
+import RegisterPage from './RegisterPage';
 import LoginPage from './LoginPage';
 import PaymentPage from './PaymentPage';
 import SubmissionForm from './SubmissionForm';
@@ -55,6 +55,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
