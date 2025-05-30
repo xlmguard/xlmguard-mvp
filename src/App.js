@@ -1,6 +1,5 @@
 
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-// XLMGuard Buyer & Seller Dashboard (Full Flow with Auth + Payment Gating)
+// XLMGuard Buyer & Seller Dashboard (Full Flow with Auth + Payment Gating + Transaction + Seller Verification)
 
 import React, { useState, useEffect } from "react";
 import {
@@ -44,7 +43,7 @@ const Navigation = ({ user, logout }) => (
 
 const HomePage = () => (
   <div className="p-8 text-center">
-    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-16" />
+    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-20" />
     <h1 className="text-3xl font-bold mb-2">Welcome to XLMGuard</h1>
     <p className="mb-6 text-sm max-w-xl mx-auto">
       XLMGuard.com is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled. We link contract terms, payment status, shipment data, and dispute flags to ensure secure cross-border commerce with XLM & XRP.
@@ -133,6 +132,67 @@ const PayGate = ({ user }) => {
   );
 };
 
+const RegisterTransaction = () => {
+  const [form, setForm] = useState({ buyer: "", txId: "", amount: "", terms: "" });
+  const navigate = useNavigate();
+
+  const handleSubmit = async () => {
+    const txRef = doc(db, "transactions", form.txId);
+    await setDoc(txRef, { ...form, created: serverTimestamp(), verified: false });
+    await emailjs.send("service_xyi5n7d", "template_notify_seller", {
+      seller_email: form.buyer,
+      txid: form.txId,
+      link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
+    });
+    navigate("/confirmation");
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold">Register a Payment Transaction</h2>
+      <input className="block border p-2 w-full my-2" placeholder="Seller Wallet or Email" onChange={e => setForm({ ...form, buyer: e.target.value })} />
+      <input className="block border p-2 w-full my-2" placeholder="Transaction ID (TXID)" onChange={e => setForm({ ...form, txId: e.target.value })} />
+      <input className="block border p-2 w-full my-2" placeholder="Amount" onChange={e => setForm({ ...form, amount: e.target.value })} />
+      <textarea className="block border p-2 w-full my-2" placeholder="Contract Terms / Description" onChange={e => setForm({ ...form, terms: e.target.value })}></textarea>
+      <button onClick={handleSubmit} className="bg-green-600 text-white px-4 py-2">Submit Transaction</button>
+    </div>
+  );
+};
+
+const TransactionConfirmation = () => (
+  <div className="p-6 max-w-md mx-auto text-center">
+    <h2 className="text-xl font-bold mb-2">Transaction Submitted</h2>
+    <p>You'll receive an email once the seller confirms fulfillment.</p>
+  </div>
+);
+
+const SellerVerify = () => {
+  const query = new URLSearchParams(useLocation().search);
+  const txId = query.get("txid");
+
+  const handleFulfill = async () => {
+    const txRef = doc(db, "transactions", txId);
+    const snap = await getDoc(txRef);
+    const data = snap.data();
+    await updateDoc(txRef, { verified: true });
+    await emailjs.send("service_xyi5n7d", "template_notify_buyer", {
+      buyer_email: data.buyer,
+      txid: txId,
+      link: "https://xlmguard.com/transaction/" + txId
+    });
+    alert("Transaction marked as fulfilled and buyer notified.");
+  };
+
+  return (
+    <div className="p-6 max-w-md mx-auto">
+      <h2 className="text-xl font-bold">Seller Verification</h2>
+      <p className="mb-4">Confirm this transaction ID has been fulfilled:</p>
+      <p className="font-mono mb-4">{txId}</p>
+      <button onClick={handleFulfill} className="bg-blue-600 text-white px-4 py-2">Confirm Fulfillment</button>
+    </div>
+  );
+};
+
 export default function App() {
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -163,6 +223,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 
