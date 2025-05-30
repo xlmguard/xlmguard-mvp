@@ -1,17 +1,17 @@
 
 // XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
-// XLMGuard Buyer & Seller Dashboard (React + Firebase Auth Integration)
+// XLMGuard Buyer & Seller Dashboard (Full Flow with Auth + Payment Gating)
 
 import React, { useState, useEffect } from "react";
 import {
-  Routes, Route, useNavigate, useLocation, Link, useSearchParams
+  Routes, Route, useNavigate, useLocation, Link
 } from "react-router-dom";
 import { initializeApp } from "firebase/app";
 import {
-  getFirestore, collection, doc, setDoc, getDoc, updateDoc, serverTimestamp
+  getFirestore, doc, setDoc, getDoc, updateDoc, serverTimestamp
 } from "firebase/firestore";
 import {
-  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged
+  getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut
 } from "firebase/auth";
 import emailjs from "@emailjs/browser";
 
@@ -28,168 +28,142 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
 const EMAILJS_PUBLIC_KEY = "tcS3_a_kZH9ieBNBV";
 emailjs.init(EMAILJS_PUBLIC_KEY);
 
-const Navigation = () => (
+const Navigation = ({ user, logout }) => (
   <nav className="bg-gray-100 p-4 flex gap-6 justify-center text-sm">
     <Link to="/">Home</Link>
-    <Link to="/register">Register</Link>
-    <Link to="/confirmation?txid=test123">Confirmation</Link>
-    <Link to="/seller/verify?txid=test123">Seller Verify</Link>
+    {!user && <Link to="/login">Login</Link>}
+    {!user && <Link to="/register-user">Register</Link>}
+    {user && <Link to="/pay">Pay</Link>}
+    {user && <Link to="/register">Submit TX</Link>}
+    {user && <button onClick={logout}>Logout</button>}
   </nav>
 );
 
 const HomePage = () => (
   <div className="p-8 text-center">
-    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-32" />
-    <h1 className="text-2xl font-bold mb-2">Welcome to XLMGuard</h1>
-    <p className="mb-6 text-sm">Secure your XLM/XRP escrow transactions with seller verification and buyer protection. Fast. Simple. Trusted.</p>
-    <Link to="/register" className="bg-blue-600 text-white px-4 py-2 rounded">Register Transaction</Link>
+    <img src="/logo.png" alt="XLMGuard Logo" className="mx-auto mb-4 w-16" />
+    <h1 className="text-3xl font-bold mb-2">Welcome to XLMGuard</h1>
+    <p className="mb-6 text-sm max-w-xl mx-auto">
+      XLMGuard.com is a blockchain-based transaction protection service that helps buyers and sellers verify payments before goods or services are fulfilled. We link contract terms, payment status, shipment data, and dispute flags to ensure secure cross-border commerce with XLM & XRP.
+    </p>
   </div>
 );
 
-const TransactionConfirmation = () => {
-  const [params] = useSearchParams();
-  const txId = params.get("txid") || "Unknown";
-
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(txId);
-    alert("Transaction ID copied to clipboard");
-  };
-
-  return (
-    <div className="p-6 max-w-lg mx-auto text-center">
-      <h2 className="text-xl font-bold mb-4">✅ Transaction Submitted</h2>
-      <p className="mb-4">Your payment transaction has been registered and is currently pending seller confirmation.</p>
-      <p className="text-sm text-gray-500">Transaction ID: <code>{txId}</code></p>
-      <button onClick={copyToClipboard} className="text-blue-600 underline">Copy TXID</button>
-      <br /><br />
-      <Link to="/" className="text-blue-600 underline">Return to Dashboard</Link>
-    </div>
-  );
-};
-
-const RegisterTransaction = () => {
+const Login = ({ onLogin }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const [form, setForm] = useState({
-    buyer: auth.currentUser?.email || '',
-    seller: '',
-    txId: '',
-    amount: '',
-    terms: ''
-  });
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
-  const handleSubmit = async () => {
+  const handleLogin = async () => {
     try {
-      await setDoc(doc(db, "transactions", form.txId), {
-        buyer_id: form.buyer,
-        seller_id: form.seller,
-        amount: form.amount,
-        contract_terms: form.terms,
-        payment_status: "pending",
-        created_at: new Date().toISOString()
-      });
-
-      await emailjs.send("service_xyi5n7d", "template_pixnkqs", {
-        seller_email: form.seller,
-        buyer_email: form.buyer,
-        txid: form.txId,
-        amount: form.amount,
-        terms: form.terms,
-        link: `https://xlmguard.com/seller/verify?txid=${form.txId}`
-      }, EMAILJS_PUBLIC_KEY);
-
-      navigate(`/confirmation?txid=${form.txId}`);
-    } catch (error) {
-      alert("Error saving transaction: " + error.message);
+      await signInWithEmailAndPassword(auth, email, password);
+      onLogin();
+      navigate("/pay");
+    } catch (err) {
+      alert("Login failed: " + err.message);
     }
   };
 
   return (
-    <div className="p-6 max-w-lg mx-auto space-y-4">
-      <h2 className="text-xl font-bold">Register a Payment Transaction</h2>
-      <input className="block border p-2 w-full" name="seller" placeholder="Seller Wallet or Email" onChange={handleChange} />
-      <input className="block border p-2 w-full" name="txId" placeholder="Transaction ID (TXID)" onChange={handleChange} />
-      <input className="block border p-2 w-full" name="amount" placeholder="Amount" onChange={handleChange} />
-      <textarea className="block border p-2 w-full" name="terms" placeholder="Contract Terms / Description" onChange={handleChange} />
-      <button className="bg-blue-600 text-white px-4 py-2" onClick={handleSubmit}>Submit Transaction</button>
+    <div className="p-6 max-w-sm mx-auto">
+      <h2 className="text-xl font-bold">Login</h2>
+      <input className="block border p-2 w-full my-2" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input className="block border p-2 w-full my-2" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
+      <button className="bg-blue-600 text-white px-4 py-2" onClick={handleLogin}>Login</button>
     </div>
   );
 };
 
-const SellerVerify = () => {
-  const [params] = useSearchParams();
-  const txId = params.get("txid");
-  const [status, setStatus] = useState("Loading...");
-  const [transaction, setTransaction] = useState(null);
+const RegisterUser = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const navigate = useNavigate();
+
+  const handleRegister = async () => {
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      await setDoc(doc(db, "users", userCred.user.uid), { has_paid: false });
+      alert("Account created. Please log in.");
+      navigate("/login");
+    } catch (err) {
+      alert("Registration failed: " + err.message);
+    }
+  };
+
+  return (
+    <div className="p-6 max-w-sm mx-auto">
+      <h2 className="text-xl font-bold">Register</h2>
+      <input className="block border p-2 w-full my-2" value={email} onChange={e => setEmail(e.target.value)} placeholder="Email" />
+      <input className="block border p-2 w-full my-2" type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="Password" />
+      <button className="bg-green-600 text-white px-4 py-2" onClick={handleRegister}>Register</button>
+    </div>
+  );
+};
+
+const PayGate = ({ user }) => {
+  const navigate = useNavigate();
+  const [paid, setPaid] = useState(false);
 
   useEffect(() => {
-    const loadTransaction = async () => {
-      const docRef = doc(db, "transactions", txId);
-      const docSnap = await getDoc(docRef);
-      if (docSnap.exists()) {
-        setTransaction(docSnap.data());
-        setStatus("Ready");
-      } else {
-        setStatus("Transaction not found.");
+    const checkPayment = async () => {
+      if (!user) return;
+      const snap = await getDoc(doc(db, "users", user.uid));
+      if (snap.exists() && snap.data().has_paid) {
+        setPaid(true);
+        navigate("/register");
       }
     };
-    if (txId) loadTransaction();
-     }, [txId]);
+    checkPayment();
+  }, [user, navigate]);
 
-  const markFulfilled = async () => {
-    try {
-      const docRef = doc(db, "transactions", txId);
-      const docSnap = await getDoc(docRef);
-      const buyerEmail = docSnap.data().buyer_id;
-
-      await updateDoc(docRef, {
-        payment_status: "fulfilled",
-        fulfilled_at: serverTimestamp()
-      });
-
-      await emailjs.send("service_xyi5n7d", "template_9ry4lu4", {
-        buyer_email: buyerEmail,
-        txid: txId,
-        link: `https://xlmguard.com/dashboard?txid=${txId}`
-      }, EMAILJS_PUBLIC_KEY);
-
-      alert("✅ Transaction marked as fulfilled.");
-    } catch (err) {
-      alert("❌ Error updating transaction: " + err.message);
-    }
+  const handleConfirmPayment = async () => {
+    await updateDoc(doc(db, "users", user.uid), { has_paid: true });
+    navigate("/register");
   };
 
-  if (status !== "Ready") return <p className="text-center p-4">🔄 {status}</p>;
-
   return (
-    <div className="p-6 max-w-xl mx-auto space-y-4">
-      <h2 className="text-xl font-bold">Seller Verification</h2>
-      <p><strong>Buyer:</strong> {transaction.buyer_id}</p>
-      <p><strong>Amount:</strong> {transaction.amount}</p>
-      <p><strong>TXID:</strong> {txId}</p>
-      <p><strong>Terms:</strong> {transaction.contract_terms}</p>
-      <button className="bg-green-600 text-white px-4 py-2" onClick={markFulfilled}>Mark as Fulfilled</button>
+    <div className="p-6 max-w-md mx-auto text-center">
+      <h2 className="text-xl font-bold mb-2">Complete Your Payment</h2>
+      <p className="mb-4">Send your payment in XLM or XRP, then click below to continue.</p>
+      <button onClick={handleConfirmPayment} className="bg-blue-600 text-white px-4 py-2">I've Paid – Continue</button>
     </div>
   );
 };
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, setUser);
+    return () => unsub();
+  }, []);
+
+  const logout = () => {
+    signOut(auth);
+    setUser(null);
+    navigate("/");
+  };
+
   return (
     <>
-      <Navigation />
+      <Navigation user={user} logout={logout} />
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={<RegisterTransaction />} />
+        <Route path="/login" element={<Login onLogin={() => {}} />} />
+        <Route path="/register-user" element={<RegisterUser />} />
+        <Route path="/pay" element={<PayGate user={user} />} />
+        {user && <Route path="/register" element={<RegisterTransaction />} />}
         <Route path="/confirmation" element={<TransactionConfirmation />} />
         <Route path="/seller/verify" element={<SellerVerify />} />
       </Routes>
     </>
-   );
+  );
 }
+
 
 
 
