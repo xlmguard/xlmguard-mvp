@@ -5,7 +5,7 @@ function HomePage() {
   return (
     <div style={{ padding: '2rem', fontFamily: 'sans-serif' }}>
       <header style={{ display: 'flex', alignItems: 'center', marginBottom: '2rem' }}>
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '80px', marginRight: '1rem' }} />
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '100px', marginRight: '1rem' }} />
         <h1>XLMGuard</h1>
       </header>
 
