@@ -53,7 +53,7 @@ function App() {
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
+        <Route path="/register" element={!user || !hasPaid ? <RegisterPage /> : <Navigate to="/submit" />} />
         <Route path="/login" element={!user ? <LoginPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
         <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to={user ? '/submit' : '/login'} />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
@@ -66,6 +66,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
