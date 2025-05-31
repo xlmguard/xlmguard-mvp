@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import { QRCode } from 'qrcode.react';
 
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
@@ -13,7 +12,7 @@ const PaymentPage = () => {
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const navigate = useNavigate();
 
-  const walletDetails = { 
+  const walletDetails = {
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
@@ -75,9 +74,6 @@ const PaymentPage = () => {
       <div>
         <strong>Wallet Address:</strong> <code>{address}</code><br />
         <strong>Memo/Tag:</strong> <code>{tag}</code>
-        <div style={{ marginTop: '10px' }}>
-          <QRCode value={`${address}?memo=${tag}`} size={160} />
-        </div>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -106,6 +102,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+;
 
 
 
