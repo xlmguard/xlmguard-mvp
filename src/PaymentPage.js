@@ -4,9 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
-import QRCode from 'qrcode.react';
+import { QRCode } from 'qrcode.react';
 
-const PaymentPage = () => { 
+const PaymentPage = () => {
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
@@ -106,6 +106,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
