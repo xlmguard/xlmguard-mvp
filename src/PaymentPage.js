@@ -6,7 +6,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import QRCode from 'qrcode.react';
 
-const PaymentPage = () => {
+const PaymentPage = () => { 
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
