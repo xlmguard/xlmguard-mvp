@@ -10,6 +10,7 @@ const PaymentPage = () => {
   const [user, setUser] = useState(null);
   const [walletInfo, setWalletInfo] = useState({ address: '', memo: '', currency: '' });
   const [txHash, setTxHash] = useState('');
+  const [confirmationMessage, setConfirmationMessage] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -39,7 +40,8 @@ const PaymentPage = () => {
         paymentHash: txHash,
         paidAt: new Date(),
       });
-      navigate('/login');
+      setConfirmationMessage('Payment confirmed! Redirecting to login page...');
+      setTimeout(() => navigate('/login'), 2000);
     }
   };
 
@@ -55,7 +57,7 @@ const PaymentPage = () => {
         <strong>Wallet Address:</strong> <code>{walletInfo.address}</code><br />
         <strong>Memo/Tag:</strong> <code>{walletInfo.memo}</code>
         <div style={{ marginTop: '10px' }}>
-          <QRCode value={walletInfo.address} size={128} />
+          <QRCode value={walletInfo.address} size={160} />
         </div>
       </div>
 
@@ -74,11 +76,18 @@ const PaymentPage = () => {
       <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
         Confirm Payment
       </button>
+
+      {confirmationMessage && (
+        <div style={{ marginTop: '20px', color: 'green' }}>
+          {confirmationMessage}
+        </div>
+      )}
     </div>
   );
 };
 
 export default PaymentPage;
+
 
 
 
