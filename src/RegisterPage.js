@@ -1,8 +1,9 @@
+// src/RegisterPage.js
 import React, { useState } from 'react';
-import { createUserWithEmailAndPassword, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
+import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
   const [email, setEmail] = useState('');
@@ -12,20 +13,19 @@ function RegisterPage() {
 
   const handleRegister = async (e) => {
     e.preventDefault();
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+    setError('');
 
-      // Add Firestore record
+    try {
+      const userCred = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
+
+      // Set hasPaid false explicitly on Firestore
       await setDoc(doc(db, 'users', user.uid), { hasPaid: false });
 
-      // Force sign out
-      await signOut(auth);
-
-      // Slight delay before navigation to ensure Firebase resets
+      // OPTIONAL: show success message, then redirect
       setTimeout(() => {
         navigate('/login');
-      }, 500);
+      }, 1000);
     } catch (err) {
       setError(err.message);
     }
@@ -33,29 +33,30 @@ function RegisterPage() {
 
   return (
     <div>
-      <h2>Register</h2>
+      <h1>Register</h1>
       <form onSubmit={handleRegister}>
         <input
           type="email"
           placeholder="Email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
           required
-        /><br/>
+          onChange={(e) => setEmail(e.target.value)}
+        />
         <input
           type="password"
           placeholder="Password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
           required
-        /><br/>
+          onChange={(e) => setPassword(e.target.value)}
+        />
         <button type="submit">Register</button>
       </form>
-      {error && <p style={{color: 'red'}}>{error}</p>}
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
 }
 
 export default RegisterPage;
+
 
 
