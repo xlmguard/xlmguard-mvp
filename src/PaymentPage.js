@@ -5,7 +5,7 @@ import { auth, db } from './firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-const PaymentPage = () => {
+const PaymentPage = () => { 
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
