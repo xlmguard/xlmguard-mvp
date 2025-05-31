@@ -1,4 +1,4 @@
-// Reverting App.js to known-good version from May 30, 2025 (with post-registration logout fix)
+// Reverting App.js to known-good version from May 30, 2025 (with post-registration logout fix) + version marker
 
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
@@ -48,6 +48,9 @@ function App() {
 
   return (
     <Router>
+      <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
+        App Version: May 30 - Post Registration Fix
+      </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
@@ -63,6 +66,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
