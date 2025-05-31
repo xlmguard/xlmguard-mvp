@@ -39,7 +39,7 @@ function App() {
         setHasPaid(false);
       }
       setLoading(false);
-    });
+      });
 
     return () => unsub();
   }, []);
