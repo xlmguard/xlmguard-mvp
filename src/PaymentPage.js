@@ -1,59 +1,71 @@
-import React, { useState } from 'react';
-import { doc, updateDoc } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
+// Reverting App.js to known-good version from May 30, 2025 (with post-registration logout fix) + logo size + hash tag routing
+
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import HomePage from './HomePage';
+import RegisterPage from './RegisterPage';
+import LoginPage from './LoginPage';
+import PaymentPage from './PaymentPage';
+import SubmissionForm from './SubmissionForm';
+import Dashboard from './Dashboard';
+import AdminLogin from './AdminLogin';
+import AdminPanel from './AdminPanel';
 
-function PaymentPage() {
-  const [txHash, setTxHash] = useState('');
-  const navigate = useNavigate();
+function App() {
+  const [user, setUser] = useState(null);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const handleConfirm = async () => {
-    const user = auth.currentUser;
-    if (!user || !txHash.trim()) return;
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async currentUser => {
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        const snap = await getDoc(userRef);
 
-    const userRef = doc(db, 'users', user.uid);
-    await updateDoc(userRef, { hasPaid: true, txHash });
-    navigate('/submit');
-  };
+        if (snap.exists()) {
+          const paid = snap.data().hasPaid || false;
+          setHasPaid(paid);
+        } else {
+          await setDoc(userRef, { hasPaid: false });
+          setHasPaid(false);
+        }
+
+        setUser(currentUser);
+      } else {
+        setUser(null);
+        setHasPaid(false);
+      }
+      setLoading(false);
+    });
+
+    return () => unsub();
+  }, []);
+
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <div style={{ padding: '2rem' }}>
+    <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
         App Version: May 30 - Post Registration Fix
       </div>
-
-      <h1>Make a Payment</h1>
-      <p>Please send your one-time payment to the wallet address below:</p>
-
-      <h2>XLM Wallet:</h2>
-      <code style={{ fontSize: '1rem' }}>
-        GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL
-      </code>
-      <p><strong>Memo:</strong> <span style={{ fontWeight: 600 }}>1095582935</span></p>
-
-      <h2>XRP Wallet:</h2>
-      <code style={{ fontSize: '1rem' }}>
-        rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J
-      </code>
-      <p><strong>Destination Tag:</strong> <span style={{ fontWeight: 600 }}>1952896539</span></p>
-
-      <div style={{ marginTop: '2rem' }}>
-        <label htmlFor="txHash">Enter Transaction Hash / ID:</label>
-        <input
-          id="txHash"
-          type="text"
-          value={txHash}
-          onChange={e => setTxHash(e.target.value)}
-          style={{ display: 'block', width: '100%', maxWidth: '500px', marginTop: '0.5rem', marginBottom: '1rem' }}
-        />
-        <button onClick={handleConfirm} style={{ padding: '10px 20px' }}>
-          Confirm Payment
-        </button>
-      </div>
-    </div>
+      <Routes>
+        <Route path="/" element={<HomePage logoSize="110%" />} />
+        <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
+        <Route path="/login" element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to={user ? '/submit' : '/login'} />} />
+        <Route path="/submit" element={user ? <SubmissionForm /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
+      </Routes>
+    </Router>
   );
 }
 
-export default PaymentPage;
+export default App;
+
 
 
