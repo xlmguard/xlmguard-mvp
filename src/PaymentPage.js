@@ -2,30 +2,35 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
-import { doc, updateDoc, getDoc } from 'firebase/firestore';
+import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import QRCode from 'qrcode.react';
 
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
-  const [walletInfo, setWalletInfo] = useState({ address: '', memo: '', currency: '' });
+  const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const navigate = useNavigate();
+
+  const walletDetails = {
+    XLM: {
+      address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
+      tag: '1095582935',
+      amount: 4
+    },
+    XRP: {
+      address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
+      tag: '1952896539',
+      amount: 2
+    }
+  };
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        const isXRP = currentUser.email.includes('xrp');
-        setWalletInfo({
-          address: isXRP
-            ? 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J'
-            : 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
-          memo: isXRP ? '1952896539' : '1095582935',
-          currency: isXRP ? 'XRP' : 'XLM'
-        });
-      } else {  
+      } else {
         navigate('/login');
       }
     });
@@ -45,19 +50,33 @@ const PaymentPage = () => {
     }
   };
 
-  const paymentAmount = walletInfo.currency === 'XRP' ? 2 : 4;
+  const { address, tag, amount } = walletDetails[currency];
 
   return (
     <div style={{ padding: '20px' }}>
       <h2>Make a Payment</h2>
       <p>
-        Please send <strong>{paymentAmount} {walletInfo.currency}</strong> to the wallet below. After payment, enter your transaction hash to confirm.
+        Please send <strong>{amount} {currency}</strong> to the wallet below. After payment, enter your transaction hash to confirm.
       </p>
+
+      <div style={{ marginBottom: '15px' }}>
+        <label htmlFor="currency">Choose currency:</label>
+        <select
+          id="currency"
+          value={currency}
+          onChange={(e) => setCurrency(e.target.value)}
+          style={{ marginLeft: '10px' }}
+        >
+          <option value="XLM">XLM</option>
+          <option value="XRP">XRP</option>
+        </select>
+      </div>
+
       <div>
-        <strong>Wallet Address:</strong> <code>{walletInfo.address}</code><br />
-        <strong>Memo/Tag:</strong> <code>{walletInfo.memo}</code>
+        <strong>Wallet Address:</strong> <code>{address}</code><br />
+        <strong>Memo/Tag:</strong> <code>{tag}</code>
         <div style={{ marginTop: '10px' }}>
-          <QRCode value={walletInfo.address} size={160} />
+          <QRCode value={address} size={160} />
         </div>
       </div>
 
@@ -87,6 +106,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
