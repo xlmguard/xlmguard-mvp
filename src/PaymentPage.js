@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { doc, updateDoc, getDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import QRCode from 'qrcode.react';
 
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
@@ -15,7 +16,6 @@ const PaymentPage = () => {
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // Determine payment type based on email or logic
         const isXRP = currentUser.email.includes('xrp');
         setWalletInfo({
           address: isXRP
@@ -43,15 +43,20 @@ const PaymentPage = () => {
     }
   };
 
+  const paymentAmount = walletInfo.currency === 'XRP' ? 2 : 4;
+
   return (
     <div style={{ padding: '20px' }}>
       <h2>Make a Payment</h2>
       <p>
-        Please send <strong>25 {walletInfo.currency}</strong> to the wallet below. After payment, enter your transaction hash to confirm.
+        Please send <strong>{paymentAmount} {walletInfo.currency}</strong> to the wallet below. After payment, enter your transaction hash to confirm.
       </p>
       <div>
         <strong>Wallet Address:</strong> <code>{walletInfo.address}</code><br />
         <strong>Memo/Tag:</strong> <code>{walletInfo.memo}</code>
+        <div style={{ marginTop: '10px' }}>
+          <QRCode value={walletInfo.address} size={128} />
+        </div>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -74,6 +79,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
