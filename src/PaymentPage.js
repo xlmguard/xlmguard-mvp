@@ -76,7 +76,7 @@ const PaymentPage = () => {
         <strong>Wallet Address:</strong> <code>{address}</code><br />
         <strong>Memo/Tag:</strong> <code>{tag}</code>
         <div style={{ marginTop: '10px' }}>
-          <QRCode value={address} size={160} />
+          <QRCode value={`${address}?memo=${tag}`} size={160} />
         </div>
       </div>
 
@@ -106,6 +106,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
