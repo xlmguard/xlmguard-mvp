@@ -25,7 +25,7 @@ const PaymentPage = () => {
           memo: isXRP ? '1952896539' : '1095582935',
           currency: isXRP ? 'XRP' : 'XLM'
         });
-      } else {
+      } else {  
         navigate('/login');
       }
     });
