@@ -2,46 +2,30 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, db } from './firebase';
-import { doc, getDoc } from 'firebase/firestore';
+import { auth } from './firebase';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [userStatusChecked, setUserStatusChecked] = useState(false);
-  const [shouldShowContent, setShouldShowContent] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        const userRef = doc(db, 'users', currentUser.uid);
-        const userSnap = await getDoc(userRef);
-        const userData = userSnap.exists() ? userSnap.data() : {};
-
-        if (!userData.hasPaid) {
-          navigate('/payment');
-        } else {
-          navigate('/submit');
-        }
-      } else {
-        setShouldShowContent(true);
-        setUserStatusChecked(true);
-      }
+    const unsubscribe = onAuthStateChanged(auth, () => {
+      setIsReady(true); // Always show home page regardless of auth status
     });
 
     return () => unsubscribe();
-  }, [navigate]);
+  }, []);
 
-  if (!userStatusChecked && !shouldShowContent) {
-    return <div>Checking status...</div>;
-  }
+  if (!isReady) return <div>Loading...</div>;
 
   return (
     <div style={{ textAlign: 'center', padding: '40px' }}>
-      <img src="/logo192.png" alt="XLMGuard Logo" style={{ width: 100, marginBottom: 20 }} />
+      <img src="/logo192.png" alt="XLMGuard Logo" style={{ width: 132, marginBottom: 20 }} />
       <h1>Welcome to XLMGuard</h1>
       <p>
         Protect your XLM and XRP transactions from fraud with our secure transaction
-        verification and protection system.
+        verification and protection system. Our service ensures that your payments are verified,
+        logged, and can be validated anytime.
       </p>
       <div style={{ margin: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px', padding: '10px 20px' }}>
@@ -55,8 +39,10 @@ const HomePage = () => {
         <label htmlFor="language">Language:</label>
         <select id="language" style={{ marginLeft: '10px' }}>
           <option value="en">English</option>
-          <option value="es">Español</option>
-          <option value="fr">Français</option>
+          <option value="ja">日本語 (Japanese)</option>
+          <option value="ko">한국어 (Korean)</option>
+          <option value="pt">Português</option>
+          <option value="zh">中文 (Chinese)</option>
         </select>
       </div>
     </div>
@@ -64,6 +50,7 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
 
 
 
