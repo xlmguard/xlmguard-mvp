@@ -13,7 +13,7 @@ const PaymentPage = () => {
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const navigate = useNavigate();
 
-  const walletDetails = {
+  const walletDetails = { 
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
