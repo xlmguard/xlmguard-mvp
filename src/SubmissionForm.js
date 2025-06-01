@@ -1,70 +1,87 @@
 // SubmissionForm.js
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
-import HomePage from './HomePage';
-import RegisterPage from './RegisterPage';
-import LoginPage from './LoginPage';
-import PaymentPage from './PaymentPage';
-import SubmissionForm from './SubmissionForm';
-import Dashboard from './Dashboard';
-import AdminLogin from './AdminLogin';
-import AdminPanel from './AdminPanel';
+import React, { useState } from 'react';
+import { db } from './firebase';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
 
-function App() {
-  const [user, setUser] = useState(null);
-  const [hasPaid, setHasPaid] = useState(false);
-  const [loading, setLoading] = useState(true);
+const SubmissionForm = ({ user }) => {
+  const [formData, setFormData] = useState({
+    currency: 'XLM',
+    transactionId: '',
+    amount: '',
+    notes: '',
+  });
+  const [statusMessage, setStatusMessage] = useState('');
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async currentUser => {
-      if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
-        const snap = await getDoc(userRef);
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-        if (snap.exists()) {
-          const paid = snap.data().hasPaid || false;
-          setHasPaid(paid);
-        } else {
-          await setDoc(userRef, { hasPaid: false });
-          setHasPaid(false);
-        }
-
-        setUser(currentUser);
-      } else {
-        setUser(null);
-        setHasPaid(false);
-      }
-      setLoading(false);
-    });
-
-    return () => unsub();
-  }, []);
-
-  if (loading) return <div>Loading...</div>;
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await addDoc(collection(db, 'transactions'), {
+        ...formData,
+        userId: user.uid,
+        submittedAt: Timestamp.now(),
+      });
+      setStatusMessage('Transaction submitted successfully. Redirecting...');
+      setTimeout(() => navigate('/'), 3000);
+    } catch (error) {
+      console.error('Error submitting transaction:', error);
+      setStatusMessage('Failed to submit transaction. Please try again.');
+    }
+  };
 
   return (
-    <Router>
-      <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 1 - Submit Fix
-      </div>
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to="/login" />} />
-        <Route path="/submit" element={user && hasPaid ? <SubmissionForm user={user} /> : <Navigate to="/login" />} />
-        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
-        <Route path="/admin" element={<AdminLogin />} />
-        <Route path="/admin-panel" element={<AdminPanel />} />
-      </Routes>
-    </Router>
+    <div style={{ padding: '20px' }}>
+      <h2>Submit Transaction</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Currency:</label>
+          <select name="currency" value={formData.currency} onChange={handleChange}>
+            <option value="XLM">XLM</option>
+            <option value="XRP">XRP</option>
+          </select>
+        </div>
+        <div>
+          <label>Transaction ID:</label>
+          <input
+            type="text"
+            name="transactionId"
+            value={formData.transactionId}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Amount:</label>
+          <input
+            type="number"
+            name="amount"
+            value={formData.amount}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>Notes:</label>
+          <textarea
+            name="notes"
+            value={formData.notes}
+            onChange={handleChange}
+          />
+        </div>
+        <button type="submit">Submit</button>
+      </form>
+      {statusMessage && <p>{statusMessage}</p>}
+    </div>
   );
-}
+};
 
-export default App;
+export default SubmissionForm;
+
 
 
 
