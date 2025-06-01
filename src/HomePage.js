@@ -20,7 +20,7 @@ const HomePage = () => {
 
   return (
     <div style={{ textAlign: 'center', padding: '40px' }}>
-      <img src="/logo192.png" alt="XLMGuard Logo" style={{ width: 132, marginBottom: 20 }} />
+      <img src="/logo.png" alt="XLMGuard Logo" style={{ width: 132, marginBottom: 20 }} />
       <h1>Welcome to XLMGuard</h1>
       <p>
         Protect your XLM and XRP transactions from fraud with our secure transaction
@@ -50,6 +50,7 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
 
 
 
