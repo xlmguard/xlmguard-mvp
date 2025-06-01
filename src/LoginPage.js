@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
 const LoginPage = () => {
@@ -31,6 +31,11 @@ const LoginPage = () => {
     } catch (err) {
       setError(err.message);
     }
+  };
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate('/');
   };
 
   return (
@@ -62,9 +67,13 @@ const LoginPage = () => {
         </button>
         {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
       </form>
+      <button onClick={handleLogout} style={{ marginTop: '20px', padding: '10px 20px' }}>
+        Logout
+      </button>
     </div>
   );
 };
 
 export default LoginPage;
+
 
