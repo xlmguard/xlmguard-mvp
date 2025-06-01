@@ -1,36 +1,38 @@
 // SubmissionForm.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from './firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { useNavigate } from 'react-router-dom';
 
 const SubmissionForm = ({ user }) => {
-  const [formData, setFormData] = useState({
-    currency: 'XLM',
-    transactionId: '',
-    amount: '',
-    notes: '',
-  });
-  const [statusMessage, setStatusMessage] = useState('');
+  const [currency, setCurrency] = useState('XLM');
+  const [txId, setTxId] = useState('');
+  const [amount, setAmount] = useState('');
+  const [notes, setNotes] = useState('');
+  const [message, setMessage] = useState('');
   const navigate = useNavigate();
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!user) {
+      setMessage('User not authenticated.');
+      return;
+    }
+
     try {
-      await addDoc(collection(db, 'transactions'), {
-        ...formData,
-        userId: user.uid,
-        submittedAt: Timestamp.now(),
+      const docRef = await addDoc(collection(db, 'transactions'), {
+        uid: user.uid,
+        currency,
+        transactionId: txId,
+        amount,
+        notes,
+        createdAt: Timestamp.now(),
       });
-      setStatusMessage('Transaction submitted successfully. Redirecting...');
-      setTimeout(() => navigate('/'), 3000);
+      setMessage('Transaction submitted successfully.');
+      setTimeout(() => navigate('/'), 2000);
     } catch (error) {
       console.error('Error submitting transaction:', error);
-      setStatusMessage('Failed to submit transaction. Please try again.');
+      setMessage('Failed to submit transaction. Please try again.');
     }
   };
 
@@ -40,47 +42,32 @@ const SubmissionForm = ({ user }) => {
       <form onSubmit={handleSubmit}>
         <div>
           <label>Currency:</label>
-          <select name="currency" value={formData.currency} onChange={handleChange}>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
             <option value="XLM">XLM</option>
             <option value="XRP">XRP</option>
           </select>
         </div>
         <div>
           <label>Transaction ID:</label>
-          <input
-            type="text"
-            name="transactionId"
-            value={formData.transactionId}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} required />
         </div>
         <div>
           <label>Amount:</label>
-          <input
-            type="number"
-            name="amount"
-            value={formData.amount}
-            onChange={handleChange}
-            required
-          />
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
         </div>
         <div>
           <label>Notes:</label>
-          <textarea
-            name="notes"
-            value={formData.notes}
-            onChange={handleChange}
-          />
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
         <button type="submit">Submit</button>
       </form>
-      {statusMessage && <p>{statusMessage}</p>}
+      {message && <p>{message}</p>}
     </div>
   );
 };
 
 export default SubmissionForm;
+
 
 
 
