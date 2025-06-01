@@ -1,16 +1,31 @@
 // SubmissionForm.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import { onAuthStateChanged } from 'firebase/auth';
 
-const SubmissionForm = ({ user }) => {
+const SubmissionForm = () => {
   const [currency, setCurrency] = useState('XLM');
   const [txId, setTxId] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
   const [message, setMessage] = useState('');
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+      } else {
+        setUser(null);
+        setMessage('User not authenticated. Redirecting to login...');
+        setTimeout(() => navigate('/login'), 2000);
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,7 +35,7 @@ const SubmissionForm = ({ user }) => {
     }
 
     try {
-      const docRef = await addDoc(collection(db, 'transactions'), {
+      await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
         transactionId: txId,
@@ -67,6 +82,7 @@ const SubmissionForm = ({ user }) => {
 };
 
 export default SubmissionForm;
+
 
 
 
