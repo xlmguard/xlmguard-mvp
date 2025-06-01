@@ -1,85 +1,69 @@
-// SubmissionForm.js
-import React, { useState } from 'react';
+// App.js
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import HomePage from './HomePage';
+import RegisterPage from './RegisterPage';
+import LoginPage from './LoginPage';
+import PaymentPage from './PaymentPage';
+import SubmissionForm from './SubmissionForm';
+import Dashboard from './Dashboard';
+import AdminLogin from './AdminLogin';
+import AdminPanel from './AdminPanel';
 
-const SubmissionForm = () => {
-  const [form, setForm] = useState({
-    currency: 'XLM',
-    transactionHash: '',
-    amount: '',
-    note: '',
-  });
+function App() {
+  const [user, setUser] = useState(null);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  const [submitted, setSubmitted] = useState(false);
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async currentUser => {
+      if (currentUser) {
+        const userRef = doc(db, "users", currentUser.uid);
+        const snap = await getDoc(userRef);
 
-  const handleChange = e => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+        if (snap.exists()) {
+          const paid = snap.data().hasPaid || false;
+          setHasPaid(paid);
+        } else {
+          await setDoc(userRef, { hasPaid: false });
+          setHasPaid(false);
+        }
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    const user = auth.currentUser;
-    if (!user) return;
+        setUser(currentUser);
+      } else {
+        setUser(null);
+        setHasPaid(false);
+      }
+      setLoading(false);
+    });
 
-    try {
-      await addDoc(collection(db, 'transactions'), {
-        ...form,
-        uid: user.uid,
-        submittedAt: serverTimestamp(),
-      });
-      setSubmitted(true);
-    } catch (error) {
-      console.error('Error submitting transaction:', error);
-    }
-  };
+    return () => unsub();
+  }, []);
 
-  if (submitted) {
-    return <div>Transaction submitted successfully!</div>;
-  }
+  if (loading) return <div>Loading...</div>;
 
   return (
-    <form onSubmit={handleSubmit} style={{ padding: '20px' }}>
-      <h2>Submit Transaction</h2>
-      <div>
-        <label>Currency:</label>
-        <select name="currency" value={form.currency} onChange={handleChange}>
-          <option value="XLM">XLM</option>
-          <option value="XRP">XRP</option>
-        </select>
+    <Router>
+      <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
+        App Version: June 1 - Submit Fix
       </div>
-      <div>
-        <label>Transaction Hash:</label>
-        <input
-          type="text"
-          name="transactionHash"
-          value={form.transactionHash}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div>
-        <label>Amount:</label>
-        <input
-          type="number"
-          name="amount"
-          value={form.amount}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div>
-        <label>Note (optional):</label>
-        <textarea
-          name="note"
-          value={form.note}
-          onChange={handleChange}
-        ></textarea>
-      </div>
-      <button type="submit" style={{ marginTop: '10px' }}>Submit</button>
-    </form>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to="/login" />} />
+        <Route path="/submit" element={user && hasPaid ? <SubmissionForm user={user} /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
+      </Routes>
+    </Router>
   );
-};
+}
 
-export default SubmissionForm;
+export default App;
+
 
