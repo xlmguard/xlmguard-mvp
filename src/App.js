@@ -1,5 +1,4 @@
-// Reverting App.js to known-good version from May 30, 2025 (with post-registration logout fix) + version marker
-
+// App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -39,7 +38,7 @@ function App() {
         setHasPaid(false);
       }
       setLoading(false);
-      });
+    });
 
     return () => unsub();
   }, []);
@@ -49,13 +48,13 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: May 30 - Post Registration Fix
+        App Version: June 1 - Login Routing Fix
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={!user || !hasPaid ? <RegisterPage /> : <Navigate to="/submit" />} />
-        <Route path="/login" element={!user ? <LoginPage /> : <Navigate to={hasPaid ? '/submit' : '/payment'} />} />
-        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to={user ? '/submit' : '/login'} />} />
+        <Route path="/register" element={!user ? <RegisterPage /> : <Navigate to="/login" />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to="/login" />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -66,6 +65,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
