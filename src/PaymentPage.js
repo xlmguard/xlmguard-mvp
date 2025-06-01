@@ -4,8 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import QRCode from 'qrcode.react';
 
-const PaymentPage = () => { 
+const PaymentPage = () => {
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
@@ -45,7 +46,11 @@ const PaymentPage = () => {
         paidAt: new Date(),
       });
       setConfirmationMessage('Payment confirmed! Redirecting to login page...');
-      setTimeout(() => navigate('/login'), 2000);
+
+      // Ensure redirect happens after DOM updates
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000);
     }
   };
 
@@ -74,6 +79,9 @@ const PaymentPage = () => {
       <div>
         <strong>Wallet Address:</strong> <code>{address}</code><br />
         <strong>Memo/Tag:</strong> <code>{tag}</code>
+        <div style={{ marginTop: '10px' }}>
+          <QRCode value={address} size={160} />
+        </div>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -102,6 +110,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 ;
 
 
