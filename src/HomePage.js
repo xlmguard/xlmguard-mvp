@@ -1,81 +1,66 @@
 // HomePage.js
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from './firebase';
-
-const translations = {
-  en: "Protect your XLM and XRP transactions from fraud with our secure transaction verification and protection system. Our service ensures that your payments are verified, logged, and can be validated anytime.",
-  ja: "安全な取引検証と保護システムでXLMおよびXRPの取引を詐欺から守ります。支払いが確認され、記録され、いつでも検証できることを保証します。",
-  ko: "안전한 거래 검증 및 보호 시스템으로 XLM 및 XRP 거래를 사기로부터 보호하세요. 당사의 서비스는 결제가 확인되고, 기록되며, 언제든지 검증될 수 있도록 보장합니다.",
-  pt: "Proteja suas transações de XLM e XRP contra fraudes com nosso sistema seguro de verificação e proteção de transações. Nosso serviço garante que seus pagamentos sejam verificados, registrados e possam ser validados a qualquer momento.",
-  zh: "通过我们安全的交易验证和保护系统，保护您的XLM和XRP交易免受欺诈。我们的服务确保您的付款已验证、已记录，并且可以随时验证。",
-  ru: "Защитите свои транзакции XLM и XRP от мошенничества с помощью нашей безопасной системы проверки и защиты транзакций. Наш сервис гарантирует, что ваши платежи будут проверены, зафиксированы и могут быть подтверждены в любое время.",
-  es: "Proteja sus transacciones XLM y XRP contra fraudes con nuestro sistema seguro de verificación y protección de transacciones. Nuestro servicio garantiza que sus pagos estén verificados, registrados y puedan validarse en cualquier momento.",
-  fr: "Protégez vos transactions XLM et XRP contre la fraude grâce à notre système sécurisé de vérification et de protection des transactions. Notre service garantit que vos paiements sont vérifiés, enregistrés et peuvent être validés à tout moment.",
-  hi: "हमारी सुरक्षित लेन-देन सत्यापन और सुरक्षा प्रणाली के साथ अपनी XLM और XRP लेन-देन को धोखाधड़ी से बचाएं। हमारी सेवा यह सुनिश्चित करती है कि आपके भुगतान सत्यापित, दर्ज और किसी भी समय मान्य किए जा सकें।",
-  ar: "قم بحماية معاملات XLM و XRP الخاصة بك من الاحتيال باستخدام نظام التحقق والحماية الآمن الخاص بنا. تضمن خدمتنا التحقق من مدفوعاتك وتسجيلها ويمكن التحقق منها في أي وقت."
-};
-
-const languages = [
-  { code: 'en', label: 'English' },
-  { code: 'ja', label: '日本語 (Japanese)' },
-  { code: 'ko', label: '한국어 (Korean)' },
-  { code: 'pt', label: 'Português' },
-  { code: 'zh', label: '中文 (Chinese)' },
-  { code: 'ru', label: 'Русский (Russian)' },
-  { code: 'es', label: 'Español (Spanish)' },
-  { code: 'fr', label: 'Français (French)' },
-  { code: 'hi', label: 'हिंदी (Hindi)' },
-  { code: 'ar', label: 'العربية (Arabic)' }
-  // More can be added progressively
-];
+import logo from './logo.png';
 
 const HomePage = () => {
   const navigate = useNavigate();
-  const [isReady, setIsReady] = useState(false);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('English');
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, () => {
-      setIsReady(true);
-    });
-    return () => unsubscribe();
-  }, []);
+  const descriptions = {
+    English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
+    // Add more languages as needed
+  };
 
-  if (!isReady) return <div>Loading...</div>;
+  const allLanguages = [
+    'English', 'Afrikaans', 'Albanian', 'Amharic', 'Arabic (Egyptian Spoken)', 'Arabic (Levantine)', 'Arabic (Modern Standard)',
+    'Arabic (Moroccan Spoken)', 'Arabic (Overview)', 'Aramaic', 'Armenian', 'Assamese', 'Aymara', 'Azerbaijani', 'Balochi',
+    'Bamanankan', 'Bashkort (Bashkir)', 'Basque', 'Belarusan', 'Bengali', 'Bhojpuri', 'Bislama', 'Bosnian', 'Brahui', 'Bulgarian',
+    'Burmese', 'Cantonese', 'Catalan', 'Cebuano', 'Chechen', 'Cherokee', 'Croatian', 'Czech', 'Dakota', 'Danish', 'Dari',
+    'Dholuo', 'Dutch', 'Esperanto', 'Estonian', 'Éwé', 'Finnish', 'French', 'Georgian', 'German', 'Gikuyu', 'Greek', 'Guarani',
+    'Gujarati', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hawaiian Creole', 'Hebrew', 'Hiligaynon', 'Hindi', 'Hungarian',
+    'Icelandic', 'Igbo', 'Ilocano', 'Indonesian (Bahasa Indonesia)', 'Inuit/Inupiaq', 'Irish Gaelic', 'Italian', 'Japanese',
+    'Jarai', 'Javanese', 'K’iche’', 'Kabyle', 'Kannada', 'Kashmiri', 'Kazakh', 'Khmer', 'Khoekhoe', 'Korean', 'Kurdish', 'Kyrgyz',
+    'Lao', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Macedonian', 'Maithili', 'Malagasy', 'Malay (Bahasa Melayu)',
+    'Malayalam', 'Mandarin (Chinese)', 'Marathi', 'Mende', 'Mongolian', 'Nahuatl', 'Navajo', 'Nepali', 'Norwegian', 'Ojibwa',
+    'Oriya', 'Oromo', 'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Quechua', 'Romani', 'Romanian', 'Russian', 'Rwanda',
+    'Samoan', 'Sanskrit', 'Serbian', 'Shona', 'Sindhi', 'Sinhala', 'Slovak', 'Slovene', 'Somali', 'Spanish', 'Swahili', 'Swedish',
+    'Tachelhit', 'Tagalog', 'Tajiki', 'Tamil', 'Tatar', 'Telugu', 'Thai', 'Tibetic Languages', 'Tigrigna', 'Tok Pisin', 'Turkish',
+    'Turkmen', 'Ukrainian', 'Urdu', 'Uyghur', 'Uzbek', 'Vietnamese', 'Warlpiri', 'Welsh', 'Wolof', 'Xhosa', 'Yakut', 'Yiddish',
+    'Yoruba', 'Yucatec', 'Zapotec', 'Zulu'
+  ];
 
   return (
-    <div style={{ textAlign: 'center', padding: '40px' }}>
-      <img src="/logo.png" alt="XLMGuard Logo" style={{ width: 260, marginBottom: 20 }} />
-      <h1>Welcome to XLMGuard</h1>
-      <p>{translations[language] || translations['en']}</p>
-      <div style={{ margin: '20px' }}>
-        <button onClick={() => navigate('/register')} style={{ marginRight: '10px', padding: '10px 20px' }}>
-          Register
-        </button>
-        <button onClick={() => navigate('/login')} style={{ padding: '10px 20px' }}>
-          Login
-        </button>
+    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
+      <div style={{ textAlign: 'center' }}>
+        <img src={logo} alt="XLMGuard Logo" style={{ width: '210px', marginBottom: '20px' }} />
+        <h1>Welcome to XLMGuard</h1>
+        <p style={{ maxWidth: '600px', margin: 'auto' }}>{descriptions[language] || descriptions['English']}</p>
       </div>
-      <div style={{ marginTop: '30px' }}>
-        <label htmlFor="language">Language:</label>
-        <select
-          id="language"
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          style={{ marginLeft: '10px' }}
-        >
-          {languages.map((lang) => (
-            <option key={lang.code} value={lang.code}>{lang.label}</option>
+
+      <div style={{ marginTop: '20px', textAlign: 'center' }}>
+        <label htmlFor="language">Select Language: </label>
+        <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+          {allLanguages.map((lang) => (
+            <option key={lang} value={lang}>{lang}</option>
           ))}
         </select>
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: '30px' }}>
+        <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
+        <button onClick={() => navigate('/login')}>Login</button>
+      </div>
+
+      <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '0.85rem', color: '#555' }}>
+        © {new Date().getFullYear()} XLMGuard.com. All information on this website is protected by U.S. copyright laws.
       </div>
     </div>
   );
 };
 
 export default HomePage;
+
 
 
 
