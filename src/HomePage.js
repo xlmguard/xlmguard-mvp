@@ -8,7 +8,7 @@ import { doc, getDoc } from 'firebase/firestore';
 const HomePage = () => {
   const navigate = useNavigate();
   const [userStatusChecked, setUserStatusChecked] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [shouldShowContent, setShouldShowContent] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
@@ -23,7 +23,7 @@ const HomePage = () => {
           navigate('/submit');
         }
       } else {
-        setIsLoggedIn(false);
+        setShouldShowContent(true);
         setUserStatusChecked(true);
       }
     });
@@ -31,7 +31,7 @@ const HomePage = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  if (!userStatusChecked) {
+  if (!userStatusChecked && !shouldShowContent) {
     return <div>Checking status...</div>;
   }
 
@@ -57,7 +57,6 @@ const HomePage = () => {
           <option value="en">English</option>
           <option value="es">Español</option>
           <option value="fr">Français</option>
-          {/* Add more languages as needed */}
         </select>
       </div>
     </div>
@@ -65,6 +64,7 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
 
 
 
