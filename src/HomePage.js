@@ -6,13 +6,13 @@ function HomePage() {
   const [language, setLanguage] = useState('English');
   const navigate = useNavigate();
 
-  const handleLanguageChange = (e) => { 
+  const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
   };
 
   const descriptions = {
-    English: 'Protect your XLM and XRP transactions from fraud with our secure transaction verification and protection system. Our service ensures that your payments are verified, logged, and can be validated anytime.',
-    // Add other translations here as needed
+    English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
+    // Add translations for other languages as needed
   };
 
   const allLanguages = [
@@ -36,7 +36,7 @@ function HomePage() {
   return (
     <div style={{ textAlign: 'center', paddingTop: '60px' }}>
       <img
-        src="./logo.png"
+        src="/logo.png"
         alt="XLMGuard Logo"
         style={{ width: '210px', marginBottom: '20px' }}
       />
@@ -58,13 +58,14 @@ function HomePage() {
       </div>
 
       <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
-        &copy; {new Date().getFullYear()} XLMGuard.com – All content on this site is protected by U.S. copyright laws.
+        &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
     </div>
   );
 }
 
 export default HomePage;
+
 
 
 
