@@ -6,7 +6,7 @@ function HomePage() {
   const [language, setLanguage] = useState('English');
   const navigate = useNavigate();
 
-  const handleLanguageChange = (e) => {
+  const handleLanguageChange = (e) => { 
     setLanguage(e.target.value);
   };
 
