@@ -5,7 +5,7 @@ import { auth, db } from './firebase';
 import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
 
-const LoginPage = () => {
+const LoginPage = () => { 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
