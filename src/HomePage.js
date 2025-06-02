@@ -1,7 +1,7 @@
 // HomePage.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from './logo.png';
+import logo from 'src="/logo.png"';
 
 const HomePage = () => {
   const navigate = useNavigate();
