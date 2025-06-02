@@ -36,7 +36,7 @@ function HomePage() {
   return (
     <div style={{ textAlign: 'center', paddingTop: '60px' }}>
       <img
-        src="/logo.png"
+        src="./logo.png"
         alt="XLMGuard Logo"
         style={{ width: '210px', marginBottom: '20px' }}
       />
