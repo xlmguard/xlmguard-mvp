@@ -1,84 +1,90 @@
 // SellerConfirmationPanel.js
 import React, { useState } from 'react';
 import { db, storage } from './firebase';
-import { doc, setDoc, getDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
 
 const SellerConfirmationPanel = () => {
-  const [txid, setTxid] = useState('');
+  const [transactionId, setTransactionId] = useState('');
   const [billOfLading, setBillOfLading] = useState(null);
-  const [images, setImages] = useState([]);
-  const [statusMessage, setStatusMessage] = useState('');
+  const [shipmentImages, setShipmentImages] = useState([]);
+  const [status, setStatus] = useState('');
 
-  const handleUpload = async () => {
-    if (!txid || !billOfLading || images.length === 0) {
-      setStatusMessage('Please fill all fields and upload files.');
-      return;
-    }
-
+  const handleSubmit = async () => {
     try {
-      const userDocRef = doc(db, 'transactions', txid);
-      const docSnap = await getDoc(userDocRef);
+      setStatus('');
 
-      if (!docSnap.exists()) {
-        setStatusMessage('Transaction not found.');
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setStatus('Transaction not found.');
         return;
       }
 
-      const uploads = [];
+      const transactionDoc = querySnapshot.docs[0];
+      const docRef = transactionDoc.ref;
+      const uploadPromises = [];
 
-      const billRef = ref(storage, `confirmations/${txid}/billOfLading`);
-      uploads.push(uploadBytes(billRef, billOfLading).then(() => getDownloadURL(billRef)));
+      if (billOfLading) {
+        const billRef = ref(storage, `shipmentDocs/${transactionId}/billOfLading_${billOfLading.name}`);
+        uploadPromises.push(
+          uploadBytes(billRef, billOfLading).then(() => getDownloadURL(billRef))
+        );
+      }
 
-      const imageUrls = await Promise.all(
-        images.map((file, idx) => {
-          const imgRef = ref(storage, `confirmations/${txid}/image_${idx}`);
-          return uploadBytes(imgRef, file).then(() => getDownloadURL(imgRef));
-        })
-      );
+      const imageURLs = [];
+      for (const image of shipmentImages) {
+        const imageRef = ref(storage, `shipmentDocs/${transactionId}/images/${image.name}`);
+        uploadPromises.push(
+          uploadBytes(imageRef, image).then(() => getDownloadURL(imageRef).then(url => imageURLs.push(url)))
+        );
+      }
 
-      const [billUrl] = await Promise.all(uploads);
+      const [billURL] = await Promise.all(uploadPromises);
 
-      await setDoc(userDocRef, {
-        shipmentConfirmed: true,
-        billOfLadingUrl: billUrl,
-        imageUrls: imageUrls,
-      }, { merge: true });
+      await updateDoc(docRef, {
+        sellerConfirmed: true,
+        billOfLadingURL: billURL || null,
+        shipmentImages: imageURLs,
+        confirmedAt: new Date().toISOString(),
+      });
 
-      setStatusMessage('Shipment confirmation uploaded successfully.');
-    } catch (error) {
-      console.error(error);
-      setStatusMessage('Error uploading confirmation.');
+      setStatus('Shipment confirmation uploaded successfully.');
+    } catch (err) {
+      console.error(err);
+      setStatus('Error uploading confirmation.');
     }
   };
 
   return (
     <div style={{ padding: '20px' }}>
       <h2>Seller Shipment Confirmation</h2>
+
       <input
         type="text"
-        placeholder="Transaction ID"
-        value={txid}
-        onChange={(e) => setTxid(e.target.value)}
-        style={{ display: 'block', marginBottom: '10px', width: '300px' }}
+        value={transactionId}
+        onChange={(e) => setTransactionId(e.target.value)}
+        placeholder="Enter Transaction ID"
+        style={{ marginBottom: '10px', width: '300px' }}
       />
-      <label>Upload Bill of Lading:</label>
-      <input
-        type="file"
-        onChange={(e) => setBillOfLading(e.target.files[0])}
-        style={{ display: 'block', marginBottom: '10px' }}
-      />
-      <label>Upload Shipment Images:</label>
-      <input
-        type="file"
-        multiple
-        onChange={(e) => setImages([...e.target.files])}
-        style={{ display: 'block', marginBottom: '10px' }}
-      />
-      <button onClick={handleUpload}>Submit Confirmation</button>
-      <p>{statusMessage}</p>
+
+      <div>
+        <label>Upload Bill of Lading:</label>
+        <input type="file" onChange={(e) => setBillOfLading(e.target.files[0])} />
+      </div>
+
+      <div>
+        <label>Upload Shipment Images:</label>
+        <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
+      </div>
+
+      <button onClick={handleSubmit}>Submit Confirmation</button>
+
+      {status && <p style={{ marginTop: '10px' }}>{status}</p>}
     </div>
   );
 };
 
 export default SellerConfirmationPanel;
+
