@@ -1,15 +1,18 @@
 // HomePage.js
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from 'src="/logo.png"';
 
-const HomePage = () => {
-  const navigate = useNavigate();
+function HomePage() {
   const [language, setLanguage] = useState('English');
+  const navigate = useNavigate();
+
+  const handleLanguageChange = (e) => {
+    setLanguage(e.target.value);
+  };
 
   const descriptions = {
-    English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
-    // Add more languages as needed
+    English: 'Protect your XLM and XRP transactions from fraud with our secure transaction verification and protection system. Our service ensures that your payments are verified, logged, and can be validated anytime.',
+    // Add other translations here as needed
   };
 
   const allLanguages = [
@@ -31,35 +34,38 @@ const HomePage = () => {
   ];
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <div style={{ textAlign: 'center' }}>
-        <img src={logo} alt="XLMGuard Logo" style={{ width: '210px', marginBottom: '20px' }} />
-        <h1>Welcome to XLMGuard</h1>
-        <p style={{ maxWidth: '600px', margin: 'auto' }}>{descriptions[language] || descriptions['English']}</p>
+    <div style={{ textAlign: 'center', paddingTop: '60px' }}>
+      <img
+        src="/logo.png"
+        alt="XLMGuard Logo"
+        style={{ width: '210px', marginBottom: '20px' }}
+      />
+      <h1>Welcome to XLMGuard</h1>
+      <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '16px' }}>{descriptions[language]}</p>
+
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
+        <button onClick={() => navigate('/login')}>Login</button>
       </div>
 
-      <div style={{ marginTop: '20px', textAlign: 'center' }}>
-        <label htmlFor="language">Select Language: </label>
-        <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+      <div style={{ marginTop: '20px' }}>
+        <label htmlFor="language">Language:</label>
+        <select id="language" value={language} onChange={handleLanguageChange}>
           {allLanguages.map((lang) => (
             <option key={lang} value={lang}>{lang}</option>
           ))}
         </select>
       </div>
 
-      <div style={{ textAlign: 'center', marginTop: '30px' }}>
-        <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
-        <button onClick={() => navigate('/login')}>Login</button>
-      </div>
-
-      <div style={{ marginTop: '50px', textAlign: 'center', fontSize: '0.85rem', color: '#555' }}>
-        © {new Date().getFullYear()} XLMGuard.com. All information on this website is protected by U.S. copyright laws.
-      </div>
+      <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
+        &copy; {new Date().getFullYear()} XLMGuard.com – All content on this site is protected by U.S. copyright laws.
+      </footer>
     </div>
-   );
-};
+  );
+}
 
 export default HomePage;
+
 
 
 
