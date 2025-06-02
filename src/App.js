@@ -12,6 +12,7 @@ import SubmissionForm from './SubmissionForm';
 import Dashboard from './Dashboard';
 import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
+import SellerConfirmationPanel from './SellerConfirmationPanel';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -59,12 +60,14 @@ function App() {
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
+        <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
 
 
 
