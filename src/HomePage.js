@@ -56,7 +56,7 @@ const HomePage = () => {
         © {new Date().getFullYear()} XLMGuard.com. All information on this website is protected by U.S. copyright laws.
       </div>
     </div>
-  );
+   );
 };
 
 export default HomePage;
