@@ -14,7 +14,7 @@ import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
 
-function App() {
+function App() { 
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
   const [loading, setLoading] = useState(true);
