@@ -1,4 +1,3 @@
-// SubmissionForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth } from './firebase';
@@ -37,12 +36,15 @@ const SubmissionForm = () => {
     try {
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
+        email: user.email,
+        displayName: user.displayName || '',
         currency,
         transactionId: txId,
         amount,
         notes,
         createdAt: Timestamp.now(),
       });
+
       setMessage('Transaction submitted successfully.');
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
@@ -54,6 +56,11 @@ const SubmissionForm = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2>Submit Transaction</h2>
+      {user && (
+        <p>
+          Logged in as: <strong>{user.displayName || user.email}</strong>
+        </p>
+      )}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Currency:</label>
@@ -82,6 +89,7 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
 

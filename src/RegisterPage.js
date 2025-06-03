@@ -6,6 +6,7 @@ import { auth, db } from './firebase';
 import { useNavigate } from 'react-router-dom';
 
 function RegisterPage() {
+  const [name, setName] = useState(''); // new
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -19,10 +20,13 @@ function RegisterPage() {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
 
-      // Set hasPaid false explicitly on Firestore
-      await setDoc(doc(db, 'users', user.uid), { hasPaid: false });
+      // Save name and hasPaid in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        name: name,
+        hasPaid: false
+      });
 
-      // OPTIONAL: show success message, then redirect
+      // Redirect after a short delay
       setTimeout(() => {
         navigate('/login');
       }, 1000);
@@ -35,6 +39,13 @@ function RegisterPage() {
     <div>
       <h1>Register</h1>
       <form onSubmit={handleRegister}>
+        <input
+          type="text"
+          placeholder="Full Name"
+          value={name}
+          required
+          onChange={(e) => setName(e.target.value)}
+        />
         <input
           type="email"
           placeholder="Email"
@@ -57,6 +68,7 @@ function RegisterPage() {
 }
 
 export default RegisterPage;
+
 
 
 
