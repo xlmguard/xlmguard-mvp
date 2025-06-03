@@ -1,79 +1,70 @@
-// LoginPage.js
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { auth, db } from './firebase';
-import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+// src/LoginPage.js
+import React, { useState, useEffect } from 'react';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from './firebase';
+import { useNavigate } from 'react-router-dom';
 
-const LoginPage = () => { 
+function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, 'users', user.uid));
+        const paid = userDoc.exists() && userDoc.data().hasPaid;
+        navigate(paid ? '/submit' : '/payment');
+      }
+    });
+    return () => unsubscribe();
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const user = userCredential.user;
+      const userCred = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCred.user;
 
-      const userRef = doc(db, 'users', user.uid);
-      const docSnap = await getDoc(userRef);
-      const hasPaid = docSnap.exists() && docSnap.data().hasPaid;
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      const paid = userDoc.exists() && userDoc.data().hasPaid;
 
-      if (hasPaid) {
-        navigate('/submit');
-      } else {
-        navigate('/payment');
-      }
+      navigate(paid ? '/submit' : '/payment');
     } catch (err) {
-      setError(err.message);
+      setError('Invalid email or password.');
     }
   };
 
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate('/');
-  };
-
   return (
-    <div style={{ padding: '20px' }}>
-      <h2>Login</h2>
+    <div>
+      <h1>Login</h1>
       <form onSubmit={handleLogin}>
-        <div>
-          <label>Email:</label><br />
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            style={{ width: '300px', padding: '8px' }}
-          />
-        </div>
-        <div style={{ marginTop: '10px' }}>
-          <label>Password:</label><br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            style={{ width: '300px', padding: '8px' }}
-          />
-        </div>
-        <button type="submit" style={{ marginTop: '20px', padding: '10px 20px' }}>
-          Login
-        </button>
-        {error && <p style={{ color: 'red', marginTop: '10px' }}>{error}</p>}
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          required
+          onChange={(e) => setEmail(e.target.value)}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          required
+          onChange={(e) => setPassword(e.target.value)}
+        />
+        <button type="submit">Login</button>
       </form>
-      <button onClick={handleLogout} style={{ marginTop: '20px', padding: '10px 20px' }}>
-        Logout
-      </button>
+      {error && <p style={{ color: 'red' }}>{error}</p>}
     </div>
   );
-};
+}
 
 export default LoginPage;
+
 
 

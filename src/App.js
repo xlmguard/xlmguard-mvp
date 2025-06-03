@@ -24,7 +24,6 @@ function App() {
       if (currentUser) {
         const userRef = doc(db, "users", currentUser.uid);
         const snap = await getDoc(userRef);
-
         if (snap.exists()) {
           const paid = snap.data().hasPaid || false;
           setHasPaid(paid);
@@ -32,7 +31,6 @@ function App() {
           await setDoc(userRef, { hasPaid: false });
           setHasPaid(false);
         }
-
         setUser(currentUser);
       } else {
         setUser(null);
@@ -40,7 +38,6 @@ function App() {
       }
       setLoading(false);
     });
-
     return () => unsub();
   }, []);
 
@@ -49,30 +46,18 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 3 - Bypass Login After Payment
+        App Version: June 3 - Final Routing Fix
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route
-          path="/register"
-          element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />}
-        />
-        <Route
-          path="/login"
-          element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />}
-        />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route
           path="/payment"
           element={user && !hasPaid ? <PaymentPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/login" />}
         />
-        <Route
-          path="/submit"
-          element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/dashboard"
-          element={user ? <Dashboard /> : <Navigate to="/login" />}
-        />
+        <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
@@ -82,6 +67,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
