@@ -84,7 +84,7 @@ const SubmissionForm = () => {
       <br />
       <button onClick={handleLogout}>Logout</button>
     </div>
-  );
+   );
 };
 
 export default SubmissionForm;
