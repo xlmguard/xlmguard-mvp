@@ -67,7 +67,7 @@ function App() {
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
       </Routes>
     </Router>
-  );
+   );
 }
 
 export default App;
