@@ -20,7 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async currentUser => {
       if (currentUser) {
         const userRef = doc(db, 'users', currentUser.uid);
         const snap = await getDoc(userRef);
@@ -38,7 +38,6 @@ function App() {
         setUser(null);
         setHasPaid(false);
       }
-
       setLoading(false);
     });
 
@@ -50,13 +49,17 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 3 - Payment Redirect Fix
+        App Version: June 4 – Payment Redirect to Submit
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
         <Route path="/login" element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
-        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/login" />} />
+        <Route path="/payment" element={
+          user && !hasPaid ? <PaymentPage /> :
+          user && hasPaid ? <Navigate to="/submit" /> :
+          <Navigate to="/login" />
+        } />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -68,6 +71,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
