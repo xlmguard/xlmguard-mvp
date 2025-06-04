@@ -16,17 +16,17 @@ const PaymentPage = () => {
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
-      amount: 4,
+      amount: 4
     },
     XRP: {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
-      amount: 2,
-    },
+      amount: 2
+    }
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -38,14 +38,18 @@ const PaymentPage = () => {
 
   const handleConfirmPayment = async () => {
     if (user && txHash.trim()) {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        hasPaid: true,
-        paymentHash: txHash,
-        paidAt: new Date(),
-      });
-      setConfirmationMessage('Payment confirmed! Redirecting...');
-      setTimeout(() => navigate('/submit'), 1500);
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        await updateDoc(userRef, {
+          hasPaid: true,
+          paymentHash: txHash,
+          paidAt: new Date(),
+        });
+        navigate('/submit'); // ✅ Redirects to SubmissionForm page
+      } catch (error) {
+        console.error('Payment confirmation error:', error);
+        setConfirmationMessage('Error confirming payment.');
+      }
     } else {
       setConfirmationMessage('Please enter a valid transaction hash.');
     }
@@ -90,10 +94,7 @@ const PaymentPage = () => {
         />
       </div>
 
-      <button
-        onClick={handleConfirmPayment}
-        style={{ marginTop: '20px', padding: '10px 20px' }}
-      >
+      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
         Confirm Payment
       </button>
 
@@ -107,6 +108,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
