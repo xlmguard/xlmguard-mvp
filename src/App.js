@@ -1,4 +1,3 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -20,9 +19,9 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async currentUser => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
-        const userRef = doc(db, "users", currentUser.uid);
+        const userRef = doc(db, 'users', currentUser.uid);
         const snap = await getDoc(userRef);
 
         if (snap.exists()) {
@@ -31,7 +30,7 @@ function App() {
         } else {
           await setDoc(userRef, { hasPaid: false });
           setHasPaid(false);
-         }
+        }
 
         setUser(currentUser);
       } else {
@@ -49,13 +48,13 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 3 - Full Routing & Name Capture
+        App Version: June 4 - Logout & Payment Fixes
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
         <Route path="/login" element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
-        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : user && hasPaid ? <Navigate to="/submit" /> : <Navigate to="/login" />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to="/login" />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -67,6 +66,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
