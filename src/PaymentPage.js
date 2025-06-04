@@ -45,7 +45,10 @@ const PaymentPage = () => {
           paymentHash: txHash,
           paidAt: new Date(),
         });
-        navigate('/submit'); // ✅ Now redirects to the transaction page
+        setTimeout(() => {
+  window.location.href = '/submit';
+}, 1500);
+ // ✅ Now redirects to the transaction page
       } catch (error) {
         console.error('Payment confirmation error:', error);
         setConfirmationMessage('Error confirming payment.');
