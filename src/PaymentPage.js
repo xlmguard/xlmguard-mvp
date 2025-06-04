@@ -26,7 +26,7 @@ const PaymentPage = () => {
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (currentUser) => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -38,24 +38,18 @@ const PaymentPage = () => {
 
   const handleConfirmPayment = async () => {
     if (user && txHash.trim()) {
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        await updateDoc(userRef, {
-          hasPaid: true,
-          paymentHash: txHash,
-          paidAt: new Date(),
-        });
-        setTimeout(() => {
-  window.location.href = '/submit';
-}, 1500);
- // ✅ Now redirects to the transaction page
-      } catch (error) {
-        console.error('Payment confirmation error:', error);
-        setConfirmationMessage('Error confirming payment.');
-      }
-    } else {
-      setConfirmationMessage('Please enter a valid transaction hash.');
+      const userRef = doc(db, 'users', user.uid);
+      await updateDoc(userRef, {
+        hasPaid: true,
+        paymentHash: txHash,
+        paidAt: new Date(),
+      });
+      setConfirmationMessage('Payment confirmed! You may now log in.');
     }
+  };
+
+  const handleGoToLogin = () => {
+    navigate('/login');
   };
 
   const { address, tag, amount } = walletDetails[currency];
@@ -97,9 +91,14 @@ const PaymentPage = () => {
         />
       </div>
 
-      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
-        Confirm Payment
-      </button>
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={handleConfirmPayment} style={{ marginRight: '10px', padding: '10px 20px' }}>
+          Confirm Payment
+        </button>
+        <button onClick={handleGoToLogin} style={{ padding: '10px 20px' }}>
+          Go to Login
+        </button>
+      </div>
 
       {confirmationMessage && (
         <div style={{ marginTop: '20px', color: 'green' }}>
@@ -111,6 +110,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
