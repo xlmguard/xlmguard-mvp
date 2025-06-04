@@ -26,7 +26,7 @@ const PaymentPage = () => {
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -45,7 +45,7 @@ const PaymentPage = () => {
           paymentHash: txHash,
           paidAt: new Date(),
         });
-        navigate('/submit'); // ✅ Redirects to SubmissionForm page
+        navigate('/submit'); // ✅ Now redirects to the transaction page
       } catch (error) {
         console.error('Payment confirmation error:', error);
         setConfirmationMessage('Error confirming payment.');
@@ -108,6 +108,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
