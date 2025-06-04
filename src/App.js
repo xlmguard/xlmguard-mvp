@@ -1,3 +1,4 @@
+// App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
@@ -37,6 +38,7 @@ function App() {
         setUser(null);
         setHasPaid(false);
       }
+
       setLoading(false);
     });
 
@@ -48,7 +50,7 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 4 - Logout & Payment Fixes
+        App Version: June 3 - Payment Redirect Fix
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
@@ -66,6 +68,7 @@ function App() {
 }
 
 export default App;
+
 
 
 
