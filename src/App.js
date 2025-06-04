@@ -54,7 +54,7 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
         <Route path="/login" element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
-        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : <Navigate to="/login" />} />
+        <Route path="/payment" element={user && !hasPaid ? <PaymentPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/login" />} />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
