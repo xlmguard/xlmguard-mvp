@@ -16,17 +16,17 @@ const PaymentPage = () => {
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
-      amount: 4
+      amount: 4,
     },
     XRP: {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
-      amount: 2
-    }
+      amount: 2,
+    },
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -44,8 +44,10 @@ const PaymentPage = () => {
         paymentHash: txHash,
         paidAt: new Date(),
       });
-      setConfirmationMessage('Payment confirmed! Redirecting to login page...');
-      setTimeout(() => navigate('/login'), 1000); // faster redirect
+      setConfirmationMessage('Payment confirmed! Redirecting...');
+      setTimeout(() => navigate('/submit'), 1500);
+    } else {
+      setConfirmationMessage('Please enter a valid transaction hash.');
     }
   };
 
@@ -88,7 +90,10 @@ const PaymentPage = () => {
         />
       </div>
 
-      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
+      <button
+        onClick={handleConfirmPayment}
+        style={{ marginTop: '20px', padding: '10px 20px' }}
+      >
         Confirm Payment
       </button>
 
@@ -102,6 +107,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 ;
