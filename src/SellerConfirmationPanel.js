@@ -26,22 +26,24 @@ const SellerConfirmationPanel = () => {
       const docRef = transactionDoc.ref;
       const uploadPromises = [];
 
+      let billURL = null;
+      const imageURLs = [];
+
       if (billOfLading) {
-        const billRef = ref(storage, `shipmentDocs/${transactionId}/billOfLading_${billOfLading.name}`);
+        const billRef = ref(storage, `confirmations/${transactionId}_bill_${billOfLading.name}`);
         uploadPromises.push(
-          uploadBytes(billRef, billOfLading).then(() => getDownloadURL(billRef))
+          uploadBytes(billRef, billOfLading).then(() => getDownloadURL(billRef).then(url => (billURL = url)))
         );
       }
 
-      const imageURLs = [];
       for (const image of shipmentImages) {
-        const imageRef = ref(storage, `shipmentDocs/${transactionId}/images/${image.name}`);
+        const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
           uploadBytes(imageRef, image).then(() => getDownloadURL(imageRef).then(url => imageURLs.push(url)))
         );
       }
 
-      const [billURL] = await Promise.all(uploadPromises);
+      await Promise.all(uploadPromises);
 
       await updateDoc(docRef, {
         sellerConfirmed: true,
@@ -87,4 +89,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
