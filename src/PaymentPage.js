@@ -26,7 +26,7 @@ const PaymentPage = () => {
   };
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (currentUser) => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
@@ -44,12 +44,9 @@ const PaymentPage = () => {
         paymentHash: txHash,
         paidAt: new Date(),
       });
-      setConfirmationMessage('Payment confirmed! You may now log in.');
+      setConfirmationMessage('Payment confirmed! Redirecting...');
+      setTimeout(() => navigate('/submit'), 1500);
     }
-  };
-
-  const handleGoToLogin = () => {
-    navigate('/login');
   };
 
   const { address, tag, amount } = walletDetails[currency];
@@ -58,17 +55,12 @@ const PaymentPage = () => {
     <div style={{ padding: '20px' }}>
       <h2>Make a Payment</h2>
       <p>
-        Please send <strong>{amount} {currency}</strong> to the wallet below. After payment, enter your transaction hash to confirm.
+        Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
       </p>
 
       <div style={{ marginBottom: '15px' }}>
-        <label htmlFor="currency">Choose currency:</label>
-        <select
-          id="currency"
-          value={currency}
-          onChange={(e) => setCurrency(e.target.value)}
-          style={{ marginLeft: '10px' }}
-        >
+        <label>Choose currency:</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
           <option value="XLM">XLM</option>
           <option value="XRP">XRP</option>
         </select>
@@ -80,10 +72,9 @@ const PaymentPage = () => {
       </div>
 
       <div style={{ marginTop: '20px' }}>
-        <label htmlFor="txHash">Transaction Hash:</label><br />
+        <label>Transaction Hash:</label><br />
         <input
           type="text"
-          id="txHash"
           value={txHash}
           onChange={(e) => setTxHash(e.target.value)}
           placeholder="Enter your transaction hash here"
@@ -91,14 +82,9 @@ const PaymentPage = () => {
         />
       </div>
 
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={handleConfirmPayment} style={{ marginRight: '10px', padding: '10px 20px' }}>
-          Confirm Payment
-        </button>
-        <button onClick={handleGoToLogin} style={{ padding: '10px 20px' }}>
-          Go to Login
-        </button>
-      </div>
+      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
+        Confirm Payment
+      </button>
 
       {confirmationMessage && (
         <div style={{ marginTop: '20px', color: 'green' }}>
@@ -110,6 +96,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
