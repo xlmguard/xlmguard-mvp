@@ -54,6 +54,9 @@ const PaymentPage = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2>Make a Payment</h2>
+      <p style={{ color: 'red', fontWeight: 'bold' }}>
+        Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
+      </p>
       <p>
         Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
       </p>
@@ -96,6 +99,8 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
+
 
 
 
