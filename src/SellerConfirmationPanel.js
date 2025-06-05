@@ -20,7 +20,7 @@ const SellerConfirmationPanel = () => {
       if (querySnapshot.empty) {
         setStatus('Transaction not found.');
         return;
-      }
+       }
 
       const transactionDoc = querySnapshot.docs[0];
       const docRef = transactionDoc.ref;
