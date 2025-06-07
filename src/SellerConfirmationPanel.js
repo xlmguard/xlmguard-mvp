@@ -64,40 +64,58 @@ const SellerConfirmationPanel = () => {
         confirmedAt: new Date().toISOString(),
       });
 
-      // ✅ Send Email Notifications via EmailJS
+      // ✅ Prepare EmailJS
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
       const publicKey = 'tcS3_a_kZH9ieBNBV';
 
       const sellerEmail = txData.seller_email;
-      const buyerEmail = txData.buyer_email;
+      let buyerEmail = txData.buyer_email;
       const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
 
-      // Send to seller
-      emailjs.send(serviceID, sellerTemplateID, {
-        seller_email: sellerEmail,
-        buyer_email: buyerEmail,
-        amount: txData.amount || 'N/A',
-        terms: txData.terms || 'N/A',
-        txid: transactionId,
-        link: confirmationLink,
-      }, publicKey).then(() => {
-        console.log('Email sent to seller.');
-      }).catch((err) => {
-        console.error('Error sending seller email:', err);
-      });
+      // ✅ Fallback: fetch buyer_email using matching paymentHash
+      if (!buyerEmail) {
+        const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
+        const buyerSnap = await getDocs(buyerQuery);
+        if (!buyerSnap.empty) {
+          buyerEmail = buyerSnap.docs[0].data().email;
+          console.log('Buyer email resolved from users:', buyerEmail);
+        } else {
+          console.warn('Buyer email not found in users.');
+        }
+      }
 
-      // Send to buyer
-      emailjs.send(serviceID, buyerTemplateID, {
-        buyer_email: buyerEmail,
-        txid: transactionId,
-        link: confirmationLink,
-      }, publicKey).then(() => {
-        console.log('Email sent to buyer.');
-      }).catch((err) => {
-        console.error('Error sending buyer email:', err);
-      });
+      // Notify Seller
+      if (sellerEmail) {
+        emailjs.send(serviceID, sellerTemplateID, {
+          seller_email: sellerEmail,
+          buyer_email: buyerEmail || 'n/a',
+          amount: txData.amount || 'N/A',
+          terms: txData.terms || 'N/A',
+          txid: transactionId,
+          link: confirmationLink,
+        }, publicKey).then(() => {
+          console.log('Email sent to seller.');
+        }).catch((err) => {
+          console.error('Error sending seller email:', err);
+        });
+      }
+
+      // Notify Buyer
+      if (buyerEmail) {
+        emailjs.send(serviceID, buyerTemplateID, {
+          buyer_email: buyerEmail,
+          txid: transactionId,
+          link: confirmationLink,
+        }, publicKey).then(() => {
+          console.log('Email sent to buyer.');
+        }).catch((err) => {
+          console.error('Error sending buyer email:', err);
+        });
+      } else {
+        console.warn('No buyer email available; buyer email not sent.');
+      }
 
       setStatus('Shipment confirmation uploaded successfully.');
 
@@ -141,6 +159,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
