@@ -20,7 +20,7 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async currentUser => {
+    const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userRef = doc(db, 'users', currentUser.uid);
         const snap = await getDoc(userRef);
@@ -38,6 +38,7 @@ function App() {
         setUser(null);
         setHasPaid(false);
       }
+
       setLoading(false);
     });
 
@@ -47,16 +48,45 @@ function App() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <Router
+    <Router>
       <Routes>
         <Route path="/" element={<HomePage />} />
-        <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
-        <Route path="/login" element={!user ? <LoginPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
-        <Route path="/payment" element={
-          user && !hasPaid ? <PaymentPage /> :
-          user && hasPaid ? <Navigate to="/submit" /> :
-          <Navigate to="/login" />
-        } />
+        <Route
+          path="/register"
+          element={
+            !user ? (
+              <RegisterPage />
+            ) : hasPaid ? (
+              <Navigate to="/submit" />
+            ) : (
+              <Navigate to="/payment" />
+            )
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            !user ? (
+              <LoginPage />
+            ) : hasPaid ? (
+              <Navigate to="/submit" />
+            ) : (
+              <Navigate to="/payment" />
+            )
+          }
+        />
+        <Route
+          path="/payment"
+          element={
+            user && !hasPaid ? (
+              <PaymentPage />
+            ) : user && hasPaid ? (
+              <Navigate to="/submit" />
+            ) : (
+              <Navigate to="/login" />
+            )
+          }
+        />
         <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -64,10 +94,11 @@ function App() {
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
       </Routes>
     </Router>
-   );
+  );
 }
 
 export default App;
+
 
 
 
