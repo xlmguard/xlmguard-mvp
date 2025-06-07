@@ -20,26 +20,36 @@ const SellerConfirmationPanel = () => {
       if (querySnapshot.empty) {
         setStatus('Transaction not found.');
         return;
-       }
+      }
 
       const transactionDoc = querySnapshot.docs[0];
       const docRef = transactionDoc.ref;
-      const uploadPromises = [];
 
       let billURL = null;
       const imageURLs = [];
+      const uploadPromises = [];
 
+      // Upload Bill of Lading
       if (billOfLading) {
         const billRef = ref(storage, `confirmations/${transactionId}_bill_${billOfLading.name}`);
         uploadPromises.push(
-          uploadBytes(billRef, billOfLading).then(() => getDownloadURL(billRef).then(url => (billURL = url)))
+          uploadBytes(billRef, billOfLading)
+            .then(() => getDownloadURL(billRef))
+            .then((url) => {
+              billURL = url;
+            })
         );
       }
 
+      // Upload Shipment Images
       for (const image of shipmentImages) {
         const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
-          uploadBytes(imageRef, image).then(() => getDownloadURL(imageRef).then(url => imageURLs.push(url)))
+          uploadBytes(imageRef, image)
+            .then(() => getDownloadURL(imageRef))
+            .then((url) => {
+              imageURLs.push(url);
+            })
         );
       }
 
@@ -53,6 +63,11 @@ const SellerConfirmationPanel = () => {
       });
 
       setStatus('Shipment confirmation uploaded successfully.');
+
+      // ✅ Redirect to home page after short delay
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
     } catch (err) {
       console.error(err);
       setStatus('Error uploading confirmation.');
@@ -89,5 +104,6 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
