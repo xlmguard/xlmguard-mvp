@@ -115,7 +115,7 @@ const SellerConfirmationPanel = () => {
         });
       } else {
         console.warn('No buyer email available; buyer email not sent.');
-      }
+       }
 
       setStatus('Shipment confirmation uploaded successfully.');
 
