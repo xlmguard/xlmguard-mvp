@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
+import emailjs from 'emailjs-com';
 
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
@@ -24,6 +25,7 @@ const SellerConfirmationPanel = () => {
 
       const transactionDoc = querySnapshot.docs[0];
       const docRef = transactionDoc.ref;
+      const txData = transactionDoc.data();
 
       let billURL = null;
       const imageURLs = [];
@@ -62,12 +64,47 @@ const SellerConfirmationPanel = () => {
         confirmedAt: new Date().toISOString(),
       });
 
+      // ✅ Send Email Notifications via EmailJS
+      const serviceID = 'service_xyj5n7d';
+      const sellerTemplateID = 'template_pixnkqs';
+      const buyerTemplateID = 'template_9ry4lu4';
+      const publicKey = 'tcS3_a_kZH9ieBNBV';
+
+      const sellerEmail = txData.seller_email;
+      const buyerEmail = txData.buyer_email;
+      const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
+
+      // Send to seller
+      emailjs.send(serviceID, sellerTemplateID, {
+        seller_email: sellerEmail,
+        buyer_email: buyerEmail,
+        amount: txData.amount || 'N/A',
+        terms: txData.terms || 'N/A',
+        txid: transactionId,
+        link: confirmationLink,
+      }, publicKey).then(() => {
+        console.log('Email sent to seller.');
+      }).catch((err) => {
+        console.error('Error sending seller email:', err);
+      });
+
+      // Send to buyer
+      emailjs.send(serviceID, buyerTemplateID, {
+        buyer_email: buyerEmail,
+        txid: transactionId,
+        link: confirmationLink,
+      }, publicKey).then(() => {
+        console.log('Email sent to buyer.');
+      }).catch((err) => {
+        console.error('Error sending buyer email:', err);
+      });
+
       setStatus('Shipment confirmation uploaded successfully.');
 
-      // ✅ Redirect to home page after short delay
       setTimeout(() => {
         window.location.href = '/';
       }, 1500);
+
     } catch (err) {
       console.error(err);
       setStatus('Error uploading confirmation.');
@@ -104,6 +141,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
