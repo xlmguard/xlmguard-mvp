@@ -49,7 +49,7 @@ function App() {
   return (
     <Router>
       <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        App Version: June 4 – Payment Redirect to Submit
+        
       </div>
       <Routes>
         <Route path="/" element={<HomePage />} />
