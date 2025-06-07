@@ -47,10 +47,7 @@ function App() {
   if (loading) return <div>Loading...</div>;
 
   return (
-    <Router>
-      <div style={{ position: 'fixed', top: 0, left: 0, background: '#000', color: '#0f0', padding: '5px', zIndex: 9999 }}>
-        
-      </div>
+    <Router
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/register" element={!user ? <RegisterPage /> : hasPaid ? <Navigate to="/submit" /> : <Navigate to="/payment" />} />
