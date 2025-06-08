@@ -13,8 +13,8 @@ const SellerConfirmationPanel = () => {
 
   const handleSubmit = async () => {
     try {
-      console.log('Transaction ID submitted:', transactionId);
       setStatus('');
+      console.log('Submit clicked with TXID:', transactionId);
 
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
       const querySnapshot = await getDocs(q);
@@ -37,7 +37,9 @@ const SellerConfirmationPanel = () => {
         uploadPromises.push(
           uploadBytes(billRef, billOfLading)
             .then(() => getDownloadURL(billRef))
-            .then((url) => { billURL = url; })
+            .then((url) => {
+              billURL = url;
+            })
         );
       }
 
@@ -46,7 +48,9 @@ const SellerConfirmationPanel = () => {
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
-            .then((url) => imageURLs.push(url))
+            .then((url) => {
+              imageURLs.push(url);
+            })
         );
       }
 
@@ -81,33 +85,41 @@ const SellerConfirmationPanel = () => {
       }
 
       if (sellerEmail) {
-        console.log('Sending email to seller:', sellerEmail);
-        await emailjs.send(serviceID, sellerTemplateID, {
+        emailjs.send(serviceID, sellerTemplateID, {
           seller_email: sellerEmail,
           buyer_email: buyerEmail || 'n/a',
           amount: txData.amount || 'N/A',
           terms: txData.terms || 'N/A',
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey);
+        }, publicKey).then(() => {
+          console.log('Email sent to seller.');
+        }).catch((err) => {
+          console.error('Error sending seller email:', err);
+        });
       }
 
       if (buyerEmail) {
-        console.log('Sending email to buyer:', buyerEmail);
-        await emailjs.send(serviceID, buyerTemplateID, {
+        emailjs.send(serviceID, buyerTemplateID, {
           buyer_email: buyerEmail,
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey);
+        }, publicKey).then(() => {
+          console.log('Email sent to buyer.');
+        }).catch((err) => {
+          console.error('Error sending buyer email:', err);
+        });
       } else {
-        console.warn('No buyer email available; skipping buyer email notification.');
+        console.warn('No buyer email available; buyer email not sent.');
       }
 
       setStatus('Shipment confirmation uploaded successfully.');
-      setTimeout(() => window.location.href = '/', 1500);
 
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
     } catch (err) {
-      console.error('Error in submission:', err);
+      console.error(err);
       setStatus('Error uploading confirmation.');
     }
   };
@@ -142,3 +154,4 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
