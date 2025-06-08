@@ -1,8 +1,9 @@
+// SellerConfirmationPanel.js
 import React, { useState } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
-import emailjs from '@emailjs/browser';  // ✅ Updated SDK
+import emailjs from '@emailjs/browser';
 
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
@@ -12,6 +13,7 @@ const SellerConfirmationPanel = () => {
 
   const handleSubmit = async () => {
     try {
+      console.log('Transaction ID submitted:', transactionId);
       setStatus('');
 
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
@@ -35,9 +37,7 @@ const SellerConfirmationPanel = () => {
         uploadPromises.push(
           uploadBytes(billRef, billOfLading)
             .then(() => getDownloadURL(billRef))
-            .then((url) => {
-              billURL = url;
-            })
+            .then((url) => { billURL = url; })
         );
       }
 
@@ -46,9 +46,7 @@ const SellerConfirmationPanel = () => {
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
-            .then((url) => {
-              imageURLs.push(url);
-            })
+            .then((url) => imageURLs.push(url))
         );
       }
 
@@ -61,7 +59,7 @@ const SellerConfirmationPanel = () => {
         confirmedAt: new Date().toISOString(),
       });
 
-      // ✅ EmailJS Setup
+      // EmailJS setup
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
@@ -83,41 +81,33 @@ const SellerConfirmationPanel = () => {
       }
 
       if (sellerEmail) {
-        emailjs.send(serviceID, sellerTemplateID, {
+        console.log('Sending email to seller:', sellerEmail);
+        await emailjs.send(serviceID, sellerTemplateID, {
           seller_email: sellerEmail,
           buyer_email: buyerEmail || 'n/a',
           amount: txData.amount || 'N/A',
           terms: txData.terms || 'N/A',
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey).then(() => {
-          console.log('✅ Email sent to seller.');
-        }).catch((err) => {
-          console.error('❌ Error sending seller email:', err);
-        });
+        }, publicKey);
       }
 
       if (buyerEmail) {
-        emailjs.send(serviceID, buyerTemplateID, {
+        console.log('Sending email to buyer:', buyerEmail);
+        await emailjs.send(serviceID, buyerTemplateID, {
           buyer_email: buyerEmail,
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey).then(() => {
-          console.log('✅ Email sent to buyer.');
-        }).catch((err) => {
-          console.error('❌ Error sending buyer email:', err);
-        });
+        }, publicKey);
       } else {
-        console.warn('No buyer email available; buyer email not sent.');
+        console.warn('No buyer email available; skipping buyer email notification.');
       }
 
       setStatus('Shipment confirmation uploaded successfully.');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+      setTimeout(() => window.location.href = '/', 1500);
 
     } catch (err) {
-      console.error(err);
+      console.error('Error in submission:', err);
       setStatus('Error uploading confirmation.');
     }
   };
@@ -152,6 +142,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
