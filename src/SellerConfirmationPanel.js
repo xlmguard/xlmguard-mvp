@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
-import emailjs from '@emailjs/browser';
+import emailjs from 'emailjs-com';
 
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
@@ -12,14 +12,18 @@ const SellerConfirmationPanel = () => {
   const [status, setStatus] = useState('');
 
   const handleSubmit = async () => {
+    console.log('✅ handleSubmit triggered with TXID:', transactionId);
+
     try {
       setStatus('');
-      console.log('Submit clicked with TXID:', transactionId);
 
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
       const querySnapshot = await getDocs(q);
 
+      console.log('📦 Firebase query complete. Found docs:', querySnapshot.size);
+
       if (querySnapshot.empty) {
+        console.warn('⚠️ Transaction not found.');
         setStatus('Transaction not found.');
         return;
       }
@@ -28,10 +32,13 @@ const SellerConfirmationPanel = () => {
       const docRef = transactionDoc.ref;
       const txData = transactionDoc.data();
 
+      console.log('📋 Transaction data:', txData);
+
       let billURL = null;
       const imageURLs = [];
       const uploadPromises = [];
 
+      // Upload Bill of Lading
       if (billOfLading) {
         const billRef = ref(storage, `confirmations/${transactionId}_bill_${billOfLading.name}`);
         uploadPromises.push(
@@ -39,10 +46,12 @@ const SellerConfirmationPanel = () => {
             .then(() => getDownloadURL(billRef))
             .then((url) => {
               billURL = url;
+              console.log('📄 Bill of Lading uploaded:', billURL);
             })
         );
       }
 
+      // Upload Shipment Images
       for (const image of shipmentImages) {
         const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
@@ -50,11 +59,13 @@ const SellerConfirmationPanel = () => {
             .then(() => getDownloadURL(imageRef))
             .then((url) => {
               imageURLs.push(url);
+              console.log('🖼️ Shipment image uploaded:', url);
             })
         );
       }
 
       await Promise.all(uploadPromises);
+      console.log('📤 All files uploaded');
 
       await updateDoc(docRef, {
         sellerConfirmed: true,
@@ -63,7 +74,9 @@ const SellerConfirmationPanel = () => {
         confirmedAt: new Date().toISOString(),
       });
 
-      // EmailJS setup
+      console.log('✅ Firestore document updated');
+
+      // Prepare EmailJS
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
@@ -73,18 +86,21 @@ const SellerConfirmationPanel = () => {
       let buyerEmail = txData.buyer_email;
       const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
 
+      // Fallback lookup for buyer_email
       if (!buyerEmail) {
         const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
         const buyerSnap = await getDocs(buyerQuery);
         if (!buyerSnap.empty) {
           buyerEmail = buyerSnap.docs[0].data().email;
-          console.log('Buyer email resolved from users:', buyerEmail);
+          console.log('📨 Buyer email resolved from users collection:', buyerEmail);
         } else {
-          console.warn('Buyer email not found in users.');
+          console.warn('⚠️ Buyer email not found in users.');
         }
       }
 
+      // Notify Seller
       if (sellerEmail) {
+        console.log('📧 Sending email to seller...');
         emailjs.send(serviceID, sellerTemplateID, {
           seller_email: sellerEmail,
           buyer_email: buyerEmail || 'n/a',
@@ -93,33 +109,35 @@ const SellerConfirmationPanel = () => {
           txid: transactionId,
           link: confirmationLink,
         }, publicKey).then(() => {
-          console.log('Email sent to seller.');
+          console.log('✅ Email sent to seller');
         }).catch((err) => {
-          console.error('Error sending seller email:', err);
+          console.error('❌ Error sending seller email:', err);
         });
       }
 
+      // Notify Buyer
       if (buyerEmail) {
+        console.log('📧 Sending email to buyer...');
         emailjs.send(serviceID, buyerTemplateID, {
           buyer_email: buyerEmail,
           txid: transactionId,
           link: confirmationLink,
         }, publicKey).then(() => {
-          console.log('Email sent to buyer.');
+          console.log('✅ Email sent to buyer');
         }).catch((err) => {
-          console.error('Error sending buyer email:', err);
+          console.error('❌ Error sending buyer email:', err);
         });
       } else {
-        console.warn('No buyer email available; buyer email not sent.');
+        console.warn('⚠️ No buyer email available; email not sent.');
       }
 
       setStatus('Shipment confirmation uploaded successfully.');
-
       setTimeout(() => {
         window.location.href = '/';
       }, 1500);
+
     } catch (err) {
-      console.error(err);
+      console.error('❌ handleSubmit error:', err);
       setStatus('Error uploading confirmation.');
     }
   };
@@ -147,14 +165,13 @@ const SellerConfirmationPanel = () => {
       </div>
 
       <button
-  onClick={() => {
-    alert('Submit clicked');
-    handleSubmit();
-  }}
->
-  Submit Confirmation
-</button>
-
+        onClick={() => {
+          alert('Submit clicked');
+          handleSubmit();
+        }}
+      >
+        Submit Confirmation
+      </button>
 
       {status && <p style={{ marginTop: '10px' }}>{status}</p>}
     </div>
@@ -162,4 +179,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
