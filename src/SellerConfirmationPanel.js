@@ -146,7 +146,15 @@ const SellerConfirmationPanel = () => {
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
       </div>
 
-      <button onClick={handleSubmit}>Submit Confirmation</button>
+      <button
+  onClick={() => {
+    alert('Submit clicked');
+    handleSubmit();
+  }}
+>
+  Submit Confirmation
+</button>
+
 
       {status && <p style={{ marginTop: '10px' }}>{status}</p>}
     </div>
