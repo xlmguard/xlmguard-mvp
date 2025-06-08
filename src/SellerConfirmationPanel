@@ -1,0 +1,37 @@
+import React, { useState, useEffect } from 'react';
+
+const SellerConfirmationPanel = () => {
+  const [transactionId, setTransactionId] = useState('');
+  const [status, setStatus] = useState('');
+
+  useEffect(() => {
+    console.log('🚀 SellerConfirmationPanel mounted');
+    alert('✅ SellerConfirmationPanel code is running');
+  }, []);
+
+  const handleSubmit = () => {
+    alert('Submit clicked');
+    console.log('📦 handleSubmit called');
+    setStatus('Submit pressed for transaction: ' + transactionId);
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Seller Shipment Confirmation</h2>
+
+      <input
+        type="text"
+        value={transactionId}
+        onChange={(e) => setTransactionId(e.target.value)}
+        placeholder="Enter Transaction ID"
+        style={{ marginBottom: '10px', width: '300px' }}
+      />
+
+      <button onClick={handleSubmit}>Submit Confirmation</button>
+
+      {status && <p style={{ marginTop: '10px' }}>{status}</p>}
+    </div>
+  );
+};
+
+export default SellerConfirmationPanel;
