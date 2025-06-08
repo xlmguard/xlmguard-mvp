@@ -32,7 +32,6 @@ const SellerConfirmationPanel = () => {
       const imageURLs = [];
       const uploadPromises = [];
 
-      // Upload Bill of Lading
       if (billOfLading) {
         const billRef = ref(storage, `confirmations/${transactionId}_bill_${billOfLading.name}`);
         uploadPromises.push(
@@ -44,7 +43,6 @@ const SellerConfirmationPanel = () => {
         );
       }
 
-      // Upload Shipment Images
       for (const image of shipmentImages) {
         const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
@@ -65,7 +63,7 @@ const SellerConfirmationPanel = () => {
         confirmedAt: new Date().toISOString(),
       });
 
-      // EmailJS
+      // EmailJS setup
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
@@ -75,7 +73,6 @@ const SellerConfirmationPanel = () => {
       let buyerEmail = txData.buyer_email;
       const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
 
-      // Fallback to user email if buyer_email is not on transaction
       if (!buyerEmail) {
         const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
         const buyerSnap = await getDocs(buyerQuery);
@@ -87,7 +84,6 @@ const SellerConfirmationPanel = () => {
         }
       }
 
-      // Send email to seller
       if (sellerEmail) {
         emailjs.send(serviceID, sellerTemplateID, {
           seller_email: sellerEmail,
@@ -103,7 +99,6 @@ const SellerConfirmationPanel = () => {
         });
       }
 
-      // Send email to buyer
       if (buyerEmail) {
         emailjs.send(serviceID, buyerTemplateID, {
           buyer_email: buyerEmail,
@@ -119,6 +114,7 @@ const SellerConfirmationPanel = () => {
       }
 
       setStatus('Shipment confirmation uploaded successfully.');
+
       setTimeout(() => {
         window.location.href = '/';
       }, 1500);
@@ -158,5 +154,6 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
