@@ -154,6 +154,3 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
-
-
-
