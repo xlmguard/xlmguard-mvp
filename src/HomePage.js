@@ -1,6 +1,6 @@
 // HomePage.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 function HomePage() {
   const [language, setLanguage] = useState('English');
@@ -53,7 +53,10 @@ function HomePage() {
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
         <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
-        <button onClick={() => navigate('/seller-confirm')}>Seller Shipment Confirmation</button>
+        <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
+        <Link to="/about">
+          <button>About XLMGuard</button>
+        </Link>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -73,6 +76,7 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
 
