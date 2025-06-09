@@ -205,7 +205,7 @@ En resumen, XLMGuard facilita transacciones seguras y eficientes a nivel global.
     }
   };
 
-  return (
+  return ( 
     <div style={{ padding: '20px' }}>
       <div style={{ textAlign: 'center', paddingTop: '60px' }}>
         <img
