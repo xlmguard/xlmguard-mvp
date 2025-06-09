@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import logo from './assets/xlmguard-logo.png'; // Update path if different
 
 const AboutPage = () => {
   const [language, setLanguage] = useState('en');
@@ -18,7 +17,7 @@ const AboutPage = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <img src={logo} alt="XLMGuard Logo" style={{ width: '200px', marginBottom: '20px' }} />
+      <img src="/xlmguard-logo.png" alt="XLMGuard Logo" style={{ width: '200px', marginBottom: '20px' }} />
 
       <div style={{ marginBottom: '10px' }}>
         <label htmlFor="lang">Language: </label>
@@ -45,3 +44,4 @@ const AboutPage = () => {
 };
 
 export default AboutPage;
+
