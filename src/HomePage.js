@@ -18,7 +18,6 @@ function HomePage() {
     Chinese: 'XLMGuard 使用时间戳验证和安全的卖家确认来保护您的 XLM 和 XRP 交易。',
     Arabic: 'XLMGuard يحمي معاملات XLM و XRP الخاصة بك من خلال التحقق من المعاملة بختم زمني وتأكيدات البائع الآمنة.',
     Hindi: 'XLMGuard आपकी XLM और XRP लेन-देन को समय-मुद्रित सत्यापन और सुरक्षित विक्रेता पुष्टि के साथ सुरक्षित करता है।'
-    // Add more translations here as needed
   };
 
   const allLanguages = [
@@ -54,6 +53,7 @@ function HomePage() {
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
         <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
+        <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Transaction Lookup</button>
         <Link to="/about">
           <button>About XLMGuard</button>
         </Link>
@@ -76,6 +76,7 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
 
