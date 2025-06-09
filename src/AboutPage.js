@@ -45,7 +45,7 @@ const AboutPage = () => {
         <Link to="/">Back to Home</Link>
       </div>
     </div>
-  );
+   );
 };
 
 export default AboutPage;
