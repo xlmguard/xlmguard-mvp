@@ -18,11 +18,12 @@ const AboutPage = () => {
   return (
     <div style={{ padding: '20px' }}>
       <div style={{ textAlign: 'center', paddingTop: '60px' }}>
-      <img
-        src="/logo.png"
-        alt="XLMGuard Logo"
-        style={{ width: '210px', marginBottom: '20px' }}
-      />
+        <img
+          src="/logo.png"
+          alt="XLMGuard Logo"
+          style={{ width: '210px', marginBottom: '20px' }}
+        />
+      </div>
 
       <div style={{ marginBottom: '10px' }}>
         <label htmlFor="lang">Language: </label>
@@ -45,8 +46,9 @@ const AboutPage = () => {
         <Link to="/">Back to Home</Link>
       </div>
     </div>
-   );
+  );
 };
 
 export default AboutPage;
+
 
