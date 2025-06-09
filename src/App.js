@@ -14,6 +14,7 @@ import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
 import AboutPage from './AboutPage'; // ✅ Add this import
+import TransactionLookup from './TransactionLookup'; // ✅ New import
 
 function App() {
   const [user, setUser] = useState(null);
@@ -94,12 +95,14 @@ function App() {
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
         <Route path="/about" element={<AboutPage />} /> {/* ✅ Add this route */}
+        <Route path="/transaction-lookup" element={<TransactionLookup />} /> {/* ✅ New route */}
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
 
 
 
