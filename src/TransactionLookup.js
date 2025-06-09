@@ -1,5 +1,6 @@
 // TransactionLookup.js
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { db } from './firebase';
 import { collection, query, where, getDocs } from 'firebase/firestore';
 
@@ -8,6 +9,7 @@ function TransactionLookup() {
   const [transaction, setTransaction] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -55,21 +57,30 @@ function TransactionLookup() {
           <p><strong>Amount:</strong> {transaction.amount}</p>
           <p><strong>Currency:</strong> {transaction.currency}</p>
           <p><strong>Notes:</strong> {transaction.notes}</p>
-          <p><strong>Bill of Lading:</strong> <a href={transaction.billOfLadingUrl} target="_blank" rel="noopener noreferrer">View</a></p>
+          {transaction.billOfLadingURL && (
+            <p><strong>Bill of Lading:</strong> <a href={transaction.billOfLadingURL} target="_blank" rel="noopener noreferrer">View</a></p>
+          )}
           <div>
             <strong>Shipment Images:</strong>
-            {transaction.images && transaction.images.map((url, index) => (
-              <div key={index} style={{ marginBottom: '10px' }}>
-                <img src={url} alt={`Shipment ${index + 1}`} style={{ maxWidth: '100%' }} />
-              </div>
-            ))}
+            {transaction.shipmentImages && transaction.shipmentImages.length > 0 ? (
+              transaction.shipmentImages.map((url, index) => (
+                <div key={index} style={{ marginBottom: '10px' }}>
+                  <img src={url} alt={`Shipment ${index + 1}`} style={{ maxWidth: '100%' }} />
+                </div>
+              ))
+            ) : (
+              <p>No shipment images available.</p>
+            )}
           </div>
-          <p><strong>Status:</strong> {transaction.status}</p>
-          <p><strong>Timestamps:</strong> {JSON.stringify(transaction.timestamps)}</p>
+          <p><strong>Status:</strong> {transaction.sellerConfirmed ? 'Confirmed by seller' : 'Pending'}</p>
+          <p><strong>Timestamps:</strong> {transaction.confirmedAt || 'Not available'}</p>
         </div>
       )}
+
+      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>Return to Home</button>
     </div>
   );
 }
 
 export default TransactionLookup;
+
