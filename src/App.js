@@ -13,6 +13,7 @@ import Dashboard from './Dashboard';
 import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
+import AboutPage from './AboutPage'; // ✅ Add this import
 
 function App() {
   const [user, setUser] = useState(null);
@@ -92,12 +93,14 @@ function App() {
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
+        <Route path="/about" element={<AboutPage />} /> {/* ✅ Add this route */}
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
 
 
 
