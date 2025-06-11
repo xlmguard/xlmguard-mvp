@@ -1,9 +1,8 @@
 // TransactionLookup.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from './firebase';
 import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -12,19 +11,7 @@ function TransactionLookup() {
   const [loading, setLoading] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState('Pending');
   const [updateMessage, setUpdateMessage] = useState('');
-  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        // Replace this with your actual admin check logic
-        const adminEmails = ['admin@example.com'];
-        setIsAdmin(adminEmails.includes(user.email));
-      }
-    });
-  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -120,18 +107,16 @@ function TransactionLookup() {
             <strong>Document Approval Status:</strong> {transaction.documentApprovalStatus || 'Pending'}
           </div>
 
-          {isAdmin && (
-            <div style={{ marginTop: '10px' }}>
-              <label htmlFor="approvalStatus">Update Approval Status: </label>
-              <select id="approvalStatus" value={approvalStatus} onChange={(e) => setApprovalStatus(e.target.value)}>
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-              <button onClick={handleApprovalUpdate} style={{ marginLeft: '10px' }}>Update</button>
-              {updateMessage && <p>{updateMessage}</p>}
-            </div>
-          )}
+          <div style={{ marginTop: '10px' }}>
+            <label htmlFor="approvalStatus">Update Approval Status: </label>
+            <select id="approvalStatus" value={approvalStatus} onChange={(e) => setApprovalStatus(e.target.value)}>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <button onClick={handleApprovalUpdate} style={{ marginLeft: '10px' }}>Update</button>
+            {updateMessage && <p>{updateMessage}</p>}
+          </div>
 
           <div>
             <strong>Shipment Images:</strong>
@@ -156,5 +141,6 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
 
 
