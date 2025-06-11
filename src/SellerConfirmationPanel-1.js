@@ -7,22 +7,9 @@ import emailjs from '@emailjs/browser';
 
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
-  const [documents, setDocuments] = useState({});
+  const [billOfLading, setBillOfLading] = useState(null);
   const [shipmentImages, setShipmentImages] = useState([]);
   const [status, setStatus] = useState('');
-
-  const documentTypes = [
-    'CommercialInvoice',
-    'PackingList',
-    'BillOfLading',
-    'InsuranceCertificate',
-    'CertificateOfOrigin',
-    'InspectionCertificate'
-  ];
-
-  const handleDocumentUpload = (type, file) => {
-    setDocuments((prevDocs) => ({ ...prevDocs, [type]: file }));
-  };
 
   const handleSubmit = async () => {
     try {
@@ -41,22 +28,19 @@ const SellerConfirmationPanel = () => {
       const docRef = transactionDoc.ref;
       const txData = transactionDoc.data();
 
-      const docURLs = {};
+      let billURL = null;
       const imageURLs = [];
       const uploadPromises = [];
 
-      for (const type of documentTypes) {
-        const file = documents[type];
-        if (file) {
-          const fileRef = ref(storage, `confirmations/${transactionId}_${type}_${file.name}`);
-          uploadPromises.push(
-            uploadBytes(fileRef, file)
-              .then(() => getDownloadURL(fileRef))
-              .then((url) => {
-                docURLs[type] = url;
-              })
-          );
-        }
+      if (billOfLading) {
+        const billRef = ref(storage, `confirmations/${transactionId}_bill_${billOfLading.name}`);
+        uploadPromises.push(
+          uploadBytes(billRef, billOfLading)
+            .then(() => getDownloadURL(billRef))
+            .then((url) => {
+              billURL = url;
+            })
+        );
       }
 
       for (const image of shipmentImages) {
@@ -74,11 +58,12 @@ const SellerConfirmationPanel = () => {
 
       await updateDoc(docRef, {
         sellerConfirmed: true,
-        documentURLs: docURLs,
+        billOfLadingURL: billURL || null,
         shipmentImages: imageURLs,
         confirmedAt: new Date().toISOString(),
       });
 
+      // EmailJS setup
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
@@ -151,12 +136,10 @@ const SellerConfirmationPanel = () => {
         style={{ marginBottom: '10px', width: '300px' }}
       />
 
-      {documentTypes.map((type) => (
-        <div key={type}>
-          <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
-          <input type="file" onChange={(e) => handleDocumentUpload(type, e.target.files[0])} />
-        </div>
-      ))}
+      <div>
+        <label>Upload Bill of Lading:</label>
+        <input type="file" onChange={(e) => setBillOfLading(e.target.files[0])} />
+      </div>
 
       <div>
         <label>Upload Shipment Images:</label>
