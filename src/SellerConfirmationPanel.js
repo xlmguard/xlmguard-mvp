@@ -10,6 +10,8 @@ const SellerConfirmationPanel = () => {
   const [documents, setDocuments] = useState({});
   const [shipmentImages, setShipmentImages] = useState([]);
   const [status, setStatus] = useState('');
+  const [redirect, setRedirect] = useState(false);
+  const [captchaChecked, setCaptchaChecked] = useState(false);
 
   const documentTypes = [
     'CommercialInvoice',
@@ -25,6 +27,15 @@ const SellerConfirmationPanel = () => {
   };
 
   const handleSubmit = async () => {
+    if (!transactionId.trim()) {
+      setStatus('Transaction ID is required.');
+      return;
+    }
+    if (!captchaChecked) {
+      setStatus('Please verify the CAPTCHA.');
+      return;
+    }
+
     try {
       setStatus('');
       console.log('Submit clicked with TXID:', transactionId);
@@ -128,16 +139,24 @@ const SellerConfirmationPanel = () => {
         console.warn('No buyer email available; buyer email not sent.');
       }
 
-      setStatus('Shipment confirmation uploaded successfully.');
-
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
+      setRedirect(true);
     } catch (err) {
       console.error(err);
       setStatus('Error uploading confirmation.');
     }
   };
+
+  if (redirect) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Confirmation Received</h2>
+        <p>Thank you. Your documents have been submitted successfully.</p>
+        <a href="/">Return to Home</a>
+        <br /><br />
+        <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px' }}>
@@ -163,11 +182,26 @@ const SellerConfirmationPanel = () => {
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
       </div>
 
+      <div style={{ margin: '10px 0' }}>
+        <input
+          type="checkbox"
+          id="captcha"
+          checked={captchaChecked}
+          onChange={(e) => setCaptchaChecked(e.target.checked)}
+        />
+        <label htmlFor="captcha"> I'm not a robot</label>
+      </div>
+
       <button onClick={handleSubmit}>Submit Confirmation</button>
 
       {status && <p style={{ marginTop: '10px' }}>{status}</p>}
+
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
+      </div>
     </div>
   );
 };
 
 export default SellerConfirmationPanel;
+
