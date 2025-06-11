@@ -33,15 +33,6 @@ function TransactionLookup() {
     }
   };
 
-  const documentLabels = {
-    CommercialInvoice: 'Commercial Invoice',
-    PackingList: 'Packing List',
-    BillOfLading: 'Bill of Lading',
-    InsuranceCertificate: 'Insurance Certificate',
-    CertificateOfOrigin: 'Certificate of Origin',
-    InspectionCertificate: 'Inspection Certificate'
-  };
-
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
       <h2>Transaction Lookup</h2>
@@ -66,30 +57,9 @@ function TransactionLookup() {
           <p><strong>Amount:</strong> {transaction.amount}</p>
           <p><strong>Currency:</strong> {transaction.currency}</p>
           <p><strong>Notes:</strong> {transaction.notes}</p>
-
-          {transaction.documentURLs && (
-            <div>
-              <h4>Uploaded Documents</h4>
-              <ul>
-                {Object.entries(documentLabels).map(([key, label]) => (
-                  <li key={key}>
-                    <strong>{label}:</strong>{' '}
-                    {transaction.documentURLs[key] ? (
-                      <>
-                        <a href={transaction.documentURLs[key]} target="_blank" rel="noopener noreferrer">View</a>{' | '}
-                        <a href={transaction.documentURLs[key]} download>Download</a>
-                      </>
-                    ) : (
-                      <span style={{ color: 'red' }}> Missing</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
+          {transaction.billOfLadingURL && (
+            <p><strong>Bill of Lading:</strong> <a href={transaction.billOfLadingURL} target="_blank" rel="noopener noreferrer">View</a></p>
           )}
-
-          <p><strong>Document Approval Status:</strong> {transaction.documentApprovalStatus || 'Pending'}</p>
-
           <div>
             <strong>Shipment Images:</strong>
             {transaction.shipmentImages && transaction.shipmentImages.length > 0 ? (
@@ -113,3 +83,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
