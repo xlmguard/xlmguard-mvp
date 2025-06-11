@@ -1,6 +1,7 @@
 // TransactionLookup.js
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
 import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
@@ -11,7 +12,15 @@ function TransactionLookup() {
   const [loading, setLoading] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState('Pending');
   const [updateMessage, setUpdateMessage] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const auth = getAuth();
+    onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
+    });
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -56,6 +65,16 @@ function TransactionLookup() {
     CertificateOfOrigin: 'Certificate of Origin',
     InspectionCertificate: 'Inspection Certificate'
   };
+
+  if (!isAuthenticated) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>Access Denied</h2>
+        <p>You must be logged in to view this page.</p>
+        <button onClick={() => navigate('/')}>Return to Home</button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -141,6 +160,7 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
 
 
 
