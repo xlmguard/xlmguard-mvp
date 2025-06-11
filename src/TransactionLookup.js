@@ -2,13 +2,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db } from './firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
   const [transaction, setTransaction] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [approvalStatus, setApprovalStatus] = useState('Pending');
+  const [updateMessage, setUpdateMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -22,7 +24,8 @@ function TransactionLookup() {
       const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
-        setTransaction(doc.data());
+        setTransaction({ ...doc.data(), docRef: doc.ref });
+        setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
       } else {
         setError('Transaction not found.');
       }
@@ -30,6 +33,18 @@ function TransactionLookup() {
       setError('Error retrieving transaction.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleApprovalUpdate = async () => {
+    try {
+      if (transaction && transaction.docRef) {
+        await updateDoc(transaction.docRef, { documentApprovalStatus: approvalStatus });
+        setUpdateMessage('Approval status updated successfully.');
+      }
+    } catch (err) {
+      console.error(err);
+      setUpdateMessage('Error updating approval status.');
     }
   };
 
@@ -88,7 +103,20 @@ function TransactionLookup() {
             </div>
           )}
 
-          <p><strong>Document Approval Status:</strong> {transaction.documentApprovalStatus || 'Pending'}</p>
+          <div>
+            <strong>Document Approval Status:</strong> {transaction.documentApprovalStatus || 'Pending'}
+          </div>
+
+          <div style={{ marginTop: '10px' }}>
+            <label htmlFor="approvalStatus">Update Approval Status: </label>
+            <select id="approvalStatus" value={approvalStatus} onChange={(e) => setApprovalStatus(e.target.value)}>
+              <option value="Pending">Pending</option>
+              <option value="Approved">Approved</option>
+              <option value="Rejected">Rejected</option>
+            </select>
+            <button onClick={handleApprovalUpdate} style={{ marginLeft: '10px' }}>Update</button>
+            {updateMessage && <p>{updateMessage}</p>}
+          </div>
 
           <div>
             <strong>Shipment Images:</strong>
@@ -113,3 +141,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
