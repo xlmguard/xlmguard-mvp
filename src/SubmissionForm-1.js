@@ -85,9 +85,6 @@ const SubmissionForm = () => {
         <button type="submit">Submit</button>
       </form>
       {message && <p>{message}</p>}
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => navigate('/')}>Return to Home Page</button>
-      </div>
       <hr />
       <button onClick={handleLogout} style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}>
         Logout
@@ -97,3 +94,11 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
+
+
+
+
+
+
+
