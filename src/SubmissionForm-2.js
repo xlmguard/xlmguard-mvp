@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { db, auth, storage } from './firebase';
+import { db, auth } from './firebase';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SubmissionForm = () => {
@@ -10,7 +9,6 @@ const SubmissionForm = () => {
   const [txId, setTxId] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
-  const [contractFile, setContractFile] = useState(null);
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
@@ -28,10 +26,6 @@ const SubmissionForm = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  const handleFileChange = (e) => {
-    setContractFile(e.target.files[0]);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -40,23 +34,14 @@ const SubmissionForm = () => {
     }
 
     try {
-      let contractURL = '';
-      if (contractFile) {
-        const storageRef = ref(storage, `contracts/${user.uid}_${Date.now()}_${contractFile.name}`);
-        const snapshot = await uploadBytes(storageRef, contractFile);
-        contractURL = await getDownloadURL(snapshot.ref);
-      }
-
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
         transactionId: txId,
         amount,
         notes,
-        contractURL,
         createdAt: Timestamp.now(),
       });
-
       setMessage('Transaction submitted successfully.');
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
@@ -96,10 +81,6 @@ const SubmissionForm = () => {
         <div>
           <label>Notes:</label>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </div>
-        <div>
-          <label>Upload Contract (PDF, DOCX, etc.):</label>
-          <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
         </div>
         <button type="submit">Submit</button>
       </form>
