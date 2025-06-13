@@ -40,7 +40,7 @@ function LoginPage() {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <h1>Login</h1>
       <form onSubmit={handleLogin}>
         <input
@@ -60,12 +60,11 @@ function LoginPage() {
         <button type="submit">Login</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => navigate('/')}>Return to Home Page</button>
-      </div>
     </div>
   );
 }
 
 export default LoginPage;
+
+
+
