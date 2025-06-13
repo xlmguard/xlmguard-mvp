@@ -211,8 +211,12 @@ const PaymentPage = () => {
       <div style={{ marginTop: '30px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={() => navigate('/login')}>Login</button>
+      </div>
     </div>
   );
 };
 
 export default PaymentPage;
+
