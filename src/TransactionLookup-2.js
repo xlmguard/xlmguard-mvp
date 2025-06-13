@@ -2,9 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { db, storage } from './firebase';
+import { db } from './firebase';
 import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -14,8 +13,6 @@ function TransactionLookup() {
   const [approvalStatus, setApprovalStatus] = useState('Pending');
   const [updateMessage, setUpdateMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [contractFile, setContractFile] = useState(null);
-  const [contractUploadStatus, setContractUploadStatus] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -57,21 +54,6 @@ function TransactionLookup() {
     } catch (err) {
       console.error(err);
       setUpdateMessage('Error updating approval status.');
-    }
-  };
-
-  const handleContractUpload = async () => {
-    if (!contractFile || !transaction?.docRef) return;
-    try {
-      setContractUploadStatus('Uploading...');
-      const contractRef = ref(storage, `contracts/${txid}_${contractFile.name}`);
-      await uploadBytes(contractRef, contractFile);
-      const downloadURL = await getDownloadURL(contractRef);
-      await updateDoc(transaction.docRef, { contractURL: downloadURL });
-      setContractUploadStatus('Contract uploaded successfully.');
-    } catch (err) {
-      console.error(err);
-      setContractUploadStatus('Failed to upload contract.');
     }
   };
 
@@ -155,13 +137,6 @@ function TransactionLookup() {
             {updateMessage && <p>{updateMessage}</p>}
           </div>
 
-          <div style={{ marginTop: '20px' }}>
-            <label>Upload Contract:</label>
-            <input type="file" onChange={(e) => setContractFile(e.target.files[0])} />
-            <button onClick={handleContractUpload} style={{ marginLeft: '10px' }}>Upload Contract</button>
-            {contractUploadStatus && <p>{contractUploadStatus}</p>}
-          </div>
-
           <div>
             <strong>Shipment Images:</strong>
             {transaction.shipmentImages && transaction.shipmentImages.length > 0 ? (
@@ -185,3 +160,7 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
+
+
+
