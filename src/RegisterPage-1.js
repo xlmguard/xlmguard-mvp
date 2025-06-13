@@ -33,7 +33,7 @@ function RegisterPage() {
   };
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div>
       <h1>Register</h1>
       <form onSubmit={handleRegister}>
         <input
@@ -60,12 +60,15 @@ function RegisterPage() {
         <button type="submit">Register</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => navigate('/')}>Return to Home Page</button>
-      </div>
     </div>
   );
 }
 
 export default RegisterPage;
+
+
+
+
+
+
+
