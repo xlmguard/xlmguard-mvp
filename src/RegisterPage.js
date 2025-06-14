@@ -20,12 +20,17 @@ function RegisterPage() {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
 
-      await setDoc(doc(db, 'users', user.uid), {
+      const userData = {
         name,
         email,
-        role,
-        hasPaid: role === 'buyer' ? false : undefined // only apply hasPaid to buyers
-      });
+        role
+      };
+
+      if (role === 'buyer') {
+        userData.hasPaid = false;
+      }
+
+      await setDoc(doc(db, 'users', user.uid), userData);
 
       if (role === 'seller') {
         navigate('/seller-confirmation'); // direct sellers to their panel
@@ -82,3 +87,4 @@ function RegisterPage() {
 }
 
 export default RegisterPage;
+
