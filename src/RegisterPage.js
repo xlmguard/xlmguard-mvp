@@ -20,26 +20,21 @@ function RegisterPage() {
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
 
-      const userData = {
+      await setDoc(doc(db, 'users', user.uid), {
         name,
         email,
-        role
-      };
-
-      if (role === 'buyer') {
-        userData.hasPaid = false;
-      }
-
-      await setDoc(doc(db, 'users', user.uid), userData);
+        role,
+        ...(role === 'buyer' && { hasPaid: false })
+      });
 
       if (role === 'seller') {
-        navigate('/seller-confirmation'); // direct sellers to their panel
+        navigate('/seller-confirm'); // ✅ fixed route
       } else {
         navigate('/payment');
       }
     } catch (err) {
       setError(err.message);
-     }
+    }
   };
 
   return (
@@ -87,4 +82,5 @@ function RegisterPage() {
 }
 
 export default RegisterPage;
+
 
