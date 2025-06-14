@@ -2,7 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import {
+  doc,
+  updateDoc,
+  getDocs,
+  query,
+  where,
+  collection,
+  addDoc
+} from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
 const PaymentPage = () => {
@@ -10,18 +18,19 @@ const PaymentPage = () => {
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
   const [confirmationMessage, setConfirmationMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const walletDetails = {
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
-      amount: 4
+      amount: 100
     },
     XRP: {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
-      amount: 2
+      amount: 10
     }
   };
 
@@ -36,17 +45,121 @@ const PaymentPage = () => {
     return () => unsub();
   }, [navigate]);
 
-  const handleConfirmPayment = async () => {
-    if (user && txHash.trim()) {
-      const userRef = doc(db, 'users', user.uid);
-      await updateDoc(userRef, {
-        hasPaid: true,
-        paymentHash: txHash,
-        paidAt: new Date(),
-      });
-      setConfirmationMessage('Payment confirmed! Redirecting...');
-      setTimeout(() => navigate('/submit'), 1500);
+  const validateXLMTransaction = async (txid, expectedMemo, expectedAmount, destinationAddress) => {
+    try {
+      const txRes = await fetch(`https://horizon.stellar.org/transactions/${txid}`);
+      if (!txRes.ok) return { success: false, message: "Transaction not found on Stellar network." };
+
+      const txData = await txRes.json();
+      if (txData.memo !== expectedMemo) {
+        return { success: false, message: "Memo does not match." };
+      }
+
+      const opRes = await fetch(txData._links.operations.href);
+      const opData = await opRes.json();
+      const payment = opData._embedded.records.find(op =>
+        op.type === "payment" &&
+        op.to === destinationAddress &&
+        op.amount === expectedAmount.toString()
+      );
+
+      if (!payment) {
+        return { success: false, message: "Payment not found or does not match expected amount/address." };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: "Error validating XLM transaction." };
     }
+  };
+
+  const validateXRPTransaction = async (txid, expectedTag, expectedAmount, destinationAddress) => {
+    try {
+      const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
+      if (!response.ok) return { success: false, message: "Transaction not found on XRP ledger." };
+
+      const data = await response.json();
+      if (
+        data.Destination !== destinationAddress ||
+        data.DestinationTag?.toString() !== expectedTag.toString() ||
+        parseFloat(data.Amount) / 1_000_000 < parseFloat(expectedAmount)
+      ) {
+        return { success: false, message: "Transaction does not match expected destination, tag, or amount." };
+      }
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: "Error validating XRP transaction." };
+    }
+  };
+
+  const isDuplicateTransaction = async (txid) => {
+    const q = query(collection(db, 'users'), where('paymentHash', '==', txid));
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+  };
+
+  const logFailedAttempt = async (reason) => {
+    await addDoc(collection(db, 'failedPayments'), {
+      uid: user?.uid || 'unknown',
+      txid: txHash.trim(),
+      currency,
+      reason,
+      timestamp: new Date()
+    });
+  };
+
+  const handleConfirmPayment = async () => {
+    const trimmedTx = txHash.trim();
+    if (!user || !trimmedTx) return;
+
+    setLoading(true);
+    setConfirmationMessage('');
+
+    const duplicate = await isDuplicateTransaction(trimmedTx);
+    if (duplicate) {
+      const msg = "This transaction has already been used.";
+      setConfirmationMessage(`❌ ${msg}`);
+      await logFailedAttempt(msg);
+      setLoading(false);
+      return;
+    }
+
+    let result = { success: true };
+    if (currency === "XLM") {
+      result = await validateXLMTransaction(
+        trimmedTx,
+        walletDetails.XLM.tag,
+        walletDetails.XLM.amount,
+        walletDetails.XLM.address
+      );
+    } else if (currency === "XRP") {
+      result = await validateXRPTransaction(
+        trimmedTx,
+        walletDetails.XRP.tag,
+        walletDetails.XRP.amount,
+        walletDetails.XRP.address
+      );
+    }
+
+    if (!result.success) {
+      setConfirmationMessage(`❌ ${result.message}`);
+      await logFailedAttempt(result.message);
+      setLoading(false);
+      return;
+    }
+
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+      hasPaid: true,
+      currency,
+      paymentHash: trimmedTx,
+      paidAt: new Date(),
+    });
+
+    setConfirmationMessage('✅ Payment confirmed! Redirecting...');
+    setTimeout(() => navigate('/submit'), 1500);
+    setLoading(false);
   };
 
   const { address, tag, amount } = walletDetails[currency];
@@ -85,38 +198,25 @@ const PaymentPage = () => {
         />
       </div>
 
-      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }}>
-        Confirm Payment
+      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }} disabled={loading}>
+        {loading ? 'Validating...' : 'Confirm Payment'}
       </button>
 
       {confirmationMessage && (
-        <div style={{ marginTop: '20px', color: 'green' }}>
+        <div style={{ marginTop: '20px', color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
           {confirmationMessage}
         </div>
       )}
+
+      <div style={{ marginTop: '30px' }}>
+        <button onClick={() => navigate('/')}>Return to Home Page</button>
+      </div>
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={() => navigate('/login')}>Login</button>
+      </div>
     </div>
   );
 };
 
 export default PaymentPage;
-
-
-
-
-
-
-
-
-
-;
-
-
-
-
-
-
-
-
-
-
 
