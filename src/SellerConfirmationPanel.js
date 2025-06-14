@@ -53,6 +53,10 @@ const SellerConfirmationPanel = () => {
       setStatus('Please verify the CAPTCHA.');
       return;
     }
+    if (!auth.currentUser) {
+      setStatus('Upload blocked: user not authenticated.');
+      return;
+    }
 
     try {
       setStatus('');
@@ -222,4 +226,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
