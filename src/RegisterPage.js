@@ -39,7 +39,7 @@ function RegisterPage() {
       }
     } catch (err) {
       setError(err.message);
-    }
+     }
   };
 
   return (
