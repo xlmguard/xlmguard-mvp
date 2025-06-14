@@ -1,9 +1,8 @@
 // SellerConfirmationPanel.js
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';
 
 const SellerConfirmationPanel = () => {
@@ -13,25 +12,6 @@ const SellerConfirmationPanel = () => {
   const [status, setStatus] = useState('');
   const [redirect, setRedirect] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
-  const [isSeller, setIsSeller] = useState(false);
-
-  const auth = getAuth();
-
-  useEffect(() => {
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        const role = snap.exists() ? snap.data().role : null;
-        if (role === 'seller') {
-          setIsSeller(true);
-        } else {
-          setIsSeller(false);
-        }
-      } else {
-        setIsSeller(false);
-      }
-    });
-  }, []);
 
   const documentTypes = [
     'CommercialInvoice',
@@ -58,6 +38,7 @@ const SellerConfirmationPanel = () => {
 
     try {
       setStatus('');
+      console.log('Submit clicked with TXID:', transactionId);
 
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
       const querySnapshot = await getDocs(q);
@@ -123,6 +104,9 @@ const SellerConfirmationPanel = () => {
         const buyerSnap = await getDocs(buyerQuery);
         if (!buyerSnap.empty) {
           buyerEmail = buyerSnap.docs[0].data().email;
+          console.log('Buyer email resolved from users:', buyerEmail);
+        } else {
+          console.warn('Buyer email not found in users.');
         }
       }
 
@@ -134,7 +118,11 @@ const SellerConfirmationPanel = () => {
           terms: txData.terms || 'N/A',
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey);
+        }, publicKey).then(() => {
+          console.log('Email sent to seller.');
+        }).catch((err) => {
+          console.error('Error sending seller email:', err);
+        });
       }
 
       if (buyerEmail) {
@@ -142,7 +130,13 @@ const SellerConfirmationPanel = () => {
           buyer_email: buyerEmail,
           txid: transactionId,
           link: confirmationLink,
-        }, publicKey);
+        }, publicKey).then(() => {
+          console.log('Email sent to buyer.');
+        }).catch((err) => {
+          console.error('Error sending buyer email:', err);
+        });
+      } else {
+        console.warn('No buyer email available; buyer email not sent.');
       }
 
       setRedirect(true);
@@ -151,16 +145,6 @@ const SellerConfirmationPanel = () => {
       setStatus('Error uploading confirmation.');
     }
   };
-
-  if (!isSeller) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Access Denied</h2>
-        <p>You must be logged in as a seller to view this page.</p>
-        <button onClick={() => window.location.href = '/'}>Return to Home</button>
-      </div>
-    );
-  }
 
   if (redirect) {
     return (
@@ -220,3 +204,4 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+

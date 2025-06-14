@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
-import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -17,18 +17,8 @@ function TransactionLookup() {
 
   useEffect(() => {
     const auth = getAuth();
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        const role = snap.exists() ? snap.data().role : null;
-        if (role === 'buyer') {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } else {
-        setIsAuthenticated(false);
-      }
+    onAuthStateChanged(auth, (user) => {
+      setIsAuthenticated(!!user);
     });
   }, []);
 
@@ -80,7 +70,7 @@ function TransactionLookup() {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h2>Access Denied</h2>
-        <p>You must be logged in as a buyer to view this page.</p>
+        <p>You must be logged in to view this page.</p>
         <button onClick={() => navigate('/')}>Return to Home</button>
       </div>
     );
@@ -178,3 +168,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+

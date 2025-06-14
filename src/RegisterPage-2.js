@@ -1,3 +1,4 @@
+// RegisterPage.js
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
@@ -8,7 +9,6 @@ function RegisterPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer'); // default role
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -23,15 +23,10 @@ function RegisterPage() {
       await setDoc(doc(db, 'users', user.uid), {
         name,
         email,
-        role,
-        hasPaid: role === 'buyer' ? false : undefined // only apply hasPaid to buyers
+        hasPaid: false
       });
 
-      if (role === 'seller') {
-        navigate('/seller-confirmation'); // direct sellers to their panel
-      } else {
-        navigate('/payment');
-      }
+      navigate('/payment');
     } catch (err) {
       setError(err.message);
     }
@@ -62,14 +57,6 @@ function RegisterPage() {
           required
           onChange={(e) => setPassword(e.target.value)}
         />
-        <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-          required
-        >
-          <option value="buyer">Buyer</option>
-          <option value="seller">Seller</option>
-        </select>
         <button type="submit">Register</button>
       </form>
       {error && <p style={{ color: 'red' }}>{error}</p>}
