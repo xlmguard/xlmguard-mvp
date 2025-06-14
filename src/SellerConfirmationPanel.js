@@ -13,7 +13,8 @@ const SellerConfirmationPanel = () => {
   const [status, setStatus] = useState('');
   const [redirect, setRedirect] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
-  const [isSeller, setIsSeller] = useState(false);
+  const [isSeller, setIsSeller] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
 
   const auth = getAuth();
 
@@ -22,14 +23,11 @@ const SellerConfirmationPanel = () => {
       if (user) {
         const snap = await getDoc(doc(db, 'users', user.uid));
         const role = snap.exists() ? snap.data().role : null;
-        if (role === 'seller') {
-          setIsSeller(true);
-        } else {
-          setIsSeller(false);
-        }
+        setIsSeller(role === 'seller');
       } else {
         setIsSeller(false);
       }
+      setAuthChecked(true);
     });
   }, []);
 
@@ -152,6 +150,10 @@ const SellerConfirmationPanel = () => {
     }
   };
 
+  if (!authChecked) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Checking access...</div>;
+  }
+
   if (!isSeller) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
@@ -220,3 +222,4 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
