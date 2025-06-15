@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 function FAQPage() {
   const [language, setLanguage] = useState('English');
@@ -33,12 +34,15 @@ Yes—XLMGuard stands out because it:
 It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.`
   };
 
-  const allLanguages = ['English'];
+  const allLanguages = [
+    'English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Hindi'
+  ];
 
   return (
-    <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', fontFamily: 'sans-serif' }}>
+    <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', fontFamily: 'Arial, sans-serif', fontSize: '16px', lineHeight: '1.6' }}>
       <h1 style={{ textAlign: 'center' }}>Frequently Asked Questions (FAQ)</h1>
-      <div style={{ marginBottom: '20px' }}>
+
+      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
         <label htmlFor="language">Select Language: </label>
         <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
           {allLanguages.map((lang) => (
@@ -46,9 +50,17 @@ It's not just about securing private keys—it's about ensuring transaction fair
           ))}
         </select>
       </div>
-      <pre style={{ whiteSpace: 'pre-wrap', fontSize: '16px' }}>{faqs[language]}</pre>
+
+      <pre style={{ whiteSpace: 'pre-wrap' }}>{faqs[language]}</pre>
+
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <Link to="/">
+          <button style={{ padding: '10px 20px', fontSize: '16px' }}>Return to Home Page</button>
+        </Link>
+      </div>
     </div>
   );
 }
 
 export default FAQPage;
+
