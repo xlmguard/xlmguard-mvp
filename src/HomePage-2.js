@@ -1,3 +1,4 @@
+// HomePage.js
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
@@ -30,18 +31,23 @@ function HomePage() {
     Hindi: 'XLMGuard आपकी XLM और XRP लेन-देन को समय-मुद्रित सत्यापन और सुरक्षित विक्रेता पुष्टि के साथ सुरक्षित करता है।'
   };
 
-  const faqs = {
-    English: `\nWhat is XLMGuard?\nXLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP...`,
-    French: `\nQu'est-ce que XLMGuard ?\nXLMGuard est un service de séquestre et de vérification de paiement basé sur la blockchain conçu pour Stellar (XLM) et XRP...`,
-    Spanish: `\n¿Qué es XLMGuard?\nXLMGuard es un servicio de depósito en garantía y verificación de pagos basado en blockchain diseñado para Stellar (XLM) y XRP...`,
-    German: `\nWas ist XLMGuard?\nXLMGuard ist ein blockchain-basierter Treuhand- und Zahlungsüberprüfungsdienst für Stellar (XLM) und XRP...`,
-    Chinese: `\n什么是XLMGuard？\nXLMGuard 是一个基于区块链的托管和支付验证服务，适用于 Stellar (XLM) 和 XRP...`,
-    Arabic: `\nما هو XLMGuard؟\nXLMGuard هو خدمة الضمان والتحقق من الدفع المستندة إلى البلوك تشين مصممة لكل من Stellar (XLM) و XRP...`,
-    Hindi: `\nXLMGuard क्या है?\nXLMGuard एक ब्लॉकचेन-आधारित एस्क्रो और भुगतान-सत्यापन सेवा है जो Stellar (XLM) और XRP के लिए बनाई गई है...`
-  };
-
   const allLanguages = [
-    'English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Hindi'
+    'English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Hindi',
+    'Afrikaans', 'Albanian', 'Amharic', 'Arabic (Egyptian Spoken)', 'Arabic (Levantine)', 'Arabic (Modern Standard)',
+    'Arabic (Moroccan Spoken)', 'Arabic (Overview)', 'Aramaic', 'Armenian', 'Assamese', 'Aymara', 'Azerbaijani', 'Balochi',
+    'Bamanankan', 'Bashkort (Bashkir)', 'Basque', 'Belarusan', 'Bengali', 'Bhojpuri', 'Bislama', 'Bosnian', 'Brahui', 'Bulgarian',
+    'Burmese', 'Cantonese', 'Catalan', 'Cebuano', 'Chechen', 'Cherokee', 'Croatian', 'Czech', 'Dakota', 'Danish', 'Dari',
+    'Dholuo', 'Dutch', 'Esperanto', 'Estonian', 'Éwé', 'Finnish', 'Georgian', 'German', 'Gikuyu', 'Greek', 'Guarani',
+    'Gujarati', 'Haitian Creole', 'Hausa', 'Hawaiian', 'Hawaiian Creole', 'Hebrew', 'Hiligaynon', 'Hindi', 'Hungarian',
+    'Icelandic', 'Igbo', 'Ilocano', 'Indonesian (Bahasa Indonesia)', 'Inuit/Inupiaq', 'Irish Gaelic', 'Italian', 'Japanese',
+    'Jarai', 'Javanese', 'K’iche’', 'Kabyle', 'Kannada', 'Kashmiri', 'Kazakh', 'Khmer', 'Khoekhoe', 'Korean', 'Kurdish', 'Kyrgyz',
+    'Lao', 'Latin', 'Latvian', 'Lingala', 'Lithuanian', 'Macedonian', 'Maithili', 'Malagasy', 'Malay (Bahasa Melayu)',
+    'Malayalam', 'Mandarin (Chinese)', 'Marathi', 'Mende', 'Mongolian', 'Nahuatl', 'Navajo', 'Nepali', 'Norwegian', 'Ojibwa',
+    'Oriya', 'Oromo', 'Pashto', 'Persian', 'Polish', 'Portuguese', 'Punjabi', 'Quechua', 'Romani', 'Romanian', 'Russian', 'Rwanda',
+    'Samoan', 'Sanskrit', 'Serbian', 'Shona', 'Sindhi', 'Sinhala', 'Slovak', 'Slovene', 'Somali', 'Swahili', 'Swedish',
+    'Tachelhit', 'Tagalog', 'Tajiki', 'Tamil', 'Tatar', 'Telugu', 'Thai', 'Tibetic Languages', 'Tigrigna', 'Tok Pisin', 'Turkish',
+    'Turkmen', 'Ukrainian', 'Urdu', 'Uyghur', 'Uzbek', 'Vietnamese', 'Warlpiri', 'Welsh', 'Wolof', 'Xhosa', 'Yakut', 'Yiddish',
+    'Yoruba', 'Yucatec', 'Zapotec', 'Zulu'
   ];
 
   return (
@@ -64,11 +70,6 @@ function HomePage() {
         <Link to="/about">
           <button>About XLMGuard</button>
         </Link>
-      </div>
-
-      <div style={{ marginTop: '40px', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'left' }}>
-        <h2>FAQ</h2>
-        <pre style={{ whiteSpace: 'pre-wrap', fontSize: '15px' }}>{faqs[language] || faqs['English']}</pre>
       </div>
 
       <div style={{ marginTop: '20px' }}>
