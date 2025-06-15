@@ -7,7 +7,8 @@ function FAQPage() {
 
   const translations = {
     English: 'Frequently Asked Questions (FAQ)',
-    Arabic: 'الأسئلة الشائعة (FAQ)'
+    Arabic: 'الأسئلة الشائعة (FAQ)',
+    Chinese: '常见问题解答（FAQ）'
   };
 
   const faqs = {
@@ -33,14 +34,14 @@ function FAQPage() {
         </ul>
 
         <h2>✅ Conclusion: A Unique Position in XLM Transactions?</h2>
-        <p>Yes—XLMGuard stands out because it:
+        <p>Yes—XLMGuard stands out because it:</p>
         <ul>
           <li>Acts as a non-custodial escrow and payment verifier,</li>
           <li>Works across both Stellar and Ripple networks,</li>
           <li>Utilizes blockchain features enriched with off-chain logic,</li>
           <li>Shields users from counterpart risk by automating condition-based releases.</li>
         </ul>
-        It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.</p>
+        <p>It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.</p>
       </div>
     ),
     Arabic: (
@@ -65,14 +66,46 @@ function FAQPage() {
         </ul>
 
         <h2>✅ الخلاصة: هل لدى XLMGuard موقع فريد في معاملات XLM؟</h2>
-        <p>نعم — يتميز XLMGuard لأنه:
+        <p>نعم — يتميز XLMGuard لأنه:</p>
         <ul>
           <li>يعمل كوسيط ضمان غير موثوق ومحقق للمدفوعات،</li>
           <li>يدعم كلاً من شبكتي Stellar وRipple،</li>
           <li>يستفيد من ميزات البلوكشين المدعمة بالمنطق الخارجي،</li>
           <li>يحمي المستخدمين من مخاطر الطرف المقابل من خلال أتمتة المدفوعات المشروطة.</li>
         </ul>
-        إنه لا يقتصر على حماية المفاتيح الخاصة فقط — بل يتعلق بضمان عدالة وسلامة المعاملة في شبكة XLM. هذا هو مجاله الفريد.</p>
+        <p>إنه لا يقتصر على حماية المفاتيح الخاصة فقط — بل يتعلق بضمان عدالة وسلامة المعاملة في شبكة XLM. هذا هو مجاله الفريد.</p>
+      </div>
+    ),
+    Chinese: (
+      <div>
+        <h2>XLMGuard 是什么？</h2>
+        <p>XLMGuard 是一个基于区块链的托管与支付验证服务，支持 Stellar (XLM) 和 XRP。它旨在为交易，尤其是点对点支付、销售或需要链外信任验证的场景，增添一层额外的安全性与信任。</p>
+
+        <h2>🔑 XLMGuard 如何工作</h2>
+        <ul>
+          <li><strong>发起交易：</strong> 发送方通过 XLMGuard 创建支付请求。</li>
+          <li><strong>资金托管：</strong> Lumens 或 XRP 被锁定在托管账户中，直到双方满足预设条件。</li>
+          <li><strong>验证过程：</strong> XLMGuard 监控交易过程，可能还集成链外确认机制。</li>
+          <li><strong>释放或退款：</strong> 一旦满足条件，资金自动释放；若出现问题，则退款。</li>
+        </ul>
+
+        <h2>🌟 XLMGuard 有哪些独特之处？</h2>
+        <ul>
+          <li><strong>跨链支持：</strong> 支持 XLM 和 XRP，这是不常见的，多数托管服务仅支持一种网络。</li>
+          <li><strong>链外验证：</strong> XLMGuard 不仅是多签，还可引入外部确认或审批流程。</li>
+          <li><strong>交易完整性：</strong> 通过预设托管条件防止欺诈和错误，而不是依赖信任或手动释放。</li>
+          <li><strong>适用于实际场景：</strong> 专为市场销售、自由职业、点对点交易等设计，而非仅仅用于密钥保管。</li>
+        </ul>
+
+        <h2>✅ 结论：XLMGuard 在 XLM 交易中是否具有独特地位？</h2>
+        <p>是的——XLMGuard 具有以下特点：</p>
+        <ul>
+          <li>充当非托管的托管与支付验证平台，</li>
+          <li>同时支持 Stellar 和 Ripple 网络，</li>
+          <li>结合区块链功能与链外逻辑，</li>
+          <li>通过条件驱动的自动释放机制，降低交易对手风险。</li>
+        </ul>
+        <p>它不仅仅是保护私钥，更是保障 XLM 交易公平性与完整性的解决方案。这就是它的独特定位。</p>
       </div>
     )
   };
@@ -104,6 +137,7 @@ function FAQPage() {
 }
 
 export default FAQPage;
+
 
 
 
