@@ -13,9 +13,8 @@ import Dashboard from './Dashboard';
 import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
-import AboutPage from './AboutPage';
-import TransactionLookup from './TransactionLookup';
-import FAQPage from './FAQPage'; // ✅ NEW import
+import AboutPage from './AboutPage'; // ✅ Add this import
+import TransactionLookup from './TransactionLookup'; // ✅ New import
 
 function App() {
   const [user, setUser] = useState(null);
@@ -95,12 +94,34 @@ function App() {
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="/transaction-lookup" element={<TransactionLookup />} />
-        <Route path="/faq" element={<FAQPage />} /> {/* ✅ NEW route */}
+        <Route path="/about" element={<AboutPage />} /> {/* ✅ Add this route */}
+        <Route path="/transaction-lookup" element={<TransactionLookup />} /> {/* ✅ New route */}
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

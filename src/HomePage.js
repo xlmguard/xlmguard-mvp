@@ -30,16 +30,6 @@ function HomePage() {
     Hindi: 'XLMGuard आपकी XLM और XRP लेन-देन को समय-मुद्रित सत्यापन और सुरक्षित विक्रेता पुष्टि के साथ सुरक्षित करता है।'
   };
 
-  const faqs = {
-    English: `\nWhat is XLMGuard?\nXLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP...`,
-    French: `\nQu'est-ce que XLMGuard ?\nXLMGuard est un service de séquestre et de vérification de paiement basé sur la blockchain conçu pour Stellar (XLM) et XRP...`,
-    Spanish: `\n¿Qué es XLMGuard?\nXLMGuard es un servicio de depósito en garantía y verificación de pagos basado en blockchain diseñado para Stellar (XLM) y XRP...`,
-    German: `\nWas ist XLMGuard?\nXLMGuard ist ein blockchain-basierter Treuhand- und Zahlungsüberprüfungsdienst für Stellar (XLM) und XRP...`,
-    Chinese: `\n什么是XLMGuard？\nXLMGuard 是一个基于区块链的托管和支付验证服务，适用于 Stellar (XLM) 和 XRP...`,
-    Arabic: `\nما هو XLMGuard؟\nXLMGuard هو خدمة الضمان والتحقق من الدفع المستندة إلى البلوك تشين مصممة لكل من Stellar (XLM) و XRP...`,
-    Hindi: `\nXLMGuard क्या है?\nXLMGuard एक ब्लॉकचेन-आधारित एस्क्रो और भुगतान-सत्यापन सेवा है जो Stellar (XLM) और XRP के लिए बनाई गई है...`
-  };
-
   const allLanguages = [
     'English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Hindi'
   ];
@@ -64,11 +54,9 @@ function HomePage() {
         <Link to="/about">
           <button>About XLMGuard</button>
         </Link>
-      </div>
-
-      <div style={{ marginTop: '40px', maxWidth: '800px', marginLeft: 'auto', marginRight: 'auto', textAlign: 'left' }}>
-        <h2>FAQ</h2>
-        <pre style={{ whiteSpace: 'pre-wrap', fontSize: '15px' }}>{faqs[language] || faqs['English']}</pre>
+        <Link to="/faq">
+          <button>FAQ</button>
+        </Link>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -88,3 +76,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
