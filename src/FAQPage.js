@@ -25,39 +25,41 @@ function FAQPage() {
     <div dangerouslySetInnerHTML={{ __html: text }} />
   );
 
+  const faqTemplate = (question, works, unique, conclusion) => `
+    <h2>${question}</h2>
+    <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
+    <h2>🔑 ${works}</h2>
+    <ul>
+      <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
+      <li><strong>Holding funds:</strong> The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.</li>
+      <li><strong>Verification:</strong> XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.</li>
+      <li><strong>Release or refund:</strong> Once conditions are met, funds are automatically released, or refunded if something goes wrong.</li>
+    </ul>
+    <h2>🌟 ${unique}</h2>
+    <ul>
+      <li><strong>Cross‑chain support:</strong> Works with both XLM and XRP, which is rare—most escrow services support only one.</li>
+      <li><strong>Off‑chain verification:</strong> Can include external confirmations before releasing funds.</li>
+      <li><strong>Transaction integrity:</strong> Prevents fraud by enforcing preset terms in escrow.</li>
+      <li><strong>Designed for real-world use cases:</strong> Ideal for marketplace sales, freelance jobs, or peer-to-peer deals.</li>
+    </ul>
+    <h2>✅ ${conclusion}</h2>
+    <p>Yes—XLMGuard acts as a non-custodial escrow and payment verifier, supports both Stellar and Ripple, and shields users from risk by automating trustless payments.</p>
+  `;
+
   const faqs = {
-    English: fullFAQContent(`
-      <h2>What is XLMGuard?</h2>
-      <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP...</p>
-      <h2>🔑 How XLMGuard Works</h2>
-      <ul>
-        <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
-        <li><strong>Holding funds:</strong> The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.</li>
-        <li><strong>Verification:</strong> XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.</li>
-        <li><strong>Release or refund:</strong> Once conditions are met, funds are automatically released, or refunded if something goes wrong.</li>
-      </ul>
-      <h2>🌟 What Makes It Unique?</h2>
-      <ul>
-        <li><strong>Cross‑chain support:</strong> Works with both XLM and XRP, which is rare—most escrow services support only one.</li>
-        <li><strong>Off‑chain verification:</strong> Can include external confirmations before releasing funds.</li>
-        <li><strong>Transaction integrity:</strong> Prevents fraud by enforcing preset terms in escrow.</li>
-        <li><strong>Designed for real-world use cases:</strong> Ideal for marketplace sales, freelance jobs, or peer-to-peer deals.</li>
-      </ul>
-      <h2>✅ Conclusion: A Unique Position in XLM Transactions?</h2>
-      <p>Yes—XLMGuard acts as a non-custodial escrow and payment verifier, supports both Stellar and Ripple, and shields users from risk by automating trustless payments.</p>
-    `),
-    French: fullFAQContent(`<p>XLMGuard est un service de séquestre et de vérification de paiement basé sur la blockchain...</p>`),
-    Spanish: fullFAQContent(`<p>XLMGuard es un servicio de custodia y verificación de pagos basado en blockchain...</p>`),
-    German: fullFAQContent(`<p>XLMGuard ist ein Blockchain-basiertes Treuhand- und Zahlungsüberprüfungsdienst...</p>`),
-    Chinese: fullFAQContent(`<p>XLMGuard 是一个基于区块链的托管和支付验证服务...</p>`),
-    Arabic: fullFAQContent(`<p>XLMGuard هو خدمة ضمان ومصادقة مدفوعات تعتمد على البلوكشين...</p>`),
-    Hindi: fullFAQContent(`<p>XLMGuard एक ब्लॉकचेन-आधारित एस्क्रो और भुगतान सत्यापन सेवा है...</p>`),
-    Portuguese: fullFAQContent(`<p>XLMGuard é um serviço de custódia e verificação de pagamentos baseado em blockchain...</p>`),
-    Japanese: fullFAQContent(`<p>XLMGuardは、ブロックチェーンベースのエスクローおよび支払い検証サービスです...</p>`),
-    Korean: fullFAQContent(`<p>XLMGuard는 블록체인 기반의 에스크로 및 결제 검증 서비스입니다...</p>`),
-    Italian: fullFAQContent(`<p>XLMGuard è un servizio di deposito a garanzia e verifica dei pagamenti basato su blockchain...</p>`),
-    Lingala: fullFAQContent(`<p>XLMGuard ezali service ya kosunga mpe koyeba solo ya botamboli na blockchain...</p>`),
-    Swahili: fullFAQContent(`<p>XLMGuard ni huduma ya uhakiki wa malipo na uhifadhi salama inayotumia blockchain...</p>`)
+    English: fullFAQContent(faqTemplate("What is XLMGuard?", "How XLMGuard Works", "What Makes It Unique?", "Conclusion: A Unique Position in XLM Transactions?")),
+    French: fullFAQContent(faqTemplate("Qu'est-ce que XLMGuard ?", "Comment fonctionne XLMGuard", "Qu'est-ce qui le rend unique ?", "Conclusion : Une position unique pour les transactions XLM ?")),
+    Spanish: fullFAQContent(faqTemplate("¿Qué es XLMGuard?", "Cómo funciona XLMGuard", "¿Qué lo hace único?", "¿Una posición única en las transacciones XLM?")),
+    German: fullFAQContent(faqTemplate("Was ist XLMGuard?", "Wie funktioniert XLMGuard", "Was macht es einzigartig?", "Fazit: Eine einzigartige Position bei XLM-Transaktionen?")),
+    Chinese: fullFAQContent(faqTemplate("XLMGuard 是什么？", "XLMGuard 如何运作", "XLMGuard 的独特之处", "结论：XLM 交易的独特地位？")),
+    Arabic: fullFAQContent(faqTemplate("ما هو XLMGuard؟", "كيف يعمل XLMGuard", "ما الذي يجعل XLMGuard فريدًا؟", "الخلاصة: هل لدى XLMGuard موقع فريد في معاملات XLM؟")),
+    Hindi: fullFAQContent(faqTemplate("XLMGuard क्या है?", "XLMGuard कैसे काम करता है", "XLMGuard की विशेषता क्या है?", "निष्कर्ष: क्या XLM लेनदेन में XLMGuard की एक अनूठी स्थिति है?")),
+    Portuguese: fullFAQContent(faqTemplate("O que é o XLMGuard?", "Como o XLMGuard Funciona", "O que Torna Único?", "Conclusão: Uma Posição Única nas Transações XLM?")),
+    Japanese: fullFAQContent(faqTemplate("XLMGuardとは何ですか？", "XLMGuardの仕組み", "ユニークな点", "結論：XLMトランザクションにおける独自の地位？")),
+    Korean: fullFAQContent(faqTemplate("XLMGuard란 무엇인가요?", "XLMGuard 작동 방식", "무엇이 특별한가요?", "결론: XLM 거래에서의 독보적인 위치?")),
+    Italian: fullFAQContent(faqTemplate("Che cos'è XLMGuard?", "Come funziona XLMGuard", "Cosa lo rende unico?", "Conclusione: una posizione unica nelle transazioni XLM?")),
+    Lingala: fullFAQContent(faqTemplate("XLMGuard ezali nini?", "XLMGuard esalaka ndenge nini", "Nini esalaka ete ezala ya solo?", "Ekokani: XLMGuard ezali na esika moko ya motuya na transaction ya XLM?")),
+    Swahili: fullFAQContent(faqTemplate("XLMGuard ni nini?", "XLMGuard inavyofanya kazi", "Ni nini hufanya kuwa ya kipekee?", "Hitimisho: Nafasi ya kipekee katika miamala ya XLM?"))
   };
 
   const allLanguages = Object.keys(translations);
@@ -87,6 +89,7 @@ function FAQPage() {
 }
 
 export default FAQPage;
+
 
 
 
