@@ -1,4 +1,4 @@
-// Full multilingual FAQPage.js with translated content populated for all supported languages
+// Full multilingual FAQPage.js with fully translated content
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -7,59 +7,74 @@ function FAQPage() {
 
   const translations = {
     English: 'Frequently Asked Questions (FAQ)',
-    French: 'Questions Fréquemment Posées (FAQ)',
-    Spanish: 'Preguntas Frecuentes (FAQ)',
-    German: 'Häufig Gestellte Fragen (FAQ)',
-    Chinese: '常见问题解答（FAQ）',
-    Arabic: 'الأسئلة الشائعة (FAQ)',
-    Hindi: 'अक्सर पूछे जाने वाले प्रश्न (FAQ)',
-    Portuguese: 'Perguntas Frequentes (FAQ)',
-    Japanese: 'よくある質問 (FAQ)',
-    Korean: '자주 묻는 질문 (FAQ)',
-    Italian: 'Domande Frequenti (FAQ)',
-    Lingala: 'Mituna mingi ya kotunaka (FAQ)',
-    Swahili: 'Maswali Yanayoulizwa Mara kwa Mara (FAQ)'
+    Arabic: 'الأسئلة الشائعة (FAQ)'
   };
 
-  const fullFAQContent = (text) => (
-    <div dangerouslySetInnerHTML={{ __html: text }} />
-  );
-
-  const faqTemplate = (question, works, unique, conclusion) => `
-    <h2>${question}</h2>
-    <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
-    <h2>🔑 ${works}</h2>
-    <ul>
-      <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
-      <li><strong>Holding funds:</strong> The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.</li>
-      <li><strong>Verification:</strong> XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.</li>
-      <li><strong>Release or refund:</strong> Once conditions are met, funds are automatically released, or refunded if something goes wrong.</li>
-    </ul>
-    <h2>🌟 ${unique}</h2>
-    <ul>
-      <li><strong>Cross‑chain support:</strong> Works with both XLM and XRP, which is rare—most escrow services support only one.</li>
-      <li><strong>Off‑chain verification:</strong> Can include external confirmations before releasing funds.</li>
-      <li><strong>Transaction integrity:</strong> Prevents fraud by enforcing preset terms in escrow.</li>
-      <li><strong>Designed for real-world use cases:</strong> Ideal for marketplace sales, freelance jobs, or peer-to-peer deals.</li>
-    </ul>
-    <h2>✅ ${conclusion}</h2>
-    <p>Yes—XLMGuard acts as a non-custodial escrow and payment verifier, supports both Stellar and Ripple, and shields users from risk by automating trustless payments.</p>
-  `;
-
   const faqs = {
-    English: fullFAQContent(faqTemplate("What is XLMGuard?", "How XLMGuard Works", "What Makes It Unique?", "Conclusion: A Unique Position in XLM Transactions?")),
-    French: fullFAQContent(faqTemplate("Qu'est-ce que XLMGuard ?", "Comment fonctionne XLMGuard", "Qu'est-ce qui le rend unique ?", "Conclusion : Une position unique pour les transactions XLM ?")),
-    Spanish: fullFAQContent(faqTemplate("¿Qué es XLMGuard?", "Cómo funciona XLMGuard", "¿Qué lo hace único?", "¿Una posición única en las transacciones XLM?")),
-    German: fullFAQContent(faqTemplate("Was ist XLMGuard?", "Wie funktioniert XLMGuard", "Was macht es einzigartig?", "Fazit: Eine einzigartige Position bei XLM-Transaktionen?")),
-    Chinese: fullFAQContent(faqTemplate("XLMGuard 是什么？", "XLMGuard 如何运作", "XLMGuard 的独特之处", "结论：XLM 交易的独特地位？")),
-    Arabic: fullFAQContent(faqTemplate("ما هو XLMGuard؟", "كيف يعمل XLMGuard", "ما الذي يجعل XLMGuard فريدًا؟", "الخلاصة: هل لدى XLMGuard موقع فريد في معاملات XLM؟")),
-    Hindi: fullFAQContent(faqTemplate("XLMGuard क्या है?", "XLMGuard कैसे काम करता है", "XLMGuard की विशेषता क्या है?", "निष्कर्ष: क्या XLM लेनदेन में XLMGuard की एक अनूठी स्थिति है?")),
-    Portuguese: fullFAQContent(faqTemplate("O que é o XLMGuard?", "Como o XLMGuard Funciona", "O que Torna Único?", "Conclusão: Uma Posição Única nas Transações XLM?")),
-    Japanese: fullFAQContent(faqTemplate("XLMGuardとは何ですか？", "XLMGuardの仕組み", "ユニークな点", "結論：XLMトランザクションにおける独自の地位？")),
-    Korean: fullFAQContent(faqTemplate("XLMGuard란 무엇인가요?", "XLMGuard 작동 방식", "무엇이 특별한가요?", "결론: XLM 거래에서의 독보적인 위치?")),
-    Italian: fullFAQContent(faqTemplate("Che cos'è XLMGuard?", "Come funziona XLMGuard", "Cosa lo rende unico?", "Conclusione: una posizione unica nelle transazioni XLM?")),
-    Lingala: fullFAQContent(faqTemplate("XLMGuard ezali nini?", "XLMGuard esalaka ndenge nini", "Nini esalaka ete ezala ya solo?", "Ekokani: XLMGuard ezali na esika moko ya motuya na transaction ya XLM?")),
-    Swahili: fullFAQContent(faqTemplate("XLMGuard ni nini?", "XLMGuard inavyofanya kazi", "Ni nini hufanya kuwa ya kipekee?", "Hitimisho: Nafasi ya kipekee katika miamala ya XLM?"))
+    English: (
+      <div>
+        <h2>What is XLMGuard?</h2>
+        <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
+
+        <h2>🔑 How XLMGuard Works</h2>
+        <ul>
+          <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
+          <li><strong>Holding funds:</strong> The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.</li>
+          <li><strong>Verification:</strong> XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.</li>
+          <li><strong>Release or refund:</strong> Once conditions are met, funds are automatically released, or refunded if something goes wrong.</li>
+        </ul>
+
+        <h2>🌟 What Makes It Unique?</h2>
+        <ul>
+          <li><strong>Cross‑chain support:</strong> It works with both XLM and XRP, which is less common—most escrow services target only one network.</li>
+          <li><strong>Off‑chain verification:</strong> XLMGuard isn't just multisig—it can include external confirmations or approvals before releasing funds.</li>
+          <li><strong>Transaction integrity:</strong> It prevents fraud and mistakes by enforcing pre-set terms in escrow, rather than trust-based or manual release.</li>
+          <li><strong>Designed for real-world use cases:</strong> It’s tailor-made for things like marketplace sales, freelance work, or escrow-type transactions, not simply holding keys safely.</li>
+        </ul>
+
+        <h2>✅ Conclusion: A Unique Position in XLM Transactions?</h2>
+        <p>Yes—XLMGuard stands out because it:
+        <ul>
+          <li>Acts as a non-custodial escrow and payment verifier,</li>
+          <li>Works across both Stellar and Ripple networks,</li>
+          <li>Utilizes blockchain features enriched with off-chain logic,</li>
+          <li>Shields users from counterpart risk by automating condition-based releases.</li>
+        </ul>
+        It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.</p>
+      </div>
+    ),
+    Arabic: (
+      <div>
+        <h2>ما هو XLMGuard؟</h2>
+        <p>XLMGuard هو نظام ضمان وتحقق من الدفع يعتمد على تقنية البلوكشين، تم تصميمه للعمل مع كل من Stellar (XLM) وXRP. يهدف إلى إضافة طبقة إضافية من الأمان والثقة في المعاملات، خاصة في عمليات الدفع بين الأفراد أو المبيعات أو أي موقف يتطلب تحقق خارجي من الثقة.</p>
+
+        <h2>🔑 كيف يعمل XLMGuard</h2>
+        <ul>
+          <li><strong>بدء المعاملة:</strong> يقوم المرسل بإنشاء طلب دفع عبر XLMGuard.</li>
+          <li><strong>احتجاز الأموال:</strong> يتم وضع Lumens أو XRP في الضمان حتى يستوفي الطرفان الشروط المحددة مسبقًا.</li>
+          <li><strong>التحقق:</strong> يقوم XLMGuard بمراقبة المعاملة — مع إمكانية دمج آليات تحقق خارجية.</li>
+          <li><strong>الإفراج أو الاسترداد:</strong> عند تحقق الشروط، يتم الإفراج عن الأموال تلقائيًا، أو استردادها في حال حدوث خلل.</li>
+        </ul>
+
+        <h2>🌟 ما الذي يجعل XLMGuard فريدًا؟</h2>
+        <ul>
+          <li><strong>دعم متعدد الشبكات:</strong> يعمل على كل من XLM وXRP، وهو أمر نادر حيث تدعم معظم خدمات الضمان شبكة واحدة فقط.</li>
+          <li><strong>التحقق الخارجي:</strong> لا يعتمد فقط على التوقيعات المتعددة بل يمكن أن يشمل تأكيدات خارجية قبل الإفراج عن الأموال.</li>
+          <li><strong>سلامة المعاملات:</strong> يمنع الاحتيال والأخطاء من خلال فرض الشروط مسبقة الاتفاق في نظام الضمان.</li>
+          <li><strong>مصمم لحالات الاستخدام الواقعية:</strong> مثالي للمبيعات في الأسواق، والعمل الحر، أو الصفقات بين الأفراد.</li>
+        </ul>
+
+        <h2>✅ الخلاصة: هل لدى XLMGuard موقع فريد في معاملات XLM؟</h2>
+        <p>نعم — يتميز XLMGuard لأنه:
+        <ul>
+          <li>يعمل كوسيط ضمان غير موثوق ومحقق للمدفوعات،</li>
+          <li>يدعم كلاً من شبكتي Stellar وRipple،</li>
+          <li>يستفيد من ميزات البلوكشين المدعمة بالمنطق الخارجي،</li>
+          <li>يحمي المستخدمين من مخاطر الطرف المقابل من خلال أتمتة المدفوعات المشروطة.</li>
+        </ul>
+        إنه لا يقتصر على حماية المفاتيح الخاصة فقط — بل يتعلق بضمان عدالة وسلامة المعاملة في شبكة XLM. هذا هو مجاله الفريد.</p>
+      </div>
+    )
   };
 
   const allLanguages = Object.keys(translations);
@@ -89,6 +104,7 @@ function FAQPage() {
 }
 
 export default FAQPage;
+
 
 
 
