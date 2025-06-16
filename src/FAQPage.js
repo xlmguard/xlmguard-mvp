@@ -16,7 +16,7 @@ function FAQPage() {
     Portuguese: 'Perguntas Frequentes (FAQ)',
     Japanese: 'よくある質問 (FAQ)',
     Korean: '자주 묻는 질문 (FAQ)'
-  };
+   };
 
   const faqs = {
     English: ( ... ),
