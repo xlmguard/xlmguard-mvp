@@ -52,7 +52,7 @@ function HomePage() {
         <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Submit Transaction</button>
         <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
         <Link to="/about">
-          <button style={{ marginRight: '10px' }}>About XLMGuard</button>
+          <button>About XLMGuard</button>
         </Link>
         <Link to="/faq">
           <button>FAQ</button>
@@ -68,13 +68,7 @@ function HomePage() {
         </select>
       </div>
 
-      {/* ✅ Updated Footer */}
       <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
-        <div style={{ marginBottom: '10px' }}>
-          <Link to="/contact">
-            <button style={{ fontSize: '12px', padding: '6px 12px' }}>Contact Us</button>
-          </Link>
-        </div>
         &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
     </div>
@@ -82,3 +76,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
