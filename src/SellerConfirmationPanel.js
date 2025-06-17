@@ -16,6 +16,7 @@ const SellerConfirmationPanel = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [contractUrl, setContractUrl] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
+  const [transactionDocRef, setTransactionDocRef] = useState(null);
   const auth = getAuth();
 
   useEffect(() => {
@@ -44,9 +45,35 @@ const SellerConfirmationPanel = () => {
     setDocuments((prevDocs) => ({ ...prevDocs, [type]: file }));
   };
 
+  const loadTransaction = async () => {
+    if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
+      setStatus('Escrow TXID must be a valid 64-character hash.');
+      return;
+    }
+    try {
+      setStatus('');
+      const q = query(collection(db, 'transactions'), where('escrowTxid', '==', escrowTxid));
+      const querySnapshot = await getDocs(q);
+
+      if (querySnapshot.empty) {
+        setStatus('Transaction not found.');
+        return;
+      }
+
+      const docSnap = querySnapshot.docs[0];
+      setTransactionDocRef(docSnap.ref);
+      const txData = docSnap.data();
+      if (txData.contractUrl) setContractUrl(txData.contractUrl);
+      setStatus('Transaction loaded.');
+    } catch (err) {
+      console.error(err);
+      setStatus('Error loading transaction.');
+    }
+  };
+
   const handleSubmit = async () => {
-    if (!escrowTxid.trim()) {
-      setStatus('Escrow TXID is required.');
+    if (!transactionDocRef) {
+      setStatus('Please load a valid transaction first.');
       return;
     }
     if (!captchaChecked) {
@@ -61,27 +88,8 @@ const SellerConfirmationPanel = () => {
       setStatus('Upload blocked: user not authenticated.');
       return;
     }
-    if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
-      setStatus('Escrow TXID must be a valid 64-character hash.');
-      return;
-    }
 
     try {
-      setStatus('');
-      const q = query(collection(db, 'transactions'), where('escrowTxid', '==', escrowTxid));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        setStatus('Transaction not found.');
-        return;
-      }
-
-      const transactionDoc = querySnapshot.docs[0];
-      const docRef = transactionDoc.ref;
-      const txData = transactionDoc.data();
-
-      if (txData.contractUrl) setContractUrl(txData.contractUrl);
-
       const docURLs = {};
       const imageURLs = [];
       const uploadPromises = [];
@@ -113,7 +121,7 @@ const SellerConfirmationPanel = () => {
 
       await Promise.all(uploadPromises);
 
-      await updateDoc(docRef, {
+      await updateDoc(transactionDocRef, {
         sellerConfirmed: true,
         shippingDocs: docURLs,
         shipmentImages: imageURLs,
@@ -166,49 +174,54 @@ const SellerConfirmationPanel = () => {
         placeholder="Enter Escrow TXID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
+      <button onClick={loadTransaction}>Load Transaction</button>
 
       {contractUrl && (
-        <div style={{ marginBottom: '20px' }}>
+        <div style={{ marginTop: '20px' }}>
           <strong>Contract Document:</strong> <br />
           <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a><br />
           <a href={contractUrl} download style={{ color: 'green', fontWeight: 'bold' }}>⬇ Download Contract</a>
         </div>
       )}
 
-      {documentTypes.map((type) => (
-        <div key={type}>
-          <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
-          <input type="file" onChange={(e) => handleDocumentUpload(type, e.target.files[0])} />
-        </div>
-      ))}
+      {contractUrl && (
+        <>
+          {documentTypes.map((type) => (
+            <div key={type}>
+              <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
+              <input type="file" onChange={(e) => handleDocumentUpload(type, e.target.files[0])} />
+            </div>
+          ))}
 
-      <div>
-        <label>Upload Shipment Images:</label>
-        <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
-      </div>
+          <div>
+            <label>Upload Shipment Images:</label>
+            <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
+          </div>
 
-      <div style={{ marginTop: '10px' }}>
-        <label>
-          <input
-            type="checkbox"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
-          />{' '}
-          I have reviewed the contract and accept the terms.
-        </label>
-      </div>
+          <div style={{ marginTop: '10px' }}>
+            <label>
+              <input
+                type="checkbox"
+                checked={acceptTerms}
+                onChange={(e) => setAcceptTerms(e.target.checked)}
+              />{' '}
+              I have reviewed the contract and accept the terms.
+            </label>
+          </div>
 
-      <div style={{ margin: '10px 0' }}>
-        <input
-          type="checkbox"
-          id="captcha"
-          checked={captchaChecked}
-          onChange={(e) => setCaptchaChecked(e.target.checked)}
-        />
-        <label htmlFor="captcha"> I'm not a robot</label>
-      </div>
+          <div style={{ margin: '10px 0' }}>
+            <input
+              type="checkbox"
+              id="captcha"
+              checked={captchaChecked}
+              onChange={(e) => setCaptchaChecked(e.target.checked)}
+            />
+            <label htmlFor="captcha"> I'm not a robot</label>
+          </div>
 
-      <button onClick={handleSubmit}>Submit Confirmation</button>
+          <button onClick={handleSubmit}>Submit Confirmation</button>
+        </>
+      )}
 
       {status && <p style={{ marginTop: '10px' }}>{status}</p>}
 
@@ -220,6 +233,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
