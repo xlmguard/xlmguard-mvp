@@ -52,7 +52,7 @@ const SellerConfirmationPanel = () => {
     }
     try {
       setStatus('');
-      const q = query(collection(db, 'transactions'), where('escrowTxid', '==', escrowTxid));
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', escrowTxid));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -233,6 +233,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
