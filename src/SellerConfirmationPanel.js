@@ -177,11 +177,15 @@ const SellerConfirmationPanel = () => {
       />
       <button onClick={loadTransaction}>Load Transaction</button>
 
-      {transactionDocRef && (
+      {contractUrl ? (
         <div style={{ marginTop: '20px' }}>
-          <strong>Contract Document:</strong> <br />
-          <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a><br />
-          <a href={contractUrl} download style={{ color: 'green', fontWeight: 'bold' }}>⬇ Download Contract</a>
+          <strong>Contract Document:</strong><br />
+          <a href={contractUrl} target="_blank" rel="noopener noreferrer">🔍 View Contract</a><br />
+          <a href={contractUrl} target="_blank" rel="noopener noreferrer" download>⬇ Download Contract</a>
+        </div>
+      ) : (
+        <div style={{ marginTop: '20px', color: 'gray' }}>
+          No contract has been uploaded for this transaction.
         </div>
       )}
 
@@ -234,6 +238,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
