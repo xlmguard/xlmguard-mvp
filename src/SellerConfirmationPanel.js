@@ -6,7 +6,7 @@ import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'fireb
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SellerConfirmationPanel = () => {
-  const [transactionId, setTransactionId] = useState('');
+  const [escrowTxid, setEscrowTxid] = useState('');
   const [documents, setDocuments] = useState({});
   const [shipmentImages, setShipmentImages] = useState([]);
   const [status, setStatus] = useState('');
@@ -16,7 +16,6 @@ const SellerConfirmationPanel = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [contractUrl, setContractUrl] = useState('');
   const [acceptTerms, setAcceptTerms] = useState(false);
-  const [escrowTxid, setEscrowTxid] = useState('');
   const auth = getAuth();
 
   useEffect(() => {
@@ -46,8 +45,8 @@ const SellerConfirmationPanel = () => {
   };
 
   const handleSubmit = async () => {
-    if (!transactionId.trim()) {
-      setStatus('Transaction ID is required.');
+    if (!escrowTxid.trim()) {
+      setStatus('Escrow TXID is required.');
       return;
     }
     if (!captchaChecked) {
@@ -69,7 +68,7 @@ const SellerConfirmationPanel = () => {
 
     try {
       setStatus('');
-      const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
+      const q = query(collection(db, 'transactions'), where('escrowTxid', '==', escrowTxid));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -82,7 +81,6 @@ const SellerConfirmationPanel = () => {
       const txData = transactionDoc.data();
 
       if (txData.contractUrl) setContractUrl(txData.contractUrl);
-      if (txData.escrowTxid && !escrowTxid) setEscrowTxid(txData.escrowTxid);
 
       const docURLs = {};
       const imageURLs = [];
@@ -91,7 +89,7 @@ const SellerConfirmationPanel = () => {
       for (const type of documentTypes) {
         const file = documents[type];
         if (file) {
-          const fileRef = ref(storage, `shippingDocs/${transactionId}/${type}_${file.name}`);
+          const fileRef = ref(storage, `shippingDocs/${escrowTxid}/${type}_${file.name}`);
           uploadPromises.push(
             uploadBytes(fileRef, file)
               .then(() => getDownloadURL(fileRef))
@@ -103,7 +101,7 @@ const SellerConfirmationPanel = () => {
       }
 
       for (const image of shipmentImages) {
-        const imageRef = ref(storage, `shippingDocs/${transactionId}/shipment_image_${image.name}`);
+        const imageRef = ref(storage, `shippingDocs/${escrowTxid}/shipment_image_${image.name}`);
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
@@ -120,7 +118,6 @@ const SellerConfirmationPanel = () => {
         shippingDocs: docURLs,
         shipmentImages: imageURLs,
         sellerAcceptedContract: true,
-        escrowTxid: escrowTxid,
         shipmentConfirmedAt: new Date().toISOString()
       });
 
@@ -164,16 +161,17 @@ const SellerConfirmationPanel = () => {
 
       <input
         type="text"
-        value={transactionId}
-        onChange={(e) => setTransactionId(e.target.value)}
-        placeholder="Enter Transaction ID"
+        value={escrowTxid}
+        onChange={(e) => setEscrowTxid(e.target.value)}
+        placeholder="Enter Escrow TXID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
 
       {contractUrl && (
         <div style={{ marginBottom: '20px' }}>
           <strong>Contract Document:</strong> <br />
-          <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a>
+          <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a><br />
+          <a href={contractUrl} download style={{ color: 'green', fontWeight: 'bold' }}>⬇ Download Contract</a>
         </div>
       )}
 
@@ -187,17 +185,6 @@ const SellerConfirmationPanel = () => {
       <div>
         <label>Upload Shipment Images:</label>
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
-      </div>
-
-      <div style={{ marginTop: '10px' }}>
-        <label>Escrow TXID:</label>
-        <input
-          type="text"
-          value={escrowTxid}
-          onChange={(e) => setEscrowTxid(e.target.value)}
-          placeholder="Enter Escrow TXID"
-          style={{ width: '300px', marginBottom: '10px' }}
-        />
       </div>
 
       <div style={{ marginTop: '10px' }}>
@@ -233,6 +220,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
