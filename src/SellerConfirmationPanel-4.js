@@ -29,7 +29,7 @@ const SellerConfirmationPanel = () => {
         setIsSeller(false);
       }
       setAuthChecked(true);
-    });
+    } );
   }, []);
 
   const documentTypes = [
