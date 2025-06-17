@@ -47,13 +47,13 @@ const SellerConfirmationPanel = () => {
 
   const loadTransaction = async () => {
     console.log('Looking up TXID:', transactionId.trim());
-    if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
+    if (!/^[a-fA-F0-9]{64}$/.test(transactionId)) {
       setStatus('Escrow TXID must be a valid 64-character hash.');
       return;
     }
     try {
       setStatus('');
-      const q = query(collection(db, 'transactions'), where('transactionId', '==', escrowTxid.trim()));
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId.trim()));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -98,7 +98,7 @@ const SellerConfirmationPanel = () => {
       for (const type of documentTypes) {
         const file = documents[type];
         if (file) {
-          const fileRef = ref(storage, `shippingDocs/${escrowTxid}/${type}_${file.name}`);
+          const fileRef = ref(storage, `shippingDocs/${transactionId}/${type}_${file.name}`);
           uploadPromises.push(
             uploadBytes(fileRef, file)
               .then(() => getDownloadURL(fileRef))
@@ -110,7 +110,7 @@ const SellerConfirmationPanel = () => {
       }
 
       for (const image of shipmentImages) {
-        const imageRef = ref(storage, `shippingDocs/${escrowTxid}/shipment_image_${image.name}`);
+        const imageRef = ref(storage, `shippingDocs/${transactionId}/shipment_image_${image.name}`);
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
@@ -170,7 +170,7 @@ const SellerConfirmationPanel = () => {
 
       <input
         type="text"
-        value={escrowTxid}
+        value={transactionId}
         onChange={(e) => setTransactionId(e.target.value)}
         placeholder="Enter Transaction ID"
         style={{ marginBottom: '10px', width: '300px' }}
@@ -234,6 +234,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
