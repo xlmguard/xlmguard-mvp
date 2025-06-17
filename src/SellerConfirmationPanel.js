@@ -46,13 +46,14 @@ const SellerConfirmationPanel = () => {
   };
 
   const loadTransaction = async () => {
+    console.log('Looking up TXID:', escrowTxid.trim());
     if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
       setStatus('Escrow TXID must be a valid 64-character hash.');
       return;
     }
     try {
       setStatus('');
-      const q = query(collection(db, 'transactions'), where('transactionId', '==', escrowTxid));
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', escrowTxid.trim()));
       const querySnapshot = await getDocs(q);
 
       if (querySnapshot.empty) {
@@ -233,6 +234,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
