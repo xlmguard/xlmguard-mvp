@@ -3,7 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
-import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import emailjs from '@emailjs/browser';
 
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
@@ -14,9 +15,7 @@ const SellerConfirmationPanel = () => {
   const [captchaChecked, setCaptchaChecked] = useState(false);
   const [isSeller, setIsSeller] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
-  const [contractUrl, setContractUrl] = useState('');
-  const [acceptTerms, setAcceptTerms] = useState(false);
-  const [escrowTxid, setEscrowTxid] = useState('');
+
   const auth = getAuth();
 
   useEffect(() => {
@@ -54,21 +53,14 @@ const SellerConfirmationPanel = () => {
       setStatus('Please verify the CAPTCHA.');
       return;
     }
-    if (!acceptTerms) {
-      setStatus('You must accept the contract terms to continue.');
-      return;
-    }
     if (!auth.currentUser) {
       setStatus('Upload blocked: user not authenticated.');
-      return;
-    }
-    if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
-      setStatus('Escrow TXID must be a valid 64-character hash.');
       return;
     }
 
     try {
       setStatus('');
+
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
       const querySnapshot = await getDocs(q);
 
@@ -81,9 +73,6 @@ const SellerConfirmationPanel = () => {
       const docRef = transactionDoc.ref;
       const txData = transactionDoc.data();
 
-      if (txData.contractUrl) setContractUrl(txData.contractUrl);
-      if (txData.escrowTxid && !escrowTxid) setEscrowTxid(txData.escrowTxid);
-
       const docURLs = {};
       const imageURLs = [];
       const uploadPromises = [];
@@ -91,7 +80,7 @@ const SellerConfirmationPanel = () => {
       for (const type of documentTypes) {
         const file = documents[type];
         if (file) {
-          const fileRef = ref(storage, `shippingDocs/${transactionId}/${type}_${file.name}`);
+          const fileRef = ref(storage, `confirmations/${transactionId}_${type}_${file.name}`);
           uploadPromises.push(
             uploadBytes(fileRef, file)
               .then(() => getDownloadURL(fileRef))
@@ -103,7 +92,7 @@ const SellerConfirmationPanel = () => {
       }
 
       for (const image of shipmentImages) {
-        const imageRef = ref(storage, `shippingDocs/${transactionId}/shipment_image_${image.name}`);
+        const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
@@ -117,15 +106,48 @@ const SellerConfirmationPanel = () => {
 
       await updateDoc(docRef, {
         sellerConfirmed: true,
-        shippingDocs: docURLs,
+        documentURLs: docURLs,
         shipmentImages: imageURLs,
-        sellerAcceptedContract: true,
-        escrowTxid: escrowTxid,
-        shipmentConfirmedAt: new Date().toISOString()
+        confirmedAt: new Date().toISOString(),
       });
 
-      await signOut(auth);
-      window.location.href = '/';
+      const serviceID = 'service_xyj5n7d';
+      const sellerTemplateID = 'template_pixnkqs';
+      const buyerTemplateID = 'template_9ry4lu4';
+      const publicKey = 'tcS3_a_kZH9ieBNBV';
+
+      const sellerEmail = txData.seller_email;
+      let buyerEmail = txData.buyer_email;
+      const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
+
+      if (!buyerEmail) {
+        const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
+        const buyerSnap = await getDocs(buyerQuery);
+        if (!buyerSnap.empty) {
+          buyerEmail = buyerSnap.docs[0].data().email;
+        }
+      }
+
+      if (sellerEmail) {
+        emailjs.send(serviceID, sellerTemplateID, {
+          seller_email: sellerEmail,
+          buyer_email: buyerEmail || 'n/a',
+          amount: txData.amount || 'N/A',
+          terms: txData.terms || 'N/A',
+          txid: transactionId,
+          link: confirmationLink,
+        }, publicKey);
+      }
+
+      if (buyerEmail) {
+        emailjs.send(serviceID, buyerTemplateID, {
+          buyer_email: buyerEmail,
+          txid: transactionId,
+          link: confirmationLink,
+        }, publicKey);
+      }
+
+      setRedirect(true);
     } catch (err) {
       console.error(err);
       setStatus('Error uploading confirmation.');
@@ -170,13 +192,6 @@ const SellerConfirmationPanel = () => {
         style={{ marginBottom: '10px', width: '300px' }}
       />
 
-      {contractUrl && (
-        <div style={{ marginBottom: '20px' }}>
-          <strong>Contract Document:</strong> <br />
-          <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a>
-        </div>
-      )}
-
       {documentTypes.map((type) => (
         <div key={type}>
           <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
@@ -187,28 +202,6 @@ const SellerConfirmationPanel = () => {
       <div>
         <label>Upload Shipment Images:</label>
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
-      </div>
-
-      <div style={{ marginTop: '10px' }}>
-        <label>Escrow TXID:</label>
-        <input
-          type="text"
-          value={escrowTxid}
-          onChange={(e) => setEscrowTxid(e.target.value)}
-          placeholder="Enter Escrow TXID"
-          style={{ width: '300px', marginBottom: '10px' }}
-        />
-      </div>
-
-      <div style={{ marginTop: '10px' }}>
-        <label>
-          <input
-            type="checkbox"
-            checked={acceptTerms}
-            onChange={(e) => setAcceptTerms(e.target.checked)}
-          />{' '}
-          I have reviewed the contract and accept the terms.
-        </label>
       </div>
 
       <div style={{ margin: '10px 0' }}>
@@ -233,6 +226,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
-
 
 
