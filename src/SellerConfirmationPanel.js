@@ -48,7 +48,7 @@ const SellerConfirmationPanel = () => {
   const loadTransaction = async () => {
     console.log('Looking up TXID:', transactionId.trim());
     if (!/^[a-fA-F0-9]{64}$/.test(transactionId)) {
-      setStatus('Escrow TXID must be a valid 64-character hash.');
+      setStatus('Transaction ID must be a valid 64-character hash.');
       return;
     }
     try {
@@ -177,16 +177,16 @@ const SellerConfirmationPanel = () => {
       />
       <button onClick={loadTransaction}>Load Transaction</button>
 
-      {contractUrl && (
-        <div style={{ marginTop: '20px' }}>
-          <strong>Contract Document:</strong> <br />
-          <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a><br />
-          <a href={contractUrl} download style={{ color: 'green', fontWeight: 'bold' }}>⬇ Download Contract</a>
-        </div>
-      )}
-
-      {contractUrl && (
+      {transactionDocRef && (
         <>
+          {contractUrl && (
+            <div style={{ marginTop: '20px' }}>
+              <strong>Contract Document:</strong> <br />
+              <a href={contractUrl} target="_blank" rel="noopener noreferrer">View Contract</a><br />
+              <a href={contractUrl} download style={{ color: 'green', fontWeight: 'bold' }}>⬇ Download Contract</a>
+            </div>
+          )}
+
           {documentTypes.map((type) => (
             <div key={type}>
               <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
@@ -234,6 +234,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
