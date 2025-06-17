@@ -6,7 +6,7 @@ import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'fireb
 import { getAuth, onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SellerConfirmationPanel = () => {
-  const [escrowTxid, setEscrowTxid] = useState('');
+  const [transactionId, setTransactionId] = useState('');
   const [documents, setDocuments] = useState({});
   const [shipmentImages, setShipmentImages] = useState([]);
   const [status, setStatus] = useState('');
@@ -46,7 +46,7 @@ const SellerConfirmationPanel = () => {
   };
 
   const loadTransaction = async () => {
-    console.log('Looking up TXID:', escrowTxid.trim());
+    console.log('Looking up TXID:', transactionId.trim());
     if (!/^[a-fA-F0-9]{64}$/.test(escrowTxid)) {
       setStatus('Escrow TXID must be a valid 64-character hash.');
       return;
@@ -171,8 +171,8 @@ const SellerConfirmationPanel = () => {
       <input
         type="text"
         value={escrowTxid}
-        onChange={(e) => setEscrowTxid(e.target.value)}
-        placeholder="Enter Escrow TXID"
+        onChange={(e) => setTransactionId(e.target.value)}
+        placeholder="Enter Transaction ID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
       <button onClick={loadTransaction}>Load Transaction</button>
@@ -234,6 +234,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
