@@ -98,7 +98,7 @@ const SellerConfirmationPanel = () => {
       for (const type of documentTypes) {
         const file = documents[type];
         if (file) {
-          const fileRef = ref(storage, `shippingDocs/${transactionId}/${type}_${file.name}`);
+          const fileRef = ref(storage, `confirmations/${transactionId}_${type}_${file.name}`);
           uploadPromises.push(
             uploadBytes(fileRef, file)
               .then(() => getDownloadURL(fileRef))
@@ -110,7 +110,7 @@ const SellerConfirmationPanel = () => {
       }
 
       for (const image of shipmentImages) {
-        const imageRef = ref(storage, `shippingDocs/${transactionId}/shipment_image_${image.name}`);
+        const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
         uploadPromises.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
@@ -234,6 +234,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
