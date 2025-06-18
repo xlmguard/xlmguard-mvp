@@ -15,6 +15,7 @@ const SellerConfirmationPanel = () => {
   const [captchaChecked, setCaptchaChecked] = useState(false);
   const [isSeller, setIsSeller] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
+  const [contractURL, setContractURL] = useState(null);
 
   const auth = getAuth();
 
@@ -42,6 +43,17 @@ const SellerConfirmationPanel = () => {
 
   const handleDocumentUpload = (type, file) => {
     setDocuments((prevDocs) => ({ ...prevDocs, [type]: file }));
+  };
+
+  const fetchContractURL = async () => {
+    const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const txData = snapshot.docs[0].data();
+      if (txData.contractURL) {
+        setContractURL(txData.contractURL);
+      }
+    }
   };
 
   const handleSubmit = async () => {
@@ -188,9 +200,18 @@ const SellerConfirmationPanel = () => {
         type="text"
         value={transactionId}
         onChange={(e) => setTransactionId(e.target.value)}
+        onBlur={fetchContractURL}
         placeholder="Enter Transaction ID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
+
+      {contractURL && (
+        <div style={{ marginBottom: '20px' }}>
+          <h4>Contract Document</h4>
+          <a href={contractURL} target="_blank" rel="noopener noreferrer">View Contract</a>{' | '}
+          <a href={contractURL} download>Download Contract</a>
+        </div>
+      )}
 
       {documentTypes.map((type) => (
         <div key={type}>
@@ -226,5 +247,19 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
