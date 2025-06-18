@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+// HomePage.js
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth, db } from './firebase';
+import { doc, getDoc } from 'firebase/firestore';
 
 function HomePage() {
   const [language, setLanguage] = useState('English');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        setCurrentUser(user);
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          setUserRole(data.role || 'Unknown');
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
@@ -36,6 +54,12 @@ function HomePage() {
 
   return (
     <div style={{ textAlign: 'center', paddingTop: '60px' }}>
+      {currentUser && (
+        <div style={{ position: 'absolute', top: '10px', left: '10px', textAlign: 'left' }}>
+          <strong>Logged in as:</strong> {currentUser.email} ({userRole})
+        </div>
+      )}
+
       <img
         src="/logo.png"
         alt="XLMGuard Logo"
@@ -82,3 +106,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
