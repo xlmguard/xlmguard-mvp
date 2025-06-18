@@ -21,7 +21,7 @@ function HomePage() {
           const data = snap.data();
           setUserRole(data.role || 'Unknown');
         }
-       }
+        }
     });
     return () => unsubscribe();
   }, []);
@@ -36,7 +36,7 @@ function HomePage() {
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
-    }
+     }
   };
 
   const descriptions = {
