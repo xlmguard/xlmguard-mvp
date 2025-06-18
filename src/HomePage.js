@@ -21,7 +21,7 @@ function HomePage() {
           const data = snap.data();
           setUserRole(data.role || 'Unknown');
         }
-      }
+       }
     });
     return () => unsubscribe();
   }, []);
