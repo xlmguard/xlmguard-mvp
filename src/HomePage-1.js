@@ -8,7 +8,7 @@ function HomePage() {
 
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
-  };
+   };
 
   const descriptions = {
     English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
