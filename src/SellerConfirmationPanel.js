@@ -13,6 +13,7 @@ const SellerConfirmationPanel = () => {
   const [status, setStatus] = useState('');
   const [redirect, setRedirect] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
   const [isSeller, setIsSeller] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
@@ -63,6 +64,10 @@ const SellerConfirmationPanel = () => {
     }
     if (!captchaChecked) {
       setStatus('Please verify the CAPTCHA.');
+      return;
+    }
+    if (!acceptTerms) {
+      setStatus('You must accept the contract terms.');
       return;
     }
     if (!auth.currentUser) {
@@ -225,6 +230,15 @@ const SellerConfirmationPanel = () => {
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
       </div>
 
+      <div style={{ marginTop: '10px' }}>
+        <input
+          type="checkbox"
+          checked={acceptTerms}
+          onChange={(e) => setAcceptTerms(e.target.checked)}
+        />{' '}
+        I have reviewed the contract and accept the terms.
+      </div>
+
       <div style={{ margin: '10px 0' }}>
         <input
           type="checkbox"
@@ -247,6 +261,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
 
 
