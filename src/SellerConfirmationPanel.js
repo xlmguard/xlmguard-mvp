@@ -257,7 +257,7 @@ const SellerConfirmationPanel = () => {
         <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
       </div>
     </div>
-  );
+   );
 };
 
 export default SellerConfirmationPanel;
