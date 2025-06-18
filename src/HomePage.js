@@ -102,7 +102,7 @@ function HomePage() {
         &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
     </div>
-  );
+   );
 }
 
 export default HomePage;
