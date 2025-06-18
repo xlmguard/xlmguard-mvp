@@ -16,7 +16,7 @@ function LoginPage() {
       if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         const paid = userDoc.exists() && userDoc.data().hasPaid;
-        navigate(paid ? '/submit' : '/payment');
+        navigate(paid ? '/' : '/payment');
       }
     });
     return () => unsubscribe();
@@ -33,7 +33,7 @@ function LoginPage() {
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const paid = userDoc.exists() && userDoc.data().hasPaid;
 
-      navigate(paid ? '/submit' : '/payment');
+      navigate(paid ? '/' : '/payment');
     } catch (err) {
       setError('Invalid email or password.');
     }
@@ -69,3 +69,5 @@ function LoginPage() {
 }
 
 export default LoginPage;
+
+
