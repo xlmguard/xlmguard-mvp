@@ -9,6 +9,7 @@ function HomePage() {
   const [language, setLanguage] = useState('English');
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -79,8 +80,9 @@ function HomePage() {
           <button style={{ marginRight: '10px' }}>About XLMGuard</button>
         </Link>
         <Link to="/faq">
-          <button>FAQ</button>
+          <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
+        <button onClick={() => setShowModal(true)}>How to Escrow</button>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -92,7 +94,6 @@ function HomePage() {
         </select>
       </div>
 
-      {/* ✅ Updated Footer */}
       <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
         <div style={{ marginBottom: '10px' }}>
           <Link to="/contact">
@@ -101,9 +102,32 @@ function HomePage() {
         </div>
         &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
+
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '8px', maxWidth: '600px' }}>
+            <h3>How to Set Up an Escrowed TXID</h3>
+            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
+            <ol>
+              <li>Create an escrow or multisig transaction in your wallet.</li>
+              <li>Confirm the recipient address, amount, and unlock conditions.</li>
+              <li>Copy the transaction ID (TXID) shown after submission.</li>
+              <li>Paste that TXID in the "Submit Transaction" form on XLMGuard.</li>
+              <li>Once the seller uploads the required documents, return to your wallet and release the escrow.</li>
+            </ol>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <img src="/escrow-diagram.png" alt="Escrow Diagram" style={{ maxWidth: '100%' }} />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button onClick={() => setShowModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
