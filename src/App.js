@@ -61,7 +61,7 @@ function App() {
             !user ? (
               <RegisterPage />
             ) : hasPaid ? (
-              <Navigate to="/submit" />
+              <Navigate to="/" />
             ) : (
               <Navigate to="/payment" />
             )
@@ -73,7 +73,7 @@ function App() {
             !user ? (
               <LoginPage />
             ) : hasPaid ? (
-              <Navigate to="/submit" />
+              <Navigate to="/" />
             ) : (
               <Navigate to="/payment" />
             )
@@ -85,7 +85,7 @@ function App() {
             user && !hasPaid ? (
               <PaymentPage />
             ) : user && hasPaid ? (
-              <Navigate to="/submit" />
+              <Navigate to="/" />
             ) : (
               <Navigate to="/login" />
             )
@@ -106,3 +106,4 @@ function App() {
 }
 
 export default App;
+
