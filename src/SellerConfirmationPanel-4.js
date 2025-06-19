@@ -1,7 +1,7 @@
 // SellerConfirmationPanel.js
 import React, { useState, useEffect } from 'react';
 import { db, storage } from './firebase';
-import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import emailjs from '@emailjs/browser';
@@ -9,9 +9,7 @@ import emailjs from '@emailjs/browser';
 const SellerConfirmationPanel = () => {
   const [transactionId, setTransactionId] = useState('');
   const [documents, setDocuments] = useState({});
-  const [existingDocuments, setExistingDocuments] = useState({});
   const [shipmentImages, setShipmentImages] = useState([]);
-  const [existingImages, setExistingImages] = useState([]);
   const [status, setStatus] = useState('');
   const [redirect, setRedirect] = useState(false);
   const [captchaChecked, setCaptchaChecked] = useState(false);
@@ -48,47 +46,52 @@ const SellerConfirmationPanel = () => {
     setDocuments((prevDocs) => ({ ...prevDocs, [type]: file }));
   };
 
-  const deleteDocument = async (type) => {
-    if (!existingDocuments[type]) return;
-    const fileRef = ref(storage, existingDocuments[type].split('/o/')[1].split('?')[0].replace('%2F', '/'));
-    await deleteObject(fileRef);
-    setExistingDocuments((prev) => {
-      const updated = { ...prev };
-      delete updated[type];
-      return updated;
-    });
-  };
-
   const fetchContractURL = async () => {
     const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
       const txData = snapshot.docs[0].data();
-      if (txData.contractURL) setContractURL(txData.contractURL);
-      if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
-      if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
+      if (txData.contractURL) {
+        setContractURL(txData.contractURL);
+      }
     }
   };
 
   const handleSubmit = async () => {
-    if (!transactionId.trim()) return setStatus('Transaction ID is required.');
-    if (!captchaChecked) return setStatus('Please verify the CAPTCHA.');
-    if (!acceptTerms) return setStatus('You must accept the contract terms.');
-    if (!auth.currentUser) return setStatus('Upload blocked: user not authenticated.');
+    if (!transactionId.trim()) {
+      setStatus('Transaction ID is required.');
+      return;
+    }
+    if (!captchaChecked) {
+      setStatus('Please verify the CAPTCHA.');
+      return;
+    }
+    if (!acceptTerms) {
+      setStatus('You must accept the contract terms.');
+      return;
+    }
+    if (!auth.currentUser) {
+      setStatus('Upload blocked: user not authenticated.');
+      return;
+    }
 
     try {
       setStatus('');
 
       const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
       const querySnapshot = await getDocs(q);
-      if (querySnapshot.empty) return setStatus('Transaction not found.');
+
+      if (querySnapshot.empty) {
+        setStatus('Transaction not found.');
+        return;
+      }
 
       const transactionDoc = querySnapshot.docs[0];
       const docRef = transactionDoc.ref;
       const txData = transactionDoc.data();
 
-      const docURLs = { ...existingDocuments };
-      const imageURLs = [...existingImages];
+      const docURLs = {};
+      const imageURLs = [];
       const uploadPromises = [];
 
       for (const type of documentTypes) {
@@ -137,7 +140,9 @@ const SellerConfirmationPanel = () => {
       if (!buyerEmail) {
         const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
         const buyerSnap = await getDocs(buyerQuery);
-        if (!buyerSnap.empty) buyerEmail = buyerSnap.docs[0].data().email;
+        if (!buyerSnap.empty) {
+          buyerEmail = buyerSnap.docs[0].data().email;
+        }
       }
 
       if (sellerEmail) {
@@ -166,26 +171,36 @@ const SellerConfirmationPanel = () => {
     }
   };
 
-  if (!authChecked) return <div style={{ padding: '40px', textAlign: 'center' }}>Checking access...</div>;
-  if (!isSeller) return (
-    <div style={{ padding: '40px', textAlign: 'center' }}>
-      <h2>Access Denied</h2>
-      <p>You must be logged in as a seller to view this page.</p>
-      <button onClick={() => window.location.href = '/'}>Return to Home</button>
-    </div>
-  );
-  if (redirect) return (
-    <div style={{ padding: '20px', textAlign: 'center' }}>
-      <h2>Confirmation Received</h2>
-      <p>Thank you. Your documents have been submitted successfully.</p>
-      <a href="/">Return to Home</a><br /><br />
-      <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
-    </div>
-  );
+  if (!authChecked) {
+    return <div style={{ padding: '40px', textAlign: 'center' }}>Checking access...</div>;
+  }
+
+  if (!isSeller) {
+    return (
+      <div style={{ padding: '40px', textAlign: 'center' }}>
+        <h2>Access Denied</h2>
+        <p>You must be logged in as a seller to view this page.</p>
+        <button onClick={() => window.location.href = '/'}>Return to Home</button>
+      </div>
+    );
+  }
+
+  if (redirect) {
+    return (
+      <div style={{ padding: '20px', textAlign: 'center' }}>
+        <h2>Confirmation Received</h2>
+        <p>Thank you. Your documents have been submitted successfully.</p>
+        <a href="/">Return to Home</a>
+        <br /><br />
+        <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px' }}>
       <h2>Seller Shipment Confirmation</h2>
+
       <input
         type="text"
         value={transactionId}
@@ -194,6 +209,7 @@ const SellerConfirmationPanel = () => {
         placeholder="Enter Transaction ID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
+
       {contractURL && (
         <div style={{ marginBottom: '20px' }}>
           <h4>Contract Document</h4>
@@ -201,29 +217,28 @@ const SellerConfirmationPanel = () => {
           <a href={contractURL} download>Download Contract</a>
         </div>
       )}
+
       {documentTypes.map((type) => (
         <div key={type}>
           <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
           <input type="file" onChange={(e) => handleDocumentUpload(type, e.target.files[0])} />
-          {existingDocuments[type] && (
-            <>
-              <a href={existingDocuments[type]} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '10px' }}>View Existing</a>
-              <button onClick={() => deleteDocument(type)} style={{ marginLeft: '10px' }}>Delete</button>
-            </>
-          )}
         </div>
       ))}
+
       <div>
         <label>Upload Shipment Images:</label>
         <input type="file" multiple onChange={(e) => setShipmentImages([...e.target.files])} />
       </div>
+
       <div style={{ marginTop: '10px' }}>
         <input
           type="checkbox"
           checked={acceptTerms}
           onChange={(e) => setAcceptTerms(e.target.checked)}
-        /> I have reviewed the contract and accept the terms.
+        />{' '}
+        I have reviewed the contract and accept the terms.
       </div>
+
       <div style={{ margin: '10px 0' }}>
         <input
           type="checkbox"
@@ -233,17 +248,19 @@ const SellerConfirmationPanel = () => {
         />
         <label htmlFor="captcha"> I'm not a robot</label>
       </div>
+
       <button onClick={handleSubmit}>Submit Confirmation</button>
+
       {status && <p style={{ marginTop: '10px' }}>{status}</p>}
+
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
       </div>
     </div>
-  );
+   );
 };
 
 export default SellerConfirmationPanel;
-
 
 
 
