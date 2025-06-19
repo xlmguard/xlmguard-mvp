@@ -10,6 +10,7 @@ function HomePage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [showModal, setShowModal] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -56,8 +57,19 @@ function HomePage() {
   return (
     <div style={{ textAlign: 'center', paddingTop: '60px' }}>
       {currentUser && (
-        <div style={{ position: 'absolute', top: '10px', left: '10px', textAlign: 'left' }}>
-          <strong>Logged in as:</strong> {currentUser.email} ({userRole})
+        <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
+          <button
+            onClick={() => setShowDropdown(!showDropdown)}
+            style={{ backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', padding: '8px 12px' }}
+          >
+            {userRole}: {currentUser.displayName || currentUser.email}
+          </button>
+          {showDropdown && (
+            <div style={{ backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '5px', padding: '10px', marginTop: '5px' }}>
+              <p>Email: {currentUser.email}</p>
+              <button onClick={handleLogout}>Logout</button>
+            </div>
+          )}
         </div>
       )}
 
@@ -72,10 +84,10 @@ function HomePage() {
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
         <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
+        <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
         <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Transaction Lookup</button>
-        <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Submit Transaction</button>
-        <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+        <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
         <Link to="/about">
           <button style={{ marginRight: '10px' }}>About XLMGuard</button>
         </Link>
@@ -125,9 +137,10 @@ function HomePage() {
         </div>
       )}
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
