@@ -86,6 +86,9 @@ function HomePage() {
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
         <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
+        {currentUser && (
+          <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+        )}
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
         <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Transaction Lookup</button>
         <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
@@ -138,10 +141,11 @@ function HomePage() {
         </div>
       )}
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
 
