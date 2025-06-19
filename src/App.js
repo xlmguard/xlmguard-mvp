@@ -21,6 +21,7 @@ import ContactPage from './ContactPage'; // ✅ NEW import
 function App() {
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
+  const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -30,17 +31,20 @@ function App() {
         const snap = await getDoc(userRef);
 
         if (snap.exists()) {
-          const paid = snap.data().hasPaid || false;
-          setHasPaid(paid);
+          const data = snap.data();
+          setHasPaid(data.hasPaid || false);
+          setRole(data.role || null);
         } else {
           await setDoc(userRef, { hasPaid: false });
           setHasPaid(false);
+          setRole(null);
         }
 
         setUser(currentUser);
       } else {
         setUser(null);
         setHasPaid(false);
+        setRole(null);
       }
 
       setLoading(false);
@@ -57,41 +61,20 @@ function App() {
         <Route path="/" element={<HomePage />} />
         <Route
           path="/register"
-          element={
-            !user ? (
-              <RegisterPage />
-            ) : hasPaid ? (
-              <Navigate to="/" />
-            ) : (
-              <Navigate to="/payment" />
-            )
-          }
+          element={!user ? <RegisterPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
         />
         <Route
           path="/login"
-          element={
-            !user ? (
-              <LoginPage />
-            ) : hasPaid ? (
-              <Navigate to="/" />
-            ) : (
-              <Navigate to="/payment" />
-            )
-          }
+          element={!user ? <LoginPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
         />
         <Route
           path="/payment"
-          element={
-            user && !hasPaid ? (
-              <PaymentPage />
-            ) : user && hasPaid ? (
-              <Navigate to="/" />
-            ) : (
-              <Navigate to="/login" />
-            )
-          }
+          element={user && role === 'buyer' && !hasPaid ? <PaymentPage /> : user ? <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} /> : <Navigate to="/login" />}
         />
-        <Route path="/submit" element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />} />
+        <Route
+          path="/submit"
+          element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />}
+        />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
@@ -106,4 +89,5 @@ function App() {
 }
 
 export default App;
+
 
