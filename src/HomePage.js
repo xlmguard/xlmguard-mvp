@@ -9,6 +9,7 @@ function HomePage() {
   const [language, setLanguage] = useState('English');
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [userName, setUserName] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const navigate = useNavigate();
@@ -21,8 +22,9 @@ function HomePage() {
         if (snap.exists()) {
           const data = snap.data();
           setUserRole(data.role || 'Unknown');
+          setUserName(data.name || user.displayName || user.email);
         }
-        }
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -37,7 +39,7 @@ function HomePage() {
       navigate('/');
     } catch (error) {
       console.error('Logout failed:', error);
-     }
+    }
   };
 
   const descriptions = {
@@ -62,7 +64,7 @@ function HomePage() {
             onClick={() => setShowDropdown(!showDropdown)}
             style={{ backgroundColor: '#007BFF', color: 'white', border: 'none', borderRadius: '5px', padding: '8px 12px' }}
           >
-            {userRole}: {currentUser.displayName || currentUser.email}
+            {userRole}: {userName}
           </button>
           {showDropdown && (
             <div style={{ backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '5px', padding: '10px', marginTop: '5px' }}>
@@ -84,7 +86,6 @@ function HomePage() {
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
         <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
-        <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
         <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Transaction Lookup</button>
         <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
@@ -141,6 +142,8 @@ function HomePage() {
 }
 
 export default HomePage;
+
+
 
 
 
