@@ -49,7 +49,7 @@ function HomePage() {
     German: 'XLMGuard schützt Ihre XLM- und XRP-Transaktionen mit zeitgestempelter Transaktionsverifizierung und sicheren Verkäuferbestätigungen.',
     Chinese: 'XLMGuard 使用时间戳验证和安全的卖家确认来保护您的 XLM 和 XRP 交易。',
     Arabic: 'XLMGuard يحمي معاملات XLM و XRP الخاصة بك من خلال التحقق من المعاملة بختم زمني وتأكيدات البائع الآمنة.',
-    Hindi: 'XLMGuard आपकी XLM और XRP लेन-देन को समय-मुद्रात प्रमाण और सुरक्षित विक्रेता पुष्टि के साथ सुरक्षित करता है।'
+    Hindi: 'XLMGuard आपकी XLM और XRP लेन-देन को समय-मुद्रित सत्यापन और सुरक्षित विक्रेता पुष्टि के साथ सुरक्षित करता है।'
   };
 
   const allLanguages = [
@@ -82,6 +82,10 @@ function HomePage() {
       />
       <h1>Welcome to XLMGuard<sup style={{ fontSize: '0.6em', marginLeft: '4px' }}>™</sup></h1>
       <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '16px' }}>{descriptions[language] || descriptions['English']}</p>
+
+      <p style={{ marginTop: '20px', fontSize: '14px', color: '#444' }}>
+        Service Fee: <strong>100 XLM / 10 XRP</strong> per transaction
+      </p>
 
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
@@ -145,6 +149,7 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
 
