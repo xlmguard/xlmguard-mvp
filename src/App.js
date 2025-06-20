@@ -91,7 +91,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} /> {/* ✅ NEW route */}
       </Routes>
     </Router>
-  );
+   );
 }
 
 export default App;
