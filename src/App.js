@@ -4,6 +4,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
+import ReactGA from 'react-ga4';
+
 import HomePage from './HomePage';
 import RegisterPage from './RegisterPage';
 import LoginPage from './LoginPage';
@@ -25,6 +27,10 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Initialize Google Analytics
+    ReactGA.initialize('G-HDR20HZ7Z9');
+    ReactGA.send({ hitType: 'pageview', page: window.location.pathname });
+
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userRef = doc(db, 'users', currentUser.uid);
@@ -89,5 +95,6 @@ function App() {
 }
 
 export default App;
+
 
 
