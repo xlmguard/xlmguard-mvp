@@ -57,7 +57,19 @@ function HomePage() {
   ];
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: '60px' }}>
+    <div
+      style={{
+        textAlign: 'center',
+        paddingTop: '60px',
+        backgroundImage: 'url("/earthbackgrownd.png")',
+        backgroundSize: 'contain',
+        backgroundRepeat: 'no-repeat',
+        backgroundPosition: 'center',
+        backgroundBlendMode: 'lighten',
+        opacity: '0.95',
+        minHeight: '100vh'
+      }}
+    >
       {currentUser && (
         <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
           <button
@@ -149,6 +161,7 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
 
