@@ -1,3 +1,4 @@
+// FAQPage.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -26,8 +27,8 @@ Reduced Costs: Blockchain can lower costs for businesses, particularly for high-
 Potential for Smart Contracts: While not explicitly mentioned in relation to XLMGuard's specific service, smart contracts, which are code stored on the blockchain, could potentially be integrated to automate contract execution and reduce transaction and enforcement costs in certain cases.
 
 In essence, XLMGuard uses blockchain to provide a more secure, transparent, and efficient way for businesses to engage in cross-border transactions, ultimately aiming to reduce risks and improve the overall commerce experience.`
-    },
-    // other languages will remain the same or be restored later
+    }
+    // You can add other languages here later
   };
 
   return (
@@ -40,9 +41,14 @@ In essence, XLMGuard uses blockchain to provide a more secure, transparent, and 
         />
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
-        <label htmlFor="lang">Language: </label>
-        <select id="lang" value={language} onChange={(e) => setLanguage(e.target.value)}>
+      <div style={{ marginBottom: '10px', textAlign: 'center' }}>
+        <label htmlFor="lang">Select Language: </label>
+        <select
+          id="lang"
+          value={language}
+          onChange={(e) => setLanguage(e.target.value)}
+          style={{ marginLeft: '8px' }}
+        >
           <option value="en">English</option>
           <option value="ja">Japanese</option>
           <option value="de">German</option>
@@ -66,6 +72,7 @@ In essence, XLMGuard uses blockchain to provide a more secure, transparent, and 
 };
 
 export default FAQPage;
+
 
 
 
