@@ -1,4 +1,5 @@
- import React, { useState } from 'react';
+// About Page.js 
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const AboutPage = () => {
@@ -241,11 +242,3 @@ En resumen, XLMGuard facilita transacciones seguras y eficientes a nivel global.
 };
 
 export default AboutPage;
-
-
-
-
-
-
-
-
