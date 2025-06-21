@@ -82,13 +82,18 @@ const FAQPage = () => {
       </div>
 
       <div style={{ textAlign: 'center', marginTop: '30px' }}>
-        <Link to="/" style={{ fontSize: '16px', color: 'blue', textDecoration: 'underline' }}>← Return to Home Page</Link>
+        <Link to="/">
+          <button style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
+            ← Return to Home Page
+          </button>
+        </Link>
       </div>
     </div>
   );
 };
 
 export default FAQPage;
+
 
 
 
