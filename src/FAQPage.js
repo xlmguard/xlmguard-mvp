@@ -47,7 +47,7 @@ const FAQPage = () => {
       style={{
         padding: '20px',
         color: 'black',
-        backgroundImage: 'url("/earth background.png")',
+        backgroundImage: 'url("/earthbackground.png")',
         backgroundSize: 'cover',
         backgroundRepeat: 'no-repeat',
         backgroundAttachment: 'fixed',
@@ -58,17 +58,30 @@ const FAQPage = () => {
         <img src="/logo.png" alt="XLMGuard Logo" style={{ width: '210px', marginBottom: '20px' }} />
       </div>
 
-      <div style={{ marginBottom: '10px' }}>
+      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
         <label htmlFor="lang">Language: </label>
         <select id="lang" value={language} onChange={(e) => setLanguage(e.target.value)}>
           <option value="en">English</option>
+          <option value="ja">Japanese</option>
+          <option value="de">German</option>
+          <option value="it">Italian</option>
+          <option value="hi">Hindi</option>
+          <option value="zh">Chinese</option>
+          <option value="fr">French</option>
+          <option value="pt">Portuguese</option>
+          <option value="es">Spanish</option>
         </select>
       </div>
 
-      <h2>{faqContent[language].heading}</h2>
-      <div dangerouslySetInnerHTML={{ __html: faqContent[language].content }} />
+      <div style={{ textAlign: 'center' }}>
+        <h2>{faqContent[language].heading}</h2>
+      </div>
 
-      <div style={{ marginTop: '30px' }}>
+      <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'left' }}>
+        <div dangerouslySetInnerHTML={{ __html: faqContent[language].content }} />
+      </div>
+
+      <div style={{ textAlign: 'center', marginTop: '30px' }}>
         <Link to="/" style={{ fontSize: '16px', color: 'blue', textDecoration: 'underline' }}>← Return to Home Page</Link>
       </div>
     </div>
@@ -76,6 +89,7 @@ const FAQPage = () => {
 };
 
 export default FAQPage;
+
 
 
 
