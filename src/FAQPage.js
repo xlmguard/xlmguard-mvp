@@ -1,5 +1,6 @@
 // FAQPage.js
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 
 const FAQPage = () => {
   const [language, setLanguage] = useState('en');
@@ -42,7 +43,17 @@ const FAQPage = () => {
   };
 
   return (
-    <div style={{ padding: '20px', color: 'black' }}>
+    <div
+      style={{
+        padding: '20px',
+        color: 'black',
+        backgroundImage: 'url("/earth background.png")',
+        backgroundSize: 'cover',
+        backgroundRepeat: 'no-repeat',
+        backgroundAttachment: 'fixed',
+        minHeight: '100vh'
+      }}
+    >
       <div style={{ textAlign: 'center', paddingTop: '60px' }}>
         <img src="/logo.png" alt="XLMGuard Logo" style={{ width: '210px', marginBottom: '20px' }} />
       </div>
@@ -56,11 +67,16 @@ const FAQPage = () => {
 
       <h2>{faqContent[language].heading}</h2>
       <div dangerouslySetInnerHTML={{ __html: faqContent[language].content }} />
+
+      <div style={{ marginTop: '30px' }}>
+        <Link to="/" style={{ fontSize: '16px', color: 'blue', textDecoration: 'underline' }}>← Return to Home Page</Link>
+      </div>
     </div>
   );
 };
 
 export default FAQPage;
+
 
 
 
