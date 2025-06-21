@@ -1,4 +1,4 @@
-// About Page.js 
+// AboutPage.js
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -8,7 +8,7 @@ const AboutPage = () => {
   const content = {
     en: {
       heading: 'About XLMGuard',
-      body: XLMGuard is a blockchain-based transaction protection service that utilizes the Stellar and XRP blockchains. It is designed to provide security and transparency for cross-border commerce by helping buyers and sellers verify payments before goods or services are fulfilled.
+      body: `XLMGuard is a blockchain-based transaction protection service that utilizes the Stellar and XRP blockchains. It is designed to provide security and transparency for cross-border commerce by helping buyers and sellers verify payments before goods or services are fulfilled.
 
 Here's how XLMGuard leverages blockchain technology and its benefits:
 
@@ -26,11 +26,11 @@ Reduced Costs: Blockchain can lower costs for businesses, particularly for high-
 
 Potential for Smart Contracts: While not explicitly mentioned in relation to XLMGuard's specific service, smart contracts, which are code stored on the blockchain, could potentially be integrated to automate contract execution and reduce transaction and enforcement costs in certain cases.
 
-In essence, XLMGuard uses blockchain to provide a more secure, transparent, and efficient way for businesses to engage in cross-border transactions, ultimately aiming to reduce risks and improve the overall commerce experience.
+In essence, XLMGuard uses blockchain to provide a more secure, transparent, and efficient way for businesses to engage in cross-border transactions, ultimately aiming to reduce risks and improve the overall commerce experience.`
     },
     ja: {
       heading: 'XLMGuardについて',
-      body: XLMGuardは、StellarおよびXRPブロックチェーンを活用したブロックチェーンベースのトランザクション保護サービスです。国境を越えた取引において、商品やサービスの履行前に支払いを確認することで、セキュリティと透明性を提供します。
+      body: `XLMGuardは、StellarおよびXRPブロックチェーンを活用したブロックチェーンベースのトランザクション保護サービスです。国境を越えた取引において、商品やサービスの履行前に支払いを確認することで、セキュリティと透明性を提供します。
 
 XLMGuardがブロックチェーン技術を活用する方法とその利点は次のとおりです：
 
@@ -48,11 +48,11 @@ XLMGuardがブロックチェーン技術を活用する方法とその利点は
 
 スマートコントラクトの可能性：スマートコントラクトによって契約の実行を自動化し、取引コストや執行コストを削減できます。
 
-要するに、XLMGuardはブロックチェーンを活用し、安全で透明性が高く効率的な取引を提供します。
+要するに、XLMGuardはブロックチェーンを活用し、安全で透明性が高く効率的な取引を提供します。`
     },
     de: {
       heading: 'Über XLMGuard',
-      body: XLMGuard ist ein blockchainbasiertes Transaktionsschutzsystem, das die Stellar- und XRP-Blockchains nutzt. Es bietet Sicherheit und Transparenz für den grenzüberschreitenden Handel, indem es Käufern und Verkäufern ermöglicht, Zahlungen vor der Erfüllung von Waren oder Dienstleistungen zu verifizieren.
+      body: `XLMGuard ist ein blockchainbasiertes Transaktionsschutzsystem, das die Stellar- und XRP-Blockchains nutzt. Es bietet Sicherheit und Transparenz für den grenzüberschreitenden Handel, indem es Käufern und Verkäufern ermöglicht, Zahlungen vor der Erfüllung von Waren oder Dienstleistungen zu verifizieren.
 
 So nutzt XLMGuard die Blockchain-Technologie und ihre Vorteile:
 
@@ -70,11 +70,11 @@ Kostensenkung: Für große Transaktionen fallen im Vergleich zu traditionellen M
 
 Smart Contracts: Zukünftig könnten intelligente Verträge genutzt werden, um Prozesse zu automatisieren und Kosten zu senken.
 
-Kurz gesagt: XLMGuard verbessert den internationalen Handel durch eine sichere, transparente und effiziente Transaktionsabwicklung.
+Kurz gesagt: XLMGuard verbessert den internationalen Handel durch eine sichere, transparente und effiziente Transaktionsabwicklung.`
     },
     it: {
       heading: 'Informazioni su XLMGuard',
-      body: XLMGuard è un servizio di protezione delle transazioni basato su blockchain che utilizza le blockchain Stellar e XRP. È progettato per offrire sicurezza e trasparenza nel commercio transfrontaliero, aiutando acquirenti e venditori a verificare i pagamenti prima dell’erogazione dei beni o servizi.
+      body: `XLMGuard è un servizio di protezione delle transazioni basato su blockchain che utilizza le blockchain Stellar e XRP. È progettato per offrire sicurezza e trasparenza nel commercio transfrontaliero, aiutando acquirenti e venditori a verificare i pagamenti prima dell’erogazione dei beni o servizi.
 
 Ecco come XLMGuard sfrutta la tecnologia blockchain:
 
@@ -92,11 +92,11 @@ Riduzione dei Costi: I costi associati ai metodi tradizionali sono notevolmente 
 
 Smart Contract: Possibile integrazione futura per automatizzare i contratti e ridurre costi legali.
 
-In sintesi, XLMGuard offre un metodo sicuro, trasparente ed efficiente per facilitare le transazioni internazionali.
+In sintesi, XLMGuard offre un metodo sicuro, trasparente ed efficiente per facilitare le transazioni internazionali.`
     },
     hi: {
       heading: 'XLMGuard के बारे में',
-      body: XLMGuard एक ब्लॉकचेन आधारित ट्रांज़ैक्शन प्रोटेक्शन सेवा है जो Stellar और XRP ब्लॉकचेन का उपयोग करती है। यह सीमा पार लेन-देन में सुरक्षा और पारदर्शिता प्रदान करती है, जिससे खरीदार और विक्रेता सेवाओं या उत्पादों की पूर्ति से पहले भुगतान की पुष्टि कर सकते हैं।
+      body: `XLMGuard एक ब्लॉकचेन आधारित ट्रांज़ैक्शन प्रोटेक्शन सेवा है जो Stellar और XRP ब्लॉकचेन का उपयोग करती है। यह सीमा पार लेन-देन में सुरक्षा और पारदर्शिता प्रदान करती है, जिससे खरीदार और विक्रेता सेवाओं या उत्पादों की पूर्ति से पहले भुगतान की पुष्टि कर सकते हैं।
 
 XLMGuard ब्लॉकचेन की इन विशेषताओं का लाभ उठाता है:
 
@@ -114,11 +114,11 @@ XLMGuard ब्लॉकचेन की इन विशेषताओं क�
 
 स्मार्ट कॉन्ट्रैक्ट्स की संभावना: भविष्य में स्वचालित अनुबंध संभव।
 
-संक्षेप में, XLMGuard सुरक्षित, पारदर्शी और कुशल व्यापार की सुविधा देता है।
+संक्षेप में, XLMGuard सुरक्षित, पारदर्शी और कुशल व्यापार की सुविधा देता है।`
     },
     zh: {
       heading: '关于XLMGuard',
-      body: XLMGuard是一项基于区块链的交易保护服务，使用Stellar和XRP区块链。该平台旨在为跨境交易提供安全性和透明度，帮助买卖双方在商品或服务履行之前验证付款。
+      body: `XLMGuard是一项基于区块链的交易保护服务，使用Stellar和XRP区块链。该平台旨在为跨境交易提供安全性和透明度，帮助买卖双方在商品或服务履行之前验证付款。
 
 XLMGuard如何利用区块链的优势：
 
@@ -136,11 +136,11 @@ XLMGuard如何利用区块链的优势：
 
 智能合约潜力：可自动执行协议，进一步减少风险与成本。
 
-总之，XLMGuard利用区块链，为企业提供更安全、更高效的跨境交易方式。
+总之，XLMGuard利用区块链，为企业提供更安全、更高效的跨境交易方式。`
     },
     fr: {
       heading: 'À propos de XLMGuard',
-      body: XLMGuard est un service de protection des transactions basé sur la blockchain qui utilise les blockchains Stellar et XRP. Il est conçu pour garantir la sécurité et la transparence du commerce transfrontalier en aidant les acheteurs et les vendeurs à vérifier les paiements avant la livraison des biens ou services.
+      body: `XLMGuard est un service de protection des transactions basé sur la blockchain qui utilise les blockchains Stellar et XRP. Il est conçu pour garantir la sécurité et la transparence du commerce transfrontalier en aidant les acheteurs et les vendeurs à vérifier les paiements avant la livraison des biens ou services.
 
 Comment XLMGuard exploite les avantages de la blockchain :
 
@@ -158,11 +158,11 @@ Réduction des coûts : frais moindres pour les transactions à forte valeur.
 
 Contrats intelligents : possibilité d'automatiser les accords commerciaux à l'avenir.
 
-En résumé, XLMGuard apporte sécurité, efficacité et transparence aux échanges internationaux.
+En résumé, XLMGuard apporte sécurité, efficacité et transparence aux échanges internationaux.`
     },
     pt: {
       heading: 'Sobre o XLMGuard',
-      body: XLMGuard é um serviço de proteção de transações baseado em blockchain que utiliza as blockchains Stellar e XRP. Foi desenvolvido para oferecer segurança e transparência ao comércio internacional, ajudando compradores e vendedores a verificarem pagamentos antes da entrega dos produtos ou serviços.
+      body: `XLMGuard é um serviço de proteção de transações baseado em blockchain que utiliza as blockchains Stellar e XRP. Foi desenvolvido para oferecer segurança e transparência ao comércio internacional, ajudando compradores e vendedores a verificarem pagamentos antes da entrega dos produtos ou serviços.
 
 Como o XLMGuard utiliza a tecnologia blockchain:
 
@@ -180,11 +180,11 @@ Custos Reduzidos: Tarifas mais baixas em relação aos métodos tradicionais.
 
 Contratos Inteligentes: Possibilidade de automação de acordos no futuro.
 
-Resumidamente, XLMGuard proporciona uma maneira mais segura e eficiente de realizar transações internacionais.
+Resumidamente, XLMGuard proporciona uma maneira mais segura e eficiente de realizar transações internacionais.`
     },
     es: {
       heading: 'Acerca de XLMGuard',
-      body: XLMGuard es un servicio de protección de transacciones basado en blockchain que utiliza las blockchains Stellar y XRP. Su objetivo es proporcionar seguridad y transparencia en el comercio transfronterizo, ayudando a compradores y vendedores a verificar pagos antes de la entrega de productos o servicios.
+      body: `XLMGuard es un servicio de protección de transacciones basado en blockchain que utiliza las blockchains Stellar y XRP. Su objetivo es proporcionar seguridad y transparencia en el comercio transfronterizo, ayudando a compradores y vendedores a verificar pagos antes de la entrega de productos o servicios.
 
 Ventajas del uso de blockchain por XLMGuard:
 
@@ -202,11 +202,11 @@ Reducción de costos: Comisiones más bajas.
 
 Contratos inteligentes: Automatización posible para el futuro.
 
-En resumen, XLMGuard facilita transacciones seguras y eficientes a nivel global.
+En resumen, XLMGuard facilita transacciones seguras y eficientes a nivel global.`
     }
   };
 
-  return ( 
+  return (
     <div style={{ padding: '20px' }}>
       <div style={{ textAlign: 'center', paddingTop: '60px' }}>
         <img
@@ -242,3 +242,4 @@ En resumen, XLMGuard facilita transacciones seguras y eficientes a nivel global.
 };
 
 export default AboutPage;
+
