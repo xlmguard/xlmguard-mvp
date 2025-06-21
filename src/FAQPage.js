@@ -1,4 +1,4 @@
-// Full multilingual FAQPage.js with full content in English, Arabic, Chinese, French, Spanish, German, Hindi, Portuguese, Japanese, and Korean
+// FAQPage.js - Multilingual version with Earth silhouette background
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,7 +18,7 @@ function FAQPage() {
     Korean: '자주 묻는 질문 (FAQ)'
   };
 
-  const content = `
+  const htmlContent = `
     <h2>What is XLMGuard?</h2>
     <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
     <h2>🔑 How XLMGuard Works</h2>
@@ -47,18 +47,34 @@ function FAQPage() {
   `;
 
   const faqs = Object.fromEntries(
-    Object.keys(translations).map(lang => [lang, <div dangerouslySetInnerHTML={{ __html: content }} />])
+    Object.keys(translations).map(lang => [
+      lang,
+      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
+    ])
   );
 
   const allLanguages = Object.keys(translations);
 
   return (
-    <div style={{ padding: '40px', maxWidth: '900px', margin: '0 auto', fontFamily: 'Arial, sans-serif', fontSize: '16px', lineHeight: '1.6' }}>
+    <div style={{
+      padding: '40px',
+      maxWidth: '900px',
+      margin: '0 auto',
+      fontFamily: 'Arial, sans-serif',
+      fontSize: '16px',
+      lineHeight: '1.6',
+      minHeight: '100vh',
+      backgroundImage: "url('/earthbackgrownd.png')",
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      color: 'white'
+    }}>
       <h1 style={{ textAlign: 'center' }}>{translations[language]}</h1>
 
       <div style={{ marginBottom: '20px', textAlign: 'center' }}>
         <label htmlFor="language">Select Language: </label>
-        <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+        <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)} style={{ color: 'black' }}>
           {allLanguages.map((lang) => (
             <option key={lang} value={lang}>{lang}</option>
           ))}
@@ -77,6 +93,7 @@ function FAQPage() {
 }
 
 export default FAQPage;
+
 
 
 
