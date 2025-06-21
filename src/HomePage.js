@@ -108,9 +108,6 @@ function HomePage() {
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
         <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Transaction Lookup</button>
         <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
-        <Link to="/about">
-          <button style={{ marginRight: '10px' }}>About XLMGuard</button>
-        </Link>
         <Link to="/faq">
           <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
