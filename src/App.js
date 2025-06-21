@@ -15,7 +15,6 @@ import Dashboard from './Dashboard';
 import AdminLogin from './AdminLogin';
 import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
-import AboutPage from './AboutPage';
 import TransactionLookup from './TransactionLookup';
 import FAQPage from './FAQPage';
 import ContactPage from './ContactPage'; // ✅ NEW import
@@ -85,7 +84,6 @@ function App() {
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
-        <Route path="/about" element={<AboutPage />} />
         <Route path="/transaction-lookup" element={<TransactionLookup />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/contact" element={<ContactPage />} /> {/* ✅ NEW route */}
