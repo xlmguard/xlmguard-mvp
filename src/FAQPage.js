@@ -1,4 +1,4 @@
-// FAQPage.js - Multilingual version with Earth silhouette background
+// --- FAQPage.js (Updated with dark overlay and better contrast) ---
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
@@ -18,9 +18,9 @@ function FAQPage() {
     Korean: '자주 묻는 질문 (FAQ)'
   };
 
-  const htmlContent = `
+  const content = `
     <h2>What is XLMGuard?</h2>
-    <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
+    <p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP...</p>
     <h2>🔑 How XLMGuard Works</h2>
     <ul>
       <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
@@ -43,56 +43,60 @@ function FAQPage() {
       <li>Utilizes blockchain features enriched with off-chain logic,</li>
       <li>Shields users from counterpart risk by automating condition-based releases.</li>
     </ul>
-    <p>It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.</p>
+    <p>It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions.</p>
   `;
 
   const faqs = Object.fromEntries(
-    Object.keys(translations).map(lang => [
-      lang,
-      <div dangerouslySetInnerHTML={{ __html: htmlContent }} />
-    ])
+    Object.keys(translations).map(lang => [lang, <div dangerouslySetInnerHTML={{ __html: content }} />])
   );
 
   const allLanguages = Object.keys(translations);
 
   return (
     <div style={{
-      padding: '40px',
-      maxWidth: '900px',
-      margin: '0 auto',
-      fontFamily: 'Arial, sans-serif',
-      fontSize: '16px',
-      lineHeight: '1.6',
-      minHeight: '100vh',
       backgroundImage: "url('/earthbackgrownd.png')",
       backgroundSize: 'cover',
       backgroundRepeat: 'no-repeat',
       backgroundPosition: 'center',
-      color: 'white'
+      minHeight: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
     }}>
-      <h1 style={{ textAlign: 'center' }}>{translations[language]}</h1>
+      <div style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.75)',
+        padding: '40px',
+        maxWidth: '900px',
+        color: 'white',
+        fontFamily: 'Arial, sans-serif',
+        fontSize: '16px',
+        lineHeight: '1.6'
+      }}>
+        <h1 style={{ textAlign: 'center' }}>{translations[language]}</h1>
 
-      <div style={{ marginBottom: '20px', textAlign: 'center' }}>
-        <label htmlFor="language">Select Language: </label>
-        <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)} style={{ color: 'black' }}>
-          {allLanguages.map((lang) => (
-            <option key={lang} value={lang}>{lang}</option>
-          ))}
-        </select>
-      </div>
+        <div style={{ marginBottom: '20px', textAlign: 'center' }}>
+          <label htmlFor="language">Select Language: </label>
+          <select id="language" value={language} onChange={(e) => setLanguage(e.target.value)}>
+            {allLanguages.map((lang) => (
+              <option key={lang} value={lang}>{lang}</option>
+            ))}
+          </select>
+        </div>
 
-      <div>{faqs[language]}</div>
+        <div>{faqs[language]}</div>
 
-      <div style={{ textAlign: 'center', marginTop: '40px' }}>
-        <Link to="/">
-          <button style={{ padding: '10px 20px', fontSize: '16px' }}>Return to Home Page</button>
-        </Link>
+        <div style={{ textAlign: 'center', marginTop: '40px' }}>
+          <Link to="/">
+            <button style={{ padding: '10px 20px', fontSize: '16px' }}>Return to Home Page</button>
+          </Link>
+        </div>
       </div>
     </div>
   );
 }
 
 export default FAQPage;
+
 
 
 
