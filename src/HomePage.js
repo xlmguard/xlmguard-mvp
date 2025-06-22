@@ -85,7 +85,7 @@ function HomePage() {
             </div>
           )}
         </div>
-      )}
+       )}
 
       <img
         src="/logo.png"
