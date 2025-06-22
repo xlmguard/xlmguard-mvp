@@ -1,98 +1,91 @@
-// FAQPage.js
+// FAQPage.js - Multilingual FAQ Component for XLMGuard
+
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+
+const faqContent = {
+  en: [
+    {
+      question: 'What is XLMGuard?',
+      answer:
+        'XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It provides a secure and transparent method for buyers and sellers to manage cross-border transactions.',
+    },
+    {
+      question: 'How does XLMGuard work?',
+      answer:
+        'The buyer deposits funds into an escrow wallet and uploads a contract. The seller uploads shipment documents. Once the buyer verifies everything, the funds are released to the seller.',
+    },
+    {
+      question: 'What documents are required?',
+      answer:
+        'The seller must upload a commercial invoice, packing list, bill of lading, insurance certificate, certificate of origin, inspection certificate, and images of the shipment.',
+    },
+    {
+      question: 'Who should use XLMGuard?',
+      answer:
+        'Anyone engaging in international trade using XLM or XRP, including importers, exporters, and brokers, can benefit from using XLMGuard.',
+    },
+  ],
+  // Placeholder content for translation – replace with accurate translations
+  ru: [
+    {
+      question: 'Что такое XLMGuard?',
+      answer:
+        'XLMGuard — это основанный на блокчейне сервис условного депонирования и проверки платежей для Stellar (XLM) и XRP. Он обеспечивает безопасный и прозрачный способ управления международными транзакциями.',
+    },
+    {
+      question: 'Как работает XLMGuard?',
+      answer:
+        'Покупатель вносит средства в эскроу-кошелёк и загружает контракт. Продавец загружает отгрузочные документы. После проверки покупателем средства переводятся продавцу.',
+    },
+    {
+      question: 'Какие документы требуются?',
+      answer:
+        'Продавец должен загрузить коммерческий инвойс, упаковочный лист, коносамент, страховой сертификат, сертификат происхождения, сертификат инспекции и фотографии груза.',
+    },
+    {
+      question: 'Кто должен использовать XLMGuard?',
+      answer:
+        'Любой, кто участвует в международной торговле с использованием XLM или XRP: импортеры, экспортеры и брокеры.',
+    },
+  ],
+  // Add similar blocks for tr, vi, pl, nl, th, id, ms, sw, fa
+};
 
 const FAQPage = () => {
   const [language, setLanguage] = useState('en');
 
-  const faqContent = {
-    en: {
-      heading: 'Frequently Asked Questions (FAQ)',
-      content: `
-<h2>What is XLMGuard?</h2>
-<p>XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It’s designed to add an extra layer of trust and security to transactions—especially in peer-to-peer payments, sales, or where trust needs to be off‑chain verified.</p>
-
-<h2>🔑 How XLMGuard Works</h2>
-<ul>
-  <li><strong>Initiating a transaction:</strong> The sender creates a payment request via XLMGuard.</li>
-  <li><strong>Holding funds:</strong> The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.</li>
-  <li><strong>Verification:</strong> XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.</li>
-  <li><strong>Release or refund:</strong> Once conditions are met, funds are automatically released, or refunded if something goes wrong.</li>
-</ul>
-
-<h2>🌟 What Makes It Unique?</h2>
-<ul>
-  <li><strong>Cross‑chain support:</strong> It works with both XLM and XRP, which is less common—most escrow services target only one network.</li>
-  <li><strong>Off‑chain verification:</strong> XLMGuard isn't just multisig—it can include external confirmations or approvals before releasing funds.</li>
-  <li><strong>Transaction integrity:</strong> It prevents fraud and mistakes by enforcing pre-set terms in escrow, rather than trust-based or manual release.</li>
-  <li><strong>Designed for real-world use cases:</strong> It’s tailor-made for things like marketplace sales, freelance work, or escrow-type transactions, not simply holding keys safely.</li>
-</ul>
-
-<h2>✅ Conclusion: A Unique Position in XLM Transactions?</h2>
-<p>Yes—XLMGuard stands out because it:</p>
-<ul>
-  <li>Acts as a non-custodial escrow and payment verifier,</li>
-  <li>Works across both Stellar and Ripple networks,</li>
-  <li>Utilizes blockchain features enriched with off-chain logic,</li>
-  <li>Shields users from counterpart risk by automating condition-based releases.</li>
-</ul>
-
-<p>It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.</p>
-      `
-    }
-  };
-
   return (
-    <div
-      style={{
-        padding: '20px',
-        color: 'black',
-        backgroundImage: 'url("/earthbackground.png")',
-        backgroundSize: 'cover',
-        backgroundRepeat: 'no-repeat',
-        backgroundAttachment: 'fixed',
-        minHeight: '100vh'
-      }}
-    >
-      <div style={{ textAlign: 'center', paddingTop: '60px' }}>
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ width: '210px', marginBottom: '20px' }} />
-      </div>
+    <div className="faq-page">
+      <h1>{language === 'en' ? 'Frequently Asked Questions (FAQ)' : 'FAQ'}</h1>
 
-      <div style={{ textAlign: 'center', marginBottom: '10px' }}>
-        <label htmlFor="lang">Language: </label>
-        <select id="lang" value={language} onChange={(e) => setLanguage(e.target.value)}>
-          <option value="en">English</option>
-          <option value="ja">Japanese</option>
-          <option value="de">German</option>
-          <option value="it">Italian</option>
-          <option value="hi">Hindi</option>
-          <option value="zh">Chinese</option>
-          <option value="fr">French</option>
-          <option value="pt">Portuguese</option>
-          <option value="es">Spanish</option>
-        </select>
-      </div>
+      <select onChange={(e) => setLanguage(e.target.value)} value={language}>
+        <option value="en">English</option>
+        <option value="ru">Русский (Russian)</option>
+        <option value="tr">Türkçe (Turkish)</option>
+        <option value="vi">Tiếng Việt (Vietnamese)</option>
+        <option value="pl">Polski (Polish)</option>
+        <option value="nl">Nederlands (Dutch)</option>
+        <option value="th">ไทย (Thai)</option>
+        <option value="id">Bahasa Indonesia</option>
+        <option value="ms">Bahasa Melayu (Malay)</option>
+        <option value="sw">Kiswahili (Swahili)</option>
+        <option value="fa">فارسی (Persian)</option>
+      </select>
 
-      <div style={{ textAlign: 'center' }}>
-        <h2>{faqContent[language].heading}</h2>
-      </div>
-
-      <div style={{ maxWidth: '800px', margin: '0 auto', textAlign: 'left' }}>
-        <div dangerouslySetInnerHTML={{ __html: faqContent[language].content }} />
-      </div>
-
-      <div style={{ textAlign: 'center', marginTop: '30px' }}>
-        <Link to="/">
-          <button style={{ padding: '10px 20px', fontSize: '16px', cursor: 'pointer' }}>
-            ← Return to Home Page
-          </button>
-        </Link>
+      <div className="faq-list">
+        {faqContent[language]?.map((item, index) => (
+          <div key={index} className="faq-item">
+            <h2>{item.question}</h2>
+            <p>{item.answer}</p>
+          </div>
+        )) || <p>No FAQ available in this language yet.</p>}
       </div>
     </div>
   );
 };
 
 export default FAQPage;
+
 
 
 
