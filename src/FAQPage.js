@@ -4,6 +4,34 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 const faqContent = {
+  en: [
+    { question: "What is XLMGuard?", answer: "XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP.
+
+🔑 How XLMGuard Works
+• Initiating a transaction: The sender creates a payment request via XLMGuard.
+• Holding funds: The lumens (or XRP) are placed in escrow until both parties fulfill predefined conditions.
+• Verification: XLMGuard monitors the transaction—possibly integrating off-chain confirmation mechanisms.
+• Release or refund: Once conditions are met, funds are automatically released, or refunded if something goes wrong.
+
+🌟 What Makes It Unique?
+• Cross‑chain support: It works with both XLM and XRP, which is less common—most escrow services target only one network.
+• Off‑chain verification: XLMGuard isn't just multisig—it can include external confirmations or approvals before releasing funds.
+• Transaction integrity: It prevents fraud and mistakes by enforcing pre-set terms in escrow, rather than trust-based or manual release.
+• Designed for real-world use cases: It’s tailor-made for things like marketplace sales, freelance work, or escrow-type transactions, not simply holding keys safely.
+
+✅ Conclusion: A Unique Position in XLM Transactions?
+• Acts as a non-custodial escrow and payment verifier,
+• Works across both Stellar and Ripple networks,
+• Utilizes blockchain features enriched with off-chain logic,
+• Shields users from counterpart risk by automating condition-based releases.
+
+It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche." },
+  en: [
+    { question: "What is XLMGuard?", answer: "XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It provides a secure and transparent method for buyers and sellers to manage cross-border transactions." },
+    { question: "How does XLMGuard work?", answer: "The buyer deposits funds into an escrow wallet and uploads a contract. The seller uploads shipment documents. Once the buyer verifies everything, the funds are released to the seller." },
+    { question: "What documents are required?", answer: "The seller must upload a commercial invoice, packing list, bill of lading, insurance certificate, certificate of origin, inspection certificate, and images of the shipment." },
+    { question: "Who should use XLMGuard?", answer: "Anyone engaging in international trade using XLM or XRP, including importers, exporters, and brokers, can benefit from using XLMGuard." }
+  ],
   tr: [
     { question: "XLMGuard nedir?", answer: "XLMGuard, Stellar (XLM) ve XRP için oluşturulmuş blok zinciri tabanlı bir emanet ve ödeme doğrulama hizmetidir. Alıcılar ve satıcılar için sınır ötesi işlemleri yönetmede güvenli ve şeffaf bir yöntem sunar." },
     { question: "XLMGuard nasıl çalışır?", answer: "Alıcı, fonları bir emanet cüzdanına yatırır ve sözleşme yükler. Satıcı, gönderi belgelerini yükler. Alıcı her şeyi onayladığında, fonlar satıcıya serbest bırakılır." },
@@ -98,8 +126,15 @@ const FAQPage = () => {
         {faqContent[language]?.map((item, index) => (
           <div key={index} className="faq-item" style={{ marginBottom: '1.5rem' }}>
             <h2 style={{ fontSize: '1.2rem', color: '#333' }}>{item.question}</h2>
-            <p style={{ fontSize: '1rem', color: '#555' }}>{item.answer}</p>
+            <ul style={{ fontSize: '1rem', color: '#555', paddingLeft: '1.5rem', listStyleType: 'disc' }}>
+              {item.answer.split(/
+|•/).map((line, i) => (
+                <li key={i} style={{ marginBottom: '0.5rem' }}>{line.trim()}</li>
+              ))}
+            </ul>
           </div>
+        )) || <p>No FAQ available in this language yet.</p>}
+      </div>
         )) || <p>No FAQ available in this language yet.</p>}
       </div>
 
@@ -125,6 +160,8 @@ const FAQPage = () => {
 };
 
 export default FAQPage;
+
+
 
 
 
