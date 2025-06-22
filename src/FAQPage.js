@@ -25,12 +25,7 @@ const faqContent = {
 • Utilizes blockchain features enriched with off-chain logic,
 • Shields users from counterpart risk by automating condition-based releases.
 
-It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche." },
-  en: [
-    { question: "What is XLMGuard?", answer: "XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP. It provides a secure and transparent method for buyers and sellers to manage cross-border transactions." },
-    { question: "How does XLMGuard work?", answer: "The buyer deposits funds into an escrow wallet and uploads a contract. The seller uploads shipment documents. Once the buyer verifies everything, the funds are released to the seller." },
-    { question: "What documents are required?", answer: "The seller must upload a commercial invoice, packing list, bill of lading, insurance certificate, certificate of origin, inspection certificate, and images of the shipment." },
-    { question: "Who should use XLMGuard?", answer: "Anyone engaging in international trade using XLM or XRP, including importers, exporters, and brokers, can benefit from using XLMGuard." }
+It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche." }
   ],
   tr: [
     { question: "XLMGuard nedir?", answer: "XLMGuard, Stellar (XLM) ve XRP için oluşturulmuş blok zinciri tabanlı bir emanet ve ödeme doğrulama hizmetidir. Alıcılar ve satıcılar için sınır ötesi işlemleri yönetmede güvenli ve şeffaf bir yöntem sunar." },
@@ -160,6 +155,7 @@ const FAQPage = () => {
 };
 
 export default FAQPage;
+
 
 
 
