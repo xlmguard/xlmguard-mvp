@@ -413,9 +413,9 @@ const FAQPage = () => {
           </div>
         ))}
         <div style={{ marginTop: '2rem' }}>
-          <a href="/" style={{ textDecoration: 'none', color: '#007bff' }}>
-            ⬅️ Return to Home
-          </a>
+          <button onClick={() => window.location.href = '/'} style={{ padding: '0.5rem 1rem', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+  ⬅️ Return to Home
+</button>
         </div>
       </div>
     </div>
@@ -423,6 +423,7 @@ const FAQPage = () => {
 };
 
 export default FAQPage;
+
 
 
 
