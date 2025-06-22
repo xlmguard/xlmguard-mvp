@@ -5,6 +5,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase';
 import ReactGA from 'react-ga4';
+import { Helmet } from 'react-helmet';
 
 import HomePage from './HomePage';
 import RegisterPage from './RegisterPage';
@@ -62,6 +63,48 @@ function App() {
 
   return (
     <Router>
+      <Helmet>
+        <script type="application/ld+json">
+          {`
+            {
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "XLMGuard",
+              "url": "https://xlmguard.com",
+              "logo": "https://xlmguard.com/logo.png",
+              "description": "A global blockchain-based escrow and payment-verification platform for XLM and XRP.",
+              "areaServed": {
+                "@type": "GeoCircle",
+                "geoMidpoint": {
+                  "@type": "GeoCoordinates",
+                  "latitude": 0,
+                  "longitude": 0
+                },
+                "geoRadius": 20040000
+              },
+              "serviceType": "Blockchain escrow and crypto transaction verification",
+              "location": {
+                "@type": "Place",
+                "address": {
+                  "@type": "PostalAddress",
+                  "addressLocality": "Charlotte",
+                  "addressRegion": "NC",
+                  "addressCountry": "US"
+                }
+              },
+              "sameAs": [
+                "https://twitter.com/xlmguard",
+                "https://linkedin.com/company/xlmguard"
+              ],
+              "founder": {
+                "@type": "Person",
+                "name": "Paul Pazzaglini"
+              }
+            }
+          `}
+        </script>
+      </Helmet>
+
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route
@@ -89,10 +132,11 @@ function App() {
         <Route path="/contact" element={<ContactPage />} /> {/* ✅ NEW route */}
       </Routes>
     </Router>
-   );
+  );
 }
 
 export default App;
+
 
 
 
