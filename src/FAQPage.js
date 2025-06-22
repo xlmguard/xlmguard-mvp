@@ -5,7 +5,9 @@ import { useNavigate } from 'react-router-dom';
 
 const faqContent = {
   en: [
-    { question: "What is XLMGuard?", answer: "XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP.
+  {
+    question: "What is XLMGuard?",
+    answer: `XLMGuard is a blockchain-based escrow and payment-verification service built for both Stellar (XLM) and XRP.
 
 🔑 How XLMGuard Works
 • Initiating a transaction: The sender creates a payment request via XLMGuard.
@@ -25,8 +27,9 @@ const faqContent = {
 • Utilizes blockchain features enriched with off-chain logic,
 • Shields users from counterpart risk by automating condition-based releases.
 
-It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche." }
-  ],
+It's not just about securing private keys—it's about ensuring transaction fairness and integrity for XLM transactions. That's its unique niche.`
+  }
+],
   tr: [
     { question: "XLMGuard nedir?", answer: "XLMGuard, Stellar (XLM) ve XRP için oluşturulmuş blok zinciri tabanlı bir emanet ve ödeme doğrulama hizmetidir. Alıcılar ve satıcılar için sınır ötesi işlemleri yönetmede güvenli ve şeffaf bir yöntem sunar." },
     { question: "XLMGuard nasıl çalışır?", answer: "Alıcı, fonları bir emanet cüzdanına yatırır ve sözleşme yükler. Satıcı, gönderi belgelerini yükler. Alıcı her şeyi onayladığında, fonlar satıcıya serbest bırakılır." },
@@ -155,6 +158,7 @@ const FAQPage = () => {
 };
 
 export default FAQPage;
+
 
 
 
