@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from 'react';
-import { db } from './firebase';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 export default function ContactPage() {
@@ -12,35 +10,26 @@ export default function ContactPage() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      await addDoc(collection(db, 'contactMessages'), {
-        ...form,
-        timestamp: Timestamp.now()
-      });
-      setSubmitted(true);
-      setForm({ name: '', email: '', message: '' });
-    } catch (err) {
-      alert('Error submitting message.');
-    }
+    const mailtoLink = `mailto:support@xlmguard.com?subject=Contact from ${encodeURIComponent(form.name)}&body=${encodeURIComponent(
+      `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
+    )}`;
+    window.location.href = mailtoLink;
+    setSubmitted(true);
+    setForm({ name: '', email: '', message: '' });
   };
-
-  // Auto-redirect to home page after 4 seconds
-  useEffect(() => {
-    if (submitted) {
-      const timer = setTimeout(() => {
-        navigate('/');
-      }, 4000);
-      return () => clearTimeout(timer);
-    }
-  }, [submitted, navigate]);
 
   return (
     <div style={{ padding: '2rem', textAlign: 'center' }}>
       <h2>Contact Us</h2>
       {submitted ? (
-        <p>Thank you! We will get back to you shortly.</p>
+        <>
+          <p>Thank you! Your email client should now be open to send the message.</p>
+          <button onClick={() => navigate('/')} style={{ marginTop: '20px', padding: '10px', fontSize: '16px' }}>
+            Return to Home Page
+          </button>
+        </>
       ) : (
         <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
           <input
@@ -77,4 +66,5 @@ export default function ContactPage() {
     </div>
   );
 }
+
 
