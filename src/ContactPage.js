@@ -12,10 +12,13 @@ export default function ContactPage() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const mailtoLink = `mailto:support@xlmguard.com?subject=Contact from ${encodeURIComponent(form.name)}&body=${encodeURIComponent(
+    const mailtoLink = `mailto:support@xlmguard.com?subject=Contact from ${encodeURIComponent(
+      form.name
+    )}&body=${encodeURIComponent(
       `Name: ${form.name}\nEmail: ${form.email}\n\nMessage:\n${form.message}`
     )}`;
-    window.location.href = mailtoLink;
+
+    window.open(mailtoLink, '_blank'); // Open mail client in a new tab
     setSubmitted(true);
     setForm({ name: '', email: '', message: '' });
   };
@@ -26,12 +29,29 @@ export default function ContactPage() {
       {submitted ? (
         <>
           <p>Thank you! Your email client should now be open to send the message.</p>
-          <button onClick={() => navigate('/')} style={{ marginTop: '20px', padding: '10px', fontSize: '16px' }}>
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              marginTop: '20px',
+              padding: '10px 20px',
+              fontSize: '16px',
+              cursor: 'pointer'
+            }}
+          >
             Return to Home Page
           </button>
         </>
       ) : (
-        <form onSubmit={handleSubmit} style={{ maxWidth: '400px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <form
+          onSubmit={handleSubmit}
+          style={{
+            maxWidth: '400px',
+            margin: '0 auto',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px'
+          }}
+        >
           <input
             name="name"
             type="text"
@@ -58,7 +78,14 @@ export default function ContactPage() {
             required
             style={{ padding: '10px', fontSize: '16px', height: '120px' }}
           />
-          <button type="submit" style={{ padding: '10px', fontSize: '16px' }}>
+          <button
+            type="submit"
+            style={{
+              padding: '10px',
+              fontSize: '16px',
+              cursor: 'pointer'
+            }}
+          >
             Send
           </button>
         </form>
@@ -66,5 +93,6 @@ export default function ContactPage() {
     </div>
   );
 }
+
 
 
