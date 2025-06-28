@@ -72,8 +72,12 @@ function HomePage() {
       }}
     >
       <Helmet>
-        <link rel="canonical" href="https://xlmguard.com/" />
         <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
+        <meta
+          name="description"
+          content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust. Protect your crypto with confidence."
+        />
+        <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
       {currentUser && (
@@ -182,5 +186,6 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
