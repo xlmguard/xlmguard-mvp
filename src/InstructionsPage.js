@@ -371,6 +371,96 @@ es: {
     'Imágenes del Envío'
   ]
 },
+fr: {
+      buyers: [
+        'Créez un compte en tant qu’Acheteur.',
+        'Terminez le processus de paiement pour débloquer les fonctionnalités du compte.',
+        'Initiez une transaction en créant un dépôt fiduciaire et en téléchargeant votre contrat.',
+        'Fournissez l’identifiant de transaction (TXID) au Vendeur.',
+        'Surveillez l’état de la transaction et les documents via votre tableau de bord.',
+        'Une fois tous les documents téléchargés par le Vendeur, examinez-les attentivement.',
+        'Approuvez ou refusez la transaction en fonction des documents fournis.',
+        'Après approbation, les fonds seront automatiquement transférés au Vendeur.'
+      ],
+      sellers: [
+        'Créez un compte en tant que Vendeur.',
+        'Recevez l’identifiant de transaction (TXID) de l’Acheteur.',
+        'Connectez-vous et accédez à la page de Confirmation d’Expédition.',
+        'Téléchargez tous les documents d’expédition requis :',
+        'Confirmez l’acceptation des conditions du contrat téléchargé par l’Acheteur.',
+        'Envoyez tous les documents pour examen par l’Acheteur.',
+        'Attendez que l’Acheteur approuve la transaction et libère le paiement.'
+      ],
+      documents: [
+        'Facture commerciale',
+        'Liste de colisage',
+        'Connaissement',
+        'Certificat d’assurance',
+        'Certificat d’origine',
+        'Certificat d’inspection',
+        'Images de l’expédition'
+      ]
+    },
+    ar: {
+      buyers: [
+        'قم بإنشاء حساب كمشتري.',
+        'أكمل عملية الدفع لفتح ميزات الحساب.',
+        'ابدأ معاملة عن طريق إنشاء حساب ضمان وتحميل العقد الخاص بك.',
+        'قدم رقم تعريف المعاملة (TXID) للبائع.',
+        'راقب حالة المعاملة والمستندات عبر لوحة التحكم الخاصة بك.',
+        'بعد أن يقوم البائع بتحميل جميع مستندات الشحنة، راجعها بعناية.',
+        'وافق على المعاملة أو ارفضها بناءً على المستندات المقدمة.',
+        'عند الموافقة، سيتم تحويل الأموال تلقائيًا إلى البائع.'
+      ],
+      sellers: [
+        'قم بإنشاء حساب كبائع.',
+        'استلم رقم تعريف المعاملة (TXID) من المشتري.',
+        'سجل الدخول وانتقل إلى صفحة تأكيد الشحنة.',
+        'قم بتحميل جميع مستندات الشحن المطلوبة:',
+        'أكد قبول شروط العقد الذي تم تحميله من قبل المشتري.',
+        'أرسل جميع المستندات لمراجعة المشتري.',
+        'انتظر موافقة المشتري على المعاملة وإطلاق الدفعة.'
+      ],
+      documents: [
+        'فاتورة تجارية',
+        'قائمة التعبئة',
+        'بوليصة الشحن',
+        'شهادة التأمين',
+        'شهادة المنشأ',
+        'شهادة الفحص',
+        'صور الشحنة'
+      ]
+    },
+    zh: {
+      buyers: [
+        '注册一个买家账户。',
+        '完成付款流程以解锁账户功能。',
+        '通过创建托管账户并上传合同来发起交易。',
+        '将交易ID（TXID）提供给卖家。',
+        '通过仪表板监控交易状态和已上传的文件。',
+        '卖家上传所有发货文件后，请仔细核查。',
+        '根据提供的文件批准或拒绝交易。',
+        '批准后，资金将自动转入卖家账户。'
+      ],
+      sellers: [
+        '注册一个卖家账户。',
+        '从买家处接收交易ID（TXID）。',
+        '登录并进入发货确认页面。',
+        '上传所有所需的发货文件：',
+        '确认接受买家上传的合同条款。',
+        '提交所有文件以供买家审核。',
+        '等待买家批准交易并释放付款。'
+      ],
+      documents: [
+        '商业发票',
+        '装箱单',
+        '提单',
+        '保险证明',
+        '原产地证书',
+        '检验证书',
+        '发货图片'
+      ]
+    },
 
 pt: {
   buyers: [
@@ -418,19 +508,23 @@ pt: {
           onChange={(e) => setLanguage(e.target.value)}
           style={{ padding: '5px' }}
         >
-          <option value="en">English</option>
-          <option value="ru">Русский</option>
-          <option value="tr">Türkçe</option>
-          <option value="vi">Tiếng Việt</option>
-          <option value="pl">Polski</option>
-          <option value="nl">Nederlands</option>
-          <option value="th">ไทย</option>
-          <option value="id">Bahasa Indonesia</option>
-          <option value="ms">Bahasa Melayu</option>
-          <option value="sw">Kiswahili</option>
-          <option value="fa">فارسی</option>
-          <option value="es">Español</option>
-          <option value="pt">Português</option>
+   <option value="en">English</option>
+  <option value="ru">Русский</option>
+  <option value="tr">Türkçe</option>
+  <option value="vi">Tiếng Việt</option>
+  <option value="pl">Polski</option>
+  <option value="nl">Nederlands</option>
+  <option value="th">ไทย</option>
+  <option value="id">Bahasa Indonesia</option>
+  <option value="ms">Bahasa Melayu</option>
+  <option value="sw">Kiswahili</option>
+  <option value="fa">فارسی</option>
+  <option value="es">Español</option>
+  <option value="pt">Português</option>
+  <option value="fr">Français</option>
+  <option value="ar">العربية</option>
+  <option value="zh">中文 (简体)</option>
+
         </select>
       </div>
       <section style={{ marginBottom: '40px' }}>
@@ -466,5 +560,8 @@ pt: {
     </div>
   );
 }
+
+
+
 
 
