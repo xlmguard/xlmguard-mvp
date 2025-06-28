@@ -13,7 +13,6 @@ function TransactionLookup() {
   const [approvalStatus, setApprovalStatus] = useState('Pending');
   const [updateMessage, setUpdateMessage] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [accessDenied, setAccessDenied] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,13 +20,8 @@ function TransactionLookup() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          // If buyer and hasPaid is false, deny access
-          if (data.role === 'buyer' && data.hasPaid === false) {
-            setAccessDenied(true);
-            return;
-          }
+        const role = snap.exists() ? snap.data().role : null;
+        if (role === 'buyer') {
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
@@ -82,21 +76,11 @@ function TransactionLookup() {
     InspectionCertificate: 'Inspection Certificate'
   };
 
-  if (accessDenied) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Access Restricted</h2>
-        <p>You must complete payment to access this feature.</p>
-        <button onClick={() => navigate('/payment')}>Go to Payment</button>
-      </div>
-    );
-  }
-
   if (!isAuthenticated) {
     return (
       <div style={{ padding: '40px', textAlign: 'center' }}>
         <h2>Access Denied</h2>
-        <p>You must be logged in to view this page.</p>
+        <p>You must be logged in as a buyer to view this page.</p>
         <button onClick={() => navigate('/')}>Return to Home</button>
       </div>
     );
