@@ -127,13 +127,289 @@ export default function InstructionsPage() {
         'Hình Ảnh Lô Hàng'
       ]
     },
-    // Repeat similar structure for pl, nl, th, id, ms, sw, fa
+    pl: {
+      buyers: [
+        'Zarejestruj konto jako Kupujący.',
+        'Dokończ proces płatności, aby odblokować funkcje konta.',
+        'Rozpocznij transakcję, tworząc depozyt i przesyłając umowę.',
+        'Przekaż identyfikator transakcji (TXID) Sprzedającemu.',
+        'Monitoruj status transakcji i przesłane dokumenty w panelu.',
+        'Po przesłaniu wszystkich dokumentów przez Sprzedającego dokładnie je sprawdź.',
+        'Zatwierdź lub odrzuć transakcję na podstawie dokumentów.',
+        'Po zatwierdzeniu środki zostaną automatycznie przekazane Sprzedającemu.'
+      ],
+      sellers: [
+        'Zarejestruj konto jako Sprzedający.',
+        'Odbierz identyfikator transakcji (TXID) od Kupującego.',
+        'Zaloguj się i przejdź do strony Potwierdzenia Wysyłki.',
+        'Prześlij wszystkie wymagane dokumenty wysyłki:',
+        'Potwierdź akceptację warunków umowy przesłanej przez Kupującego.',
+        'Prześlij dokumenty do weryfikacji przez Kupującego.',
+        'Poczekaj na zatwierdzenie transakcji i przekazanie środków.'
+      ],
+      documents: [
+        'Faktura Handlowa',
+        'Lista Pakowania',
+        'List Przewozowy',
+        'Certyfikat Ubezpieczeniowy',
+        'Certyfikat Pochodzenia',
+        'Certyfikat Kontroli',
+        'Zdjęcia Wysyłki'
+      ]
+    },
+    nl: {
+      buyers: [
+        'Registreer een account als Koper.',
+        'Voltooi het betalingsproces om accountfuncties te activeren.',
+        'Start een transactie door een escrow aan te maken en uw contract te uploaden.',
+        'Geef de Transactie-ID (TXID) aan de Verkoper.',
+        'Controleer de status en documenten via uw dashboard.',
+        'Bekijk zorgvuldig alle documenten die de Verkoper heeft geüpload.',
+        'Keur de transactie goed of wijs deze af op basis van de documenten.',
+        'Na goedkeuring worden de middelen automatisch vrijgegeven aan de Verkoper.'
+      ],
+      sellers: [
+        'Registreer een account als Verkoper.',
+        'Ontvang de Transactie-ID (TXID) van de Koper.',
+        'Log in en ga naar de pagina Verzending Bevestigen.',
+        'Upload alle vereiste verzenddocumenten:',
+        'Bevestig de voorwaarden van het door de Koper geüploade contract.',
+        'Verzend alle documenten ter beoordeling door de Koper.',
+        'Wacht tot de Koper de transactie goedkeurt en de betaling wordt vrijgegeven.'
+      ],
+      documents: [
+        'Handelsfactuur',
+        'Verpakkingslijst',
+        'Vrachtbrief',
+        'Verzekeringscertificaat',
+        'Oorsprongscertificaat',
+        'Inspectiecertificaat',
+        'Verzendfoto\'s'
+      ]
+    },
+    th: {
+  buyers: [
+    'ลงทะเบียนบัญชีในฐานะผู้ซื้อ',
+    'ดำเนินการชำระเงินเพื่อปลดล็อกฟีเจอร์บัญชี',
+    'เริ่มธุรกรรมโดยสร้างเอสโครว์และอัปโหลดสัญญา',
+    'ให้รหัสธุรกรรม (TXID) กับผู้ขาย',
+    'ติดตามสถานะและเอกสารผ่านแดชบอร์ดของคุณ',
+    'ตรวจสอบเอกสารทั้งหมดที่ผู้ขายอัปโหลดอย่างละเอียด',
+    'อนุมัติหรือปฏิเสธธุรกรรมตามเอกสาร',
+    'เมื่ออนุมัติ เงินจะถูกโอนให้ผู้ขายโดยอัตโนมัติ'
+  ],
+  sellers: [
+    'ลงทะเบียนบัญชีในฐานะผู้ขาย',
+    'รับรหัสธุรกรรม (TXID) จากผู้ซื้อ',
+    'เข้าสู่ระบบและไปที่หน้าการยืนยันการจัดส่ง',
+    'อัปโหลดเอกสารการจัดส่งที่จำเป็นทั้งหมด:',
+    'ยืนยันการยอมรับเงื่อนไขของสัญญาที่ผู้ซื้ออัปโหลด',
+    'ส่งเอกสารทั้งหมดให้ผู้ซื้อตรวจสอบ',
+    'รอให้ผู้ซื้ออนุมัติธุรกรรมและปล่อยการชำระเงิน'
+  ],
+  documents: [
+    'ใบแจ้งหนี้การค้า',
+    'รายการบรรจุภัณฑ์',
+    'ใบตราส่งสินค้า',
+    'ใบรับรองประกันภัย',
+    'ใบรับรองแหล่งกำเนิดสินค้า',
+    'ใบรับรองการตรวจสอบ',
+    'รูปภาพการจัดส่ง'
+  ]
+},
+id: {
+  buyers: [
+    'Daftar akun sebagai Pembeli.',
+    'Selesaikan proses pembayaran untuk membuka fitur akun.',
+    'Mulai transaksi dengan membuat escrow dan mengunggah kontrak.',
+    'Berikan ID Transaksi (TXID) kepada Penjual.',
+    'Pantau status dan dokumen melalui dashboard.',
+    'Tinjau semua dokumen yang diunggah Penjual dengan seksama.',
+    'Setujui atau tolak transaksi berdasarkan dokumen.',
+    'Setelah disetujui, dana akan otomatis dikirim ke Penjual.'
+  ],
+  sellers: [
+    'Daftar akun sebagai Penjual.',
+    'Terima ID Transaksi (TXID) dari Pembeli.',
+    'Masuk dan buka halaman Konfirmasi Pengiriman.',
+    'Unggah semua dokumen pengiriman yang diperlukan:',
+    'Konfirmasi persetujuan syarat kontrak dari Pembeli.',
+    'Kirim semua dokumen untuk ditinjau oleh Pembeli.',
+    'Tunggu Pembeli menyetujui transaksi dan dana dikirim.'
+  ],
+  documents: [
+    'Faktur Komersial',
+    'Daftar Kemasan',
+    'Surat Jalan',
+    'Sertifikat Asuransi',
+    'Sertifikat Asal',
+    'Sertifikat Inspeksi',
+    'Gambar Pengiriman'
+  ]
+},
+
+ms: {
+  buyers: [
+    'Daftar akaun sebagai Pembeli.',
+    'Lengkapkan proses pembayaran untuk membuka ciri akaun.',
+    'Mulakan transaksi dengan membuat escrow dan memuat naik kontrak.',
+    'Berikan ID Transaksi (TXID) kepada Penjual.',
+    'Pantau status dan dokumen melalui papan pemuka.',
+    'Semak semua dokumen yang dimuat naik oleh Penjual dengan teliti.',
+    'Luluskan atau tolak transaksi berdasarkan dokumen.',
+    'Selepas diluluskan, dana akan dihantar secara automatik kepada Penjual.'
+  ],
+  sellers: [
+    'Daftar akaun sebagai Penjual.',
+    'Terima ID Transaksi (TXID) daripada Pembeli.',
+    'Log masuk dan pergi ke halaman Pengesahan Penghantaran.',
+    'Muat naik semua dokumen penghantaran yang diperlukan:',
+    'Sahkan penerimaan syarat kontrak yang dimuat naik oleh Pembeli.',
+    'Hantar semua dokumen untuk semakan Pembeli.',
+    'Tunggu Pembeli meluluskan transaksi dan pembayaran.'
+  ],
+  documents: [
+    'Invois Komersial',
+    'Senarai Pembungkusan',
+    'Bil Muatan',
+    'Sijil Insurans',
+    'Sijil Asal',
+    'Sijil Pemeriksaan',
+    'Gambar Penghantaran'
+  ]
+},
+
+sw: {
+  buyers: [
+    'Jisajili kama Mnunuzi.',
+    'Kamilisha mchakato wa malipo kufungua vipengele vya akaunti.',
+    'Anza muamala kwa kuunda escrow na kupakia mkataba wako.',
+    'Toa Nambari ya Muamala (TXID) kwa Muuzaji.',
+    'Fuatilia hali na hati kupitia dashibodi yako.',
+    'Kagua hati zote zilizopakiwa na Muuzaji kwa makini.',
+    'Idhinisha au kataa muamala kulingana na hati.',
+    'Baada ya idhini, fedha zitatumwa moja kwa moja kwa Muuzaji.'
+  ],
+  sellers: [
+    'Jisajili kama Muuzaji.',
+    'Pokea Nambari ya Muamala (TXID) kutoka kwa Mnunuzi.',
+    'Ingia na nenda kwenye ukurasa wa Uhakikisho wa Usafirishaji.',
+    'Pakia hati zote muhimu za usafirishaji:',
+    'Thibitisha kukubali masharti ya mkataba uliopakiwa na Mnunuzi.',
+    'Tuma hati zote kwa ukaguzi wa Mnunuzi.',
+    'Subiri Mnunuzi akubali muamala na fedha zitolewe.'
+  ],
+  documents: [
+    'Ankara ya Kibiashara',
+    'Orodha ya Ufungaji',
+    'Hati ya Usafirishaji',
+    'Cheti cha Bima',
+    'Cheti cha Asili',
+    'Cheti cha Ukaguzi',
+    'Picha za Usafirishaji'
+  ]
+},
+
+fa: {
+  buyers: [
+    'یک حساب به عنوان خریدار ایجاد کنید.',
+    'فرآیند پرداخت را تکمیل کنید تا ویژگی‌های حساب فعال شود.',
+    'با ایجاد حساب امانی و بارگذاری قرارداد، معامله را آغاز کنید.',
+    'شناسه تراکنش (TXID) را به فروشنده ارائه دهید.',
+    'وضعیت معامله و اسناد را از طریق داشبورد پیگیری کنید.',
+    'پس از بارگذاری تمام اسناد توسط فروشنده، آن‌ها را با دقت بررسی کنید.',
+    'معامله را بر اساس اسناد تایید یا رد کنید.',
+    'پس از تایید، وجه به طور خودکار به فروشنده منتقل می‌شود.'
+  ],
+  sellers: [
+    'یک حساب به عنوان فروشنده ایجاد کنید.',
+    'شناسه تراکنش (TXID) را از خریدار دریافت کنید.',
+    'وارد شوید و به صفحه تایید ارسال بروید.',
+    'تمام اسناد لازم ارسال را بارگذاری کنید:',
+    'تایید شرایط قرارداد بارگذاری شده توسط خریدار.',
+    'تمام اسناد را برای بررسی خریدار ارسال کنید.',
+    'منتظر تایید معامله توسط خریدار و انتقال وجه باشید.'
+  ],
+  documents: [
+    'صورتحساب تجاری',
+    'لیست بسته‌بندی',
+    'بارنامه',
+    'گواهی بیمه',
+    'گواهی مبدا',
+    'گواهی بازرسی',
+    'تصاویر ارسال'
+  ]
+},
+
+es: {
+  buyers: [
+    'Regístrese para obtener una cuenta como Comprador.',
+    'Complete el proceso de pago para desbloquear las funciones de la cuenta.',
+    'Inicie una transacción creando un depósito en garantía y subiendo su contrato.',
+    'Proporcione el ID de la transacción (TXID) al Vendedor.',
+    'Supervise el estado de la transacción y los documentos en su panel.',
+    'Una vez que el Vendedor haya subido todos los documentos de envío, revíselos cuidadosamente.',
+    'Acepte o rechace la transacción en función de la documentación proporcionada.',
+    'Al aprobar, los fondos se liberarán automáticamente al Vendedor.'
+  ],
+  sellers: [
+    'Regístrese para obtener una cuenta como Vendedor.',
+    'Reciba el ID de la transacción (TXID) de su Comprador.',
+    'Inicie sesión y vaya a la página de Confirmación de Envío.',
+    'Suba todos los documentos de envío requeridos:',
+    'Confirme la aceptación de los términos del contrato subido por el Comprador.',
+    'Envíe todos los documentos para la revisión del Comprador.',
+    'Espere a que el Comprador apruebe la transacción y libere el pago.'
+  ],
+  documents: [
+    'Factura Comercial',
+    'Lista de Empaque',
+    'Conocimiento de Embarque',
+    'Certificado de Seguro',
+    'Certificado de Origen',
+    'Certificado de Inspección',
+    'Imágenes del Envío'
+  ]
+},
+
+pt: {
+  buyers: [
+    'Registre-se para uma conta como Comprador.',
+    'Conclua o processo de pagamento para desbloquear os recursos da conta.',
+    'Inicie uma transação criando uma conta escrow e carregando seu contrato.',
+    'Forneça o ID da transação (TXID) ao Vendedor.',
+    'Monitore o status da transação e os documentos através do seu painel.',
+    'Após o Vendedor carregar todos os documentos de envio, revise-os com atenção.',
+    'Aprove ou rejeite a transação com base na documentação fornecida.',
+    'Após a aprovação, os fundos serão liberados automaticamente ao Vendedor.'
+  ],
+  sellers: [
+    'Registre-se para uma conta como Vendedor.',
+    'Receba o ID da transação (TXID) do Comprador.',
+    'Faça login e vá para a página de Confirmação de Envio.',
+    'Carregue todos os documentos de envio obrigatórios:',
+    'Confirme a aceitação dos termos do contrato carregado pelo Comprador.',
+    'Envie todos os documentos para revisão do Comprador.',
+    'Aguarde o Comprador aprovar a transação e liberar o pagamento.'
+  ],
+  documents: [
+    'Fatura Comercial',
+    'Lista de Embalagem',
+    'Conhecimento de Embarque',
+    'Certificado de Seguro',
+    'Certificado de Origem',
+    'Certificado de Inspeção',
+    'Imagens do Envio'
+  ]
+},
+
+
+
   };
 
   return (
     <div style={{ padding: '40px', maxWidth: '800px', margin: '0 auto' }}>
       <h1>Instructions for Use</h1>
-
       <div style={{ marginBottom: '20px' }}>
         <label htmlFor="language">Select Language: </label>
         <select
@@ -153,27 +429,27 @@ export default function InstructionsPage() {
           <option value="ms">Bahasa Melayu</option>
           <option value="sw">Kiswahili</option>
           <option value="fa">فارسی</option>
+          <option value="es">Español</option>
+          <option value="pt">Português</option>
         </select>
       </div>
-
       <section style={{ marginBottom: '40px' }}>
         <h2>Buyers</h2>
         <ol>
-          {instructions[language]?.buyers.map((item, index) => (
+          {instructions[language]?.buyers?.map((item, index) => (
             <li key={index}>{item}</li>
           ))}
         </ol>
       </section>
-
       <section style={{ marginBottom: '40px' }}>
         <h2>Sellers</h2>
         <ol>
-          {instructions[language]?.sellers.map((item, index) => (
+          {instructions[language]?.sellers?.map((item, index) => (
             <li key={index}>
               {item}
               {index === 3 && (
                 <ul>
-                  {instructions[language]?.documents.map((doc, i) => (
+                  {instructions[language]?.documents?.map((doc, i) => (
                     <li key={i}>{doc}</li>
                   ))}
                 </ul>
@@ -182,7 +458,6 @@ export default function InstructionsPage() {
           ))}
         </ol>
       </section>
-
       <div style={{ textAlign: 'center', marginTop: '40px' }}>
         <button onClick={() => navigate('/')} style={{ padding: '10px 20px' }}>
           Return to Home
@@ -191,3 +466,5 @@ export default function InstructionsPage() {
     </div>
   );
 }
+
+
