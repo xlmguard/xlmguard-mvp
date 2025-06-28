@@ -36,7 +36,7 @@ function HomePage() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      navigate('/');
+      window.location.href = '/'; // Force hard reload so UI resets
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -93,7 +93,9 @@ function HomePage() {
         style={{ width: '210px', marginBottom: '20px' }}
       />
       <h1>Welcome to XLMGuard<sup style={{ fontSize: '0.6em', marginLeft: '4px' }}>™</sup></h1>
-      <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '16px' }}>{descriptions[language] || descriptions['English']}</p>
+      <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '16px' }}>
+        {descriptions[language] || descriptions['English']}
+      </p>
 
       <p style={{ marginTop: '20px', fontSize: '14px', color: '#444' }}>
         Service Fee: <strong>100 XLM / 10 XRP</strong> per transaction
@@ -111,7 +113,7 @@ function HomePage() {
         <Link to="/faq">
           <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
-        <button onClick={() => navigate('/instructions')} style={{ marginRight: '10px' }}>Instructions for Use</button> {/* ✅ NEW button */}
+        <button onClick={() => navigate('/instructions')} style={{ marginRight: '10px' }}>Instructions for Use</button>
         <button onClick={() => setShowModal(true)}>How to Escrow</button>
       </div>
 
@@ -134,8 +136,23 @@ function HomePage() {
       </footer>
 
       {showModal && (
-        <div style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', backgroundColor: 'rgba(0,0,0,0.6)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-          <div style={{ backgroundColor: '#fff', padding: '30px', borderRadius: '8px', maxWidth: '600px' }}>
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px'
+          }}>
             <h3>How to Set Up an Escrowed TXID</h3>
             <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
             <ol>
@@ -159,3 +176,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
