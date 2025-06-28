@@ -45,7 +45,7 @@ function HomePage() {
   const descriptions = {
     English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
     French: 'XLMGuard protège vos transactions XLM et XRP avec une vérification horodatée et des confirmations de vendeur sécurisées.',
-    Spanish: 'XLMGuard protege sus transacciones XLM y XRP con verificación de transacción con sello de tiempo et confirmaciones seguras del vendedor.',
+    Spanish: 'XLMGuard protege sus transacciones XLM y XRP con verificación de transacción con sello de tiempo y confirmaciones seguras del vendedor.',
     German: 'XLMGuard schützt Ihre XLM- und XRP-Transaktionen mit zeitgestempelter Transaktionsverifizierung und sicheren Verkäuferbestätigungen.',
     Chinese: 'XLMGuard 使用时间戳验证和安全的卖家确认来保护您的 XLM 和 XRP 交易。',
     Arabic: 'XLMGuard يحمي معاملات XLM و XRP الخاصة بك من خلال التحقق من المعاملة بختم زمني وتأكيدات البائع الآمنة.',
@@ -85,7 +85,7 @@ function HomePage() {
             </div>
           )}
         </div>
-      )}
+       )}
 
       <img
         src="/logo.png"
@@ -111,7 +111,6 @@ function HomePage() {
         <Link to="/faq">
           <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
-        <button onClick={() => navigate('/instructions')} style={{ marginRight: '10px' }}>Instructions for Use</button> {/* ✅ NEW button */}
         <button onClick={() => setShowModal(true)}>How to Escrow</button>
       </div>
 
@@ -159,3 +158,12 @@ function HomePage() {
 }
 
 export default HomePage;
+
+
+
+
+
+
+
+
+

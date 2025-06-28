@@ -18,8 +18,7 @@ import AdminPanel from './AdminPanel';
 import SellerConfirmationPanel from './SellerConfirmationPanel';
 import TransactionLookup from './TransactionLookup';
 import FAQPage from './FAQPage';
-import ContactPage from './ContactPage';
-import InstructionsPage from './InstructionsPage'; // ✅ NEW import
+import ContactPage from './ContactPage'; // ✅ NEW import
 
 function App() {
   const [user, setUser] = useState(null);
@@ -130,11 +129,14 @@ function App() {
         <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
         <Route path="/transaction-lookup" element={<TransactionLookup />} />
         <Route path="/faq" element={<FAQPage />} />
-        <Route path="/contact" element={<ContactPage />} />
-        <Route path="/instructions" element={<InstructionsPage />} /> {/* ✅ NEW route */}
+        <Route path="/contact" element={<ContactPage />} /> {/* ✅ NEW route */}
       </Routes>
     </Router>
-  );
+   );
 }
 
 export default App;
+
+
+
+
