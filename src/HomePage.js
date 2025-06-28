@@ -1,6 +1,7 @@
 // HomePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet';
 import { signOut } from 'firebase/auth';
 import { auth, db } from './firebase';
 import { doc, getDoc } from 'firebase/firestore';
@@ -36,7 +37,7 @@ function HomePage() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      window.location.href = '/'; // Force hard reload so UI resets
+      window.location.href = '/'; // Force hard reload
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -45,7 +46,7 @@ function HomePage() {
   const descriptions = {
     English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
     French: 'XLMGuard protège vos transactions XLM et XRP avec une vérification horodatée et des confirmations de vendeur sécurisées.',
-    Spanish: 'XLMGuard protege sus transacciones XLM y XRP con verificación de transacción con sello de tiempo et confirmaciones seguras del vendedor.',
+    Spanish: 'XLMGuard protege sus transacciones XLM y XRP con verificación de transacción con sello de tiempo y confirmaciones seguras del vendedor.',
     German: 'XLMGuard schützt Ihre XLM- und XRP-Transaktionen mit zeitgestempelter Transaktionsverifizierung und sicheren Verkäuferbestätigungen.',
     Chinese: 'XLMGuard 使用时间戳验证和安全的卖家确认来保护您的 XLM 和 XRP 交易。',
     Arabic: 'XLMGuard يحمي معاملات XLM و XRP الخاصة بك من خلال التحقق من المعاملة بختم زمني وتأكيدات البائع الآمنة.',
@@ -70,6 +71,11 @@ function HomePage() {
         minHeight: '100vh'
       }}
     >
+      <Helmet>
+        <link rel="canonical" href="https://xlmguard.com/" />
+        <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
+      </Helmet>
+
       {currentUser && (
         <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
           <button
@@ -176,4 +182,5 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
