@@ -194,7 +194,7 @@ const PaymentPage = () => {
     <div style={{ marginTop: '20px' }}>
       <h4>Scan QR Code to Pay:</h4>
       {currency === "XLM" && (
-        <QRCode
+        <QR
           value={`web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`}
           size={200}
           level="H"
@@ -202,7 +202,7 @@ const PaymentPage = () => {
         />
       )}
       {currency === "XRP" && (
-        <QRCode
+        <QR
           value={`ripple:${address}?amount=${amount}&dt=${tag}`}
           size={200}
           level="H"
