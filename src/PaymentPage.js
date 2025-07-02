@@ -1,5 +1,5 @@
 // PaymentPage.js
-import { QRcode } from "qrcode.react";
+import { QRCode } from "qrcode.react";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
@@ -194,7 +194,7 @@ const PaymentPage = () => {
     <div style={{ marginTop: '20px' }}>
       <h4>Scan QR Code to Pay:</h4>
       {currency === "XLM" && (
-        <QRcode
+        <QRCode
           value={`web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`}
           size={200}
           level="H"
@@ -202,7 +202,7 @@ const PaymentPage = () => {
         />
       )}
       {currency === "XRP" && (
-        <QRcode
+        <QRCode
           value={`ripple:${address}?amount=${amount}&dt=${tag}`}
           size={200}
           level="H"
