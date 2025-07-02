@@ -34,7 +34,7 @@ const PaymentPage = () => {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
       amount: 10
-     }
+      }
   };
 
   useEffect(() => {
