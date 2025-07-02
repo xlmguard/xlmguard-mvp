@@ -12,6 +12,7 @@ import {
   addDoc
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
@@ -31,7 +32,7 @@ const PaymentPage = () => {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
       amount: 10
-     }
+    }
   };
 
   useEffect(() => {
@@ -47,14 +48,12 @@ const PaymentPage = () => {
 
   const validateXLMTransaction = async (txid, expectedMemo, expectedAmount, destinationAddress) => {
     try {
-      const txRes = await fetch(https://horizon.stellar.org/transactions/${txid});
+      const txRes = await fetch(`https://horizon.stellar.org/transactions/${txid}`);
       if (!txRes.ok) return { success: false, message: "Transaction not found on Stellar network." };
-
       const txData = await txRes.json();
       if (txData.memo !== expectedMemo) {
         return { success: false, message: "Memo does not match." };
       }
-
       const opRes = await fetch(txData._links.operations.href);
       const opData = await opRes.json();
       const payment = opData._embedded.records.find(op =>
@@ -62,11 +61,9 @@ const PaymentPage = () => {
         op.to === destinationAddress &&
         op.amount === expectedAmount.toString()
       );
-
       if (!payment) {
         return { success: false, message: "Payment not found or does not match expected amount/address." };
       }
-
       return { success: true };
     } catch (error) {
       return { success: false, message: "Error validating XLM transaction." };
@@ -75,9 +72,8 @@ const PaymentPage = () => {
 
   const validateXRPTransaction = async (txid, expectedTag, expectedAmount, destinationAddress) => {
     try {
-      const response = await fetch(https://api.xrpscan.com/api/v1/tx/${txid});
+      const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
       if (!response.ok) return { success: false, message: "Transaction not found on XRP ledger." };
-
       const data = await response.json();
       if (
         data.Destination !== destinationAddress ||
@@ -86,7 +82,6 @@ const PaymentPage = () => {
       ) {
         return { success: false, message: "Transaction does not match expected destination, tag, or amount." };
       }
-
       return { success: true };
     } catch (error) {
       return { success: false, message: "Error validating XRP transaction." };
@@ -112,14 +107,13 @@ const PaymentPage = () => {
   const handleConfirmPayment = async () => {
     const trimmedTx = txHash.trim();
     if (!user || !trimmedTx) return;
-
     setLoading(true);
     setConfirmationMessage('');
 
     const duplicate = await isDuplicateTransaction(trimmedTx);
     if (duplicate) {
       const msg = "This transaction has already been used.";
-      setConfirmationMessage(❌ ${msg});
+      setConfirmationMessage(`❌ ${msg}`);
       await logFailedAttempt(msg);
       setLoading(false);
       return;
@@ -143,7 +137,7 @@ const PaymentPage = () => {
     }
 
     if (!result.success) {
-      setConfirmationMessage(❌ ${result.message});
+      setConfirmationMessage(`❌ ${result.message}`);
       await logFailedAttempt(result.message);
       setLoading(false);
       return;
@@ -188,6 +182,23 @@ const PaymentPage = () => {
       </div>
 
       <div style={{ marginTop: '20px' }}>
+        <h4>Scan QR Code to Pay:</h4>
+        <QRCodeCanvas
+          value={
+            currency === "XLM"
+              ? `web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`
+              : `ripple:${address}?amount=${amount}&dt=${tag}`
+          }
+          size={200}
+          level="H"
+          includeMargin={true}
+        />
+        <p style={{ marginTop: '10px', fontSize: '0.9em' }}>
+          Scan this code in your wallet app to auto-fill address, amount, and memo/tag.
+        </p>
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
         <label>Transaction Hash:</label><br />
         <input
           type="text"
@@ -198,12 +209,21 @@ const PaymentPage = () => {
         />
       </div>
 
-      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }} disabled={loading}>
+      <button
+        onClick={handleConfirmPayment}
+        style={{ marginTop: '20px', padding: '10px 20px' }}
+        disabled={loading}
+      >
         {loading ? 'Validating...' : 'Confirm Payment'}
       </button>
 
       {confirmationMessage && (
-        <div style={{ marginTop: '20px', color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
+        <div
+          style={{
+            marginTop: '20px',
+            color: confirmationMessage.startsWith('✅') ? 'green' : 'red'
+          }}
+        >
           {confirmationMessage}
         </div>
       )}
@@ -219,6 +239,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
