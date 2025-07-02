@@ -1,5 +1,4 @@
 // PaymentPage.js
-import QRCode from "qrcode.react";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
@@ -14,8 +13,6 @@ import {
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 
-
-
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
@@ -29,12 +26,12 @@ const PaymentPage = () => {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
       tag: '1095582935',
       amount: 100
-     },
+    },
     XRP: {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
       amount: 10
-      }
+    }
   };
 
   useEffect(() => {
@@ -50,7 +47,7 @@ const PaymentPage = () => {
 
   const validateXLMTransaction = async (txid, expectedMemo, expectedAmount, destinationAddress) => {
     try {
-      const txRes = await fetch(`https://horizon.stellar.org/transactions/${txid}`);
+      const txRes = await fetch(https://horizon.stellar.org/transactions/${txid});
       if (!txRes.ok) return { success: false, message: "Transaction not found on Stellar network." };
 
       const txData = await txRes.json();
@@ -78,7 +75,7 @@ const PaymentPage = () => {
 
   const validateXRPTransaction = async (txid, expectedTag, expectedAmount, destinationAddress) => {
     try {
-      const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
+      const response = await fetch(https://api.xrpscan.com/api/v1/tx/${txid});
       if (!response.ok) return { success: false, message: "Transaction not found on XRP ledger." };
 
       const data = await response.json();
@@ -122,7 +119,7 @@ const PaymentPage = () => {
     const duplicate = await isDuplicateTransaction(trimmedTx);
     if (duplicate) {
       const msg = "This transaction has already been used.";
-      setConfirmationMessage(`❌ ${msg}`);
+      setConfirmationMessage(❌ ${msg});
       await logFailedAttempt(msg);
       setLoading(false);
       return;
@@ -146,7 +143,7 @@ const PaymentPage = () => {
     }
 
     if (!result.success) {
-      setConfirmationMessage(`❌ ${result.message}`);
+      setConfirmationMessage(❌ ${result.message});
       await logFailedAttempt(result.message);
       setLoading(false);
       return;
@@ -167,93 +164,62 @@ const PaymentPage = () => {
 
   const { address, tag, amount } = walletDetails[currency];
 
- return (
-  <div style={{ padding: '20px' }}>
-    <h2>Make a Payment</h2>
-    <p style={{ color: 'red', fontWeight: 'bold' }}>
-      Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
-    </p>
-    <p>
-      Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
-    </p>
-
-    <div style={{ marginBottom: '15px' }}>
-      <label>Choose currency:</label>
-      <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-        <option value="XLM">XLM</option>
-        <option value="XRP">XRP</option>
-      </select>
-    </div>
-
-    <div>
-      <strong>Wallet Address:</strong> <code>{address}</code><br />
-      <strong>Memo/Tag:</strong> <code>{tag}</code>
-    </div>
-
-    {/* QR Code Section */}
-    <div style={{ marginTop: '20px' }}>
-      <h4>Scan QR Code to Pay:</h4>
-      {currency === "XLM" && (
-        <QRCode
-          value={`web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`}
-          size={200}
-          level="H"
-          includeMargin={true}
-        />
-      )}
-      {currency === "XRP" && (
-        <QRCode
-          value={`ripple:${address}?amount=${amount}&dt=${tag}`}
-          size={200}
-          level="H"
-          includeMargin={true}
-        />
-      )}
-      <p style={{ marginTop: '10px', fontSize: '0.9em' }}>
-        Scan this code in your wallet app to auto-fill address, amount, and memo/tag.
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Make a Payment</h2>
+      <p style={{ color: 'red', fontWeight: 'bold' }}>
+        Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
       </p>
-    </div>
+      <p>
+        Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
+      </p>
 
-    <div style={{ marginTop: '20px' }}>
-      <label>Transaction Hash:</label><br />
-      <input
-        type="text"
-        value={txHash}
-        onChange={(e) => setTxHash(e.target.value)}
-        placeholder="Enter your transaction hash here"
-        style={{ width: '300px', padding: '8px' }}
-      />
-    </div>
-
-    <button
-      onClick={handleConfirmPayment}
-      style={{ marginTop: '20px', padding: '10px 20px' }}
-      disabled={loading}
-    >
-      {loading ? 'Validating...' : 'Confirm Payment'}
-    </button>
-
-    {confirmationMessage && (
-      <div
-        style={{
-          marginTop: '20px',
-          color: confirmationMessage.startsWith('✅') ? 'green' : 'red'
-        }}
-      >
-        {confirmationMessage}
+      <div style={{ marginBottom: '15px' }}>
+        <label>Choose currency:</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <option value="XLM">XLM</option>
+          <option value="XRP">XRP</option>
+        </select>
       </div>
-    )}
 
-    <div style={{ marginTop: '30px' }}>
-      <button onClick={() => navigate('/')}>Return to Home Page</button>
-    </div>
-    <div style={{ marginTop: '10px' }}>
-      <button onClick={() => navigate('/login')}>Login</button>
-    </div>
-  </div>
-);
+      <div>
+        <strong>Wallet Address:</strong> <code>{address}</code><br />
+        <strong>Memo/Tag:</strong> <code>{tag}</code>
+      </div>
 
+      <div style={{ marginTop: '20px' }}>
+        <label>Transaction Hash:</label><br />
+        <input
+          type="text"
+          value={txHash}
+          onChange={(e) => setTxHash(e.target.value)}
+          placeholder="Enter your transaction hash here"
+          style={{ width: '300px', padding: '8px' }}
+        />
+      </div>
+
+      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }} disabled={loading}>
+        {loading ? 'Validating...' : 'Confirm Payment'}
+      </button>
+
+      {confirmationMessage && (
+        <div style={{ marginTop: '20px', color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
+          {confirmationMessage}
+        </div>
+      )}
+
+      <div style={{ marginTop: '30px' }}>
+        <button onClick={() => navigate('/')}>Return to Home Page</button>
+      </div>
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={() => navigate('/login')}>Login</button>
+      </div>
+    </div>
+  );
 };
 
 export default PaymentPage;
+
+
+
 
