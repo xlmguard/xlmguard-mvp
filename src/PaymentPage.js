@@ -1,4 +1,5 @@
 // PaymentPage.js
+import QRCode from "qrcode.react";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
@@ -12,6 +13,8 @@ import {
   addDoc
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
+
+
 
 const PaymentPage = () => {
   const [user, setUser] = useState(null);
@@ -164,58 +167,92 @@ const PaymentPage = () => {
 
   const { address, tag, amount } = walletDetails[currency];
 
-  return (
-    <div style={{ padding: '20px' }}>
-      <h2>Make a Payment</h2>
-      <p style={{ color: 'red', fontWeight: 'bold' }}>
-        Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
-      </p>
-      <p>
-        Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
-      </p>
+ return (
+  <div style={{ padding: '20px' }}>
+    <h2>Make a Payment</h2>
+    <p style={{ color: 'red', fontWeight: 'bold' }}>
+      Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
+    </p>
+    <p>
+      Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
+    </p>
 
-      <div style={{ marginBottom: '15px' }}>
-        <label>Choose currency:</label>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          <option value="XLM">XLM</option>
-          <option value="XRP">XRP</option>
-        </select>
-      </div>
-
-      <div>
-        <strong>Wallet Address:</strong> <code>{address}</code><br />
-        <strong>Memo/Tag:</strong> <code>{tag}</code>
-      </div>
-
-      <div style={{ marginTop: '20px' }}>
-        <label>Transaction Hash:</label><br />
-        <input
-          type="text"
-          value={txHash}
-          onChange={(e) => setTxHash(e.target.value)}
-          placeholder="Enter your transaction hash here"
-          style={{ width: '300px', padding: '8px' }}
-        />
-      </div>
-
-      <button onClick={handleConfirmPayment} style={{ marginTop: '20px', padding: '10px 20px' }} disabled={loading}>
-        {loading ? 'Validating...' : 'Confirm Payment'}
-      </button>
-
-      {confirmationMessage && (
-        <div style={{ marginTop: '20px', color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
-          {confirmationMessage}
-        </div>
-      )}
-
-      <div style={{ marginTop: '30px' }}>
-        <button onClick={() => navigate('/')}>Return to Home Page</button>
-      </div>
-      <div style={{ marginTop: '10px' }}>
-        <button onClick={() => navigate('/login')}>Login</button>
-      </div>
+    <div style={{ marginBottom: '15px' }}>
+      <label>Choose currency:</label>
+      <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+        <option value="XLM">XLM</option>
+        <option value="XRP">XRP</option>
+      </select>
     </div>
-  );
+
+    <div>
+      <strong>Wallet Address:</strong> <code>{address}</code><br />
+      <strong>Memo/Tag:</strong> <code>{tag}</code>
+    </div>
+
+    {/* QR Code Section */}
+    <div style={{ marginTop: '20px' }}>
+      <h4>Scan QR Code to Pay:</h4>
+      {currency === "XLM" && (
+        <QRCode
+          value={`web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`}
+          size={200}
+          level="H"
+          includeMargin={true}
+        />
+      )}
+      {currency === "XRP" && (
+        <QRCode
+          value={`ripple:${address}?amount=${amount}&dt=${tag}`}
+          size={200}
+          level="H"
+          includeMargin={true}
+        />
+      )}
+      <p style={{ marginTop: '10px', fontSize: '0.9em' }}>
+        Scan this code in your wallet app to auto-fill address, amount, and memo/tag.
+      </p>
+    </div>
+
+    <div style={{ marginTop: '20px' }}>
+      <label>Transaction Hash:</label><br />
+      <input
+        type="text"
+        value={txHash}
+        onChange={(e) => setTxHash(e.target.value)}
+        placeholder="Enter your transaction hash here"
+        style={{ width: '300px', padding: '8px' }}
+      />
+    </div>
+
+    <button
+      onClick={handleConfirmPayment}
+      style={{ marginTop: '20px', padding: '10px 20px' }}
+      disabled={loading}
+    >
+      {loading ? 'Validating...' : 'Confirm Payment'}
+    </button>
+
+    {confirmationMessage && (
+      <div
+        style={{
+          marginTop: '20px',
+          color: confirmationMessage.startsWith('✅') ? 'green' : 'red'
+        }}
+      >
+        {confirmationMessage}
+      </div>
+    )}
+
+    <div style={{ marginTop: '30px' }}>
+      <button onClick={() => navigate('/')}>Return to Home Page</button>
+    </div>
+    <div style={{ marginTop: '10px' }}>
+      <button onClick={() => navigate('/login')}>Login</button>
+    </div>
+  </div>
+);
+
 };
 
 export default PaymentPage;
