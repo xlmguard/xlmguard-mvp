@@ -1,5 +1,5 @@
 // PaymentPage.js
-import { QRCode } from "qrcode.react";
+import { QR } from "qrcode.react";
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase';
