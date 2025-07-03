@@ -110,7 +110,8 @@ function HomePage() {
       const snap = await getDoc(doc(db, 'users', currentUser.uid));
       if (snap.exists()) {
         const data = snap.data();
-        if (data.paymentCompleted) {
+        console.log('hasPaid:', data.hasPaid); // For debugging
+        if (data.hasPaid) {
           navigate('/submit');
         } else {
           navigate('/payment');
@@ -337,5 +338,8 @@ function HomePage() {
 }
 
 export default HomePage;
+
+
+
 
 
