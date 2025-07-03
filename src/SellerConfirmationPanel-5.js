@@ -19,7 +19,6 @@ const SellerConfirmationPanel = () => {
   const [isSeller, setIsSeller] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
-  const [amount, setAmount] = useState(null); // NEW: amount state
 
   const auth = getAuth();
 
@@ -61,7 +60,6 @@ const SellerConfirmationPanel = () => {
   };
 
   const fetchContractURL = async () => {
-    if (!transactionId.trim()) return;
     const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
     const snapshot = await getDocs(q);
     if (!snapshot.empty) {
@@ -69,12 +67,6 @@ const SellerConfirmationPanel = () => {
       if (txData.contractURL) setContractURL(txData.contractURL);
       if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
       if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
-      if (txData.amount) setAmount(txData.amount); // NEW: set amount
-    } else {
-      setContractURL(null);
-      setExistingDocuments({});
-      setExistingImages([]);
-      setAmount(null);
     }
   };
 
@@ -193,12 +185,7 @@ const SellerConfirmationPanel = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2 style={{ textAlign: 'center' }}>Seller Shipment Confirmation</h2>
-      {amount && (
-        <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '20px', marginBottom: '20px' }}>
-          Escrowed Value: {amount}
-        </div>
-      )}
+      <h2>Seller Shipment Confirmation</h2>
       <input
         type="text"
         value={transactionId}
@@ -256,3 +243,22 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
