@@ -19,7 +19,7 @@ const SellerConfirmationPanel = () => {
   const [isSeller, setIsSeller] = useState(null);
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
-  const [amount, setAmount] = useState(null); // NEW: amount state
+  const [amount, setAmount] = useState(null);
 
   const auth = getAuth();
 
@@ -69,7 +69,7 @@ const SellerConfirmationPanel = () => {
       if (txData.contractURL) setContractURL(txData.contractURL);
       if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
       if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
-      if (txData.amount) setAmount(txData.amount); // NEW: set amount
+      if (txData.amount) setAmount(txData.amount);
     } else {
       setContractURL(null);
       setExistingDocuments({});
@@ -215,14 +215,14 @@ const SellerConfirmationPanel = () => {
         </div>
       )}
       {documentTypes.map((type) => (
-        <div key={type}>
+        <div key={type} style={{ marginBottom: '10px' }}>
           <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
           <input type="file" onChange={(e) => handleDocumentUpload(type, e.target.files[0])} />
           {existingDocuments[type] && (
-            <>
-              <a href={existingDocuments[type]} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '10px' }}>View Existing</a>
-              <button onClick={() => deleteDocument(type)} style={{ marginLeft: '10px' }}>Delete</button>
-            </>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '5px' }}>
+              <a href={existingDocuments[type]} target="_blank" rel="noopener noreferrer">View Existing</a>
+              <button onClick={() => deleteDocument(type)}>Delete</button>
+            </div>
           )}
         </div>
       ))}
@@ -246,13 +246,14 @@ const SellerConfirmationPanel = () => {
         />
         <label htmlFor="captcha"> I'm not a robot</label>
       </div>
-      <button onClick={handleSubmit}>Submit Confirmation</button>
-      {status && <p style={{ marginTop: '10px' }}>{status}</p>}
-      <div style={{ marginTop: '20px' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '20px' }}>
+        <button onClick={handleSubmit}>Submit Confirmation</button>
         <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
       </div>
+      {status && <p style={{ marginTop: '10px' }}>{status}</p>}
     </div>
   );
 };
 
 export default SellerConfirmationPanel;
+
