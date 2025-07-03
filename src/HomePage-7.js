@@ -101,29 +101,6 @@ function HomePage() {
     }
   };
 
-  const handleSubmitTransaction = async () => {
-    if (!currentUser) {
-      navigate('/login');
-      return;
-    }
-    try {
-      const snap = await getDoc(doc(db, 'users', currentUser.uid));
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.paymentCompleted) {
-          navigate('/submit');
-        } else {
-          navigate('/payment');
-        }
-      } else {
-        navigate('/payment');
-      }
-    } catch (error) {
-      console.error('Error checking payment status:', error);
-      navigate('/payment');
-    }
-  };
-
   const descriptions = {
     English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.',
     French: 'XLMGuard protège vos transactions XLM et XRP avec une vérification horodatée et des confirmations de vendeur sécurisées.',
@@ -269,7 +246,7 @@ function HomePage() {
         )}
         <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
         <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Buyer Transaction Lookup</button>
-        <button onClick={handleSubmitTransaction} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
+        <button onClick={() => navigate('/submit')} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
         <Link to="/faq">
           <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
@@ -337,5 +314,6 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
