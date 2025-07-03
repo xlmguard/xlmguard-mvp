@@ -214,7 +214,11 @@ function HomePage() {
       <img
         src="/logo.png"
         alt="XLMGuard Logo"
-        style={{ width: '210px', marginBottom: '20px' }}
+        style={{
+          width: '180px',
+          marginTop: '40px',
+          marginBottom: '30px'
+        }}
       />
       <h1>Welcome to XLMGuard<sup style={{ fontSize: '0.6em', marginLeft: '4px' }}>™</sup></h1>
 
@@ -274,3 +278,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
