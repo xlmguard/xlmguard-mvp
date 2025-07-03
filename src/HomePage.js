@@ -155,7 +155,7 @@ function HomePage() {
       }}>
         <div style={{
           display: 'inline-block',
-          animation: 'scroll-left 20s linear infinite'
+          animation: 'scroll-left 40s linear infinite'
         }}>
           {xlmTrades.length === 0
             ? 'Loading recent XLM trades...'
@@ -179,7 +179,7 @@ function HomePage() {
       }}>
         <div style={{
           display: 'inline-block',
-          animation: 'scroll-left 25s linear infinite'
+          animation: 'scroll-left 50s linear infinite'
         }}>
           {xrpTrades.length === 0
             ? 'Loading recent XRP trades...'
@@ -314,5 +314,6 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
