@@ -13,11 +13,6 @@ function HomePage() {
   const [userName, setUserName] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [xlmPrice, setXlmPrice] = useState(null);
-  const [xrpPrice, setXrpPrice] = useState(null);
-  const [xlmTrades, setXlmTrades] = useState([]);
-  const [xrpTrades, setXrpTrades] = useState([]);
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,61 +30,6 @@ function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch prices
-  useEffect(() => {
-    const fetchPrices = async () => {
-      try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar,stellar-lumens,ripple&vs_currencies=usd');
-        const data = await res.json();
-        setXlmPrice(data['stellar-lumens']?.usd || data['stellar']?.usd || 'N/A');
-        setXrpPrice(data['ripple']?.usd || 'N/A');
-      } catch (err) {
-        console.error('Error fetching prices:', err);
-        setXlmPrice('N/A');
-        setXrpPrice('N/A');
-      }
-    };
-
-    fetchPrices();
-  }, []);
-
-  // Fetch recent trades
-  useEffect(() => {
-    const fetchTrades = async () => {
-      try {
-        // XLM
-        const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
-        const dataXLM = await resXLM.json();
-        if (dataXLM.result && dataXLM.result.XXLMZUSD) {
-          const trades = dataXLM.result.XXLMZUSD.slice(-10).map(trade => ({
-            price: trade[0],
-            volume: trade[1],
-            side: trade[3] === 'b' ? 'Buy' : 'Sell'
-          }));
-          setXlmTrades(trades);
-        }
-
-        // XRP
-        const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
-        const dataXRP = await resXRP.json();
-        if (dataXRP.result && dataXRP.result.XXRPZUSD) {
-          const trades = dataXRP.result.XXRPZUSD.slice(-10).map(trade => ({
-            price: trade[0],
-            volume: trade[1],
-            side: trade[3] === 'b' ? 'Buy' : 'Sell'
-          }));
-          setXrpTrades(trades);
-        }
-      } catch (err) {
-        console.error('Error fetching trades:', err);
-      }
-    };
-
-    fetchTrades();
-    const interval = setInterval(fetchTrades, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
   const handleLanguageChange = (e) => {
     setLanguage(e.target.value);
   };
@@ -97,7 +37,7 @@ function HomePage() {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      window.location.href = '/';
+      window.location.href = '/'; // Force hard reload
     } catch (error) {
       console.error('Logout failed:', error);
     }
@@ -138,61 +78,7 @@ function HomePage() {
           content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust. Protect your crypto with confidence."
         />
         <link rel="canonical" href="https://xlmguard.com/" />
-        <style>{`
-          @keyframes scroll-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-          }
-        `}</style>
       </Helmet>
-
-      {/* Ticker for XLM */}
-      <div style={{
-        backgroundColor: '#333',
-        color: 'yellow',
-        padding: '8px',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        fontSize: '14px'
-      }}>
-        <div style={{
-          display: 'inline-block',
-          animation: 'scroll-left 20s linear infinite'
-        }}>
-          {xlmTrades.length === 0
-            ? 'Loading recent XLM trades...'
-            : xlmTrades.map((trade, index) => (
-                <span key={index} style={{ marginRight: '50px' }}>
-                  XLM {trade.side}: {trade.volume} @ ${trade.price}
-                </span>
-              ))
-          }
-        </div>
-      </div>
-
-      {/* Ticker for XRP */}
-      <div style={{
-        backgroundColor: '#333',
-        color: 'yellow',
-        padding: '8px',
-        overflow: 'hidden',
-        whiteSpace: 'nowrap',
-        fontSize: '14px'
-      }}>
-        <div style={{
-          display: 'inline-block',
-          animation: 'scroll-left 25s linear infinite'
-        }}>
-          {xrpTrades.length === 0
-            ? 'Loading recent XRP trades...'
-            : xrpTrades.map((trade, index) => (
-                <span key={index} style={{ marginRight: '50px' }}>
-                  XRP {trade.side}: {trade.volume} @ ${trade.price}
-                </span>
-              ))
-          }
-        </div>
-      </div>
 
       {currentUser && (
         <div style={{ position: 'absolute', top: '10px', left: '10px' }}>
@@ -217,18 +103,7 @@ function HomePage() {
         style={{ width: '210px', marginBottom: '20px' }}
       />
       <h1>Welcome to XLMGuard<sup style={{ fontSize: '0.6em', marginLeft: '4px' }}>™</sup></h1>
-
-      {/* Prices */}
-      <div style={{ marginTop: '20px', fontSize: '18px' }}>
-        <div style={{ color: 'red', fontWeight: 'bold' }}>
-          XLM Price: {xlmPrice !== null ? `$${xlmPrice}` : 'Loading...'}
-        </div>
-        <div style={{ color: 'red', fontWeight: 'bold', marginTop: '5px' }}>
-          XRP Price: {xrpPrice !== null ? `$${xrpPrice}` : 'Loading...'}
-        </div>
-      </div>
-
-      <p style={{ maxWidth: '800px', margin: '20px auto 0', fontSize: '16px' }}>
+      <p style={{ maxWidth: '800px', margin: '0 auto', fontSize: '16px' }}>
         {descriptions[language] || descriptions['English']}
       </p>
 
@@ -269,8 +144,48 @@ function HomePage() {
         </div>
         &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
+
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center'
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px'
+          }}>
+            <h3>How to Set Up an Escrowed TXID</h3>
+            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
+            <ol>
+              <li>Create an escrow or multisig transaction in your wallet.</li>
+              <li>Confirm the recipient address, amount, and unlock conditions.</li>
+              <li>Copy the transaction ID (TXID) shown after submission.</li>
+              <li>Paste that TXID in the "Submit Transaction" form on XLMGuard.</li>
+              <li>Once the seller uploads the required documents, return to your wallet and release the escrow.</li>
+            </ol>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <img src="/escrow-diagram.png" alt="Escrow Diagram" style={{ maxWidth: '100%' }} />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button onClick={() => setShowModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 export default HomePage;
+
+
+
