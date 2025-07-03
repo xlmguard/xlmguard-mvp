@@ -57,7 +57,6 @@ function HomePage() {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        // XLM
         const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
         const dataXLM = await resXLM.json();
         if (dataXLM.result && dataXLM.result.XXLMZUSD) {
@@ -69,7 +68,6 @@ function HomePage() {
           setXlmTrades(trades);
         }
 
-        // XRP
         const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
         const dataXRP = await resXRP.json();
         if (dataXRP.result && dataXRP.result.XXRPZUSD) {
@@ -265,6 +263,44 @@ function HomePage() {
         </select>
       </div>
 
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px'
+          }}>
+            <h3>How to Set Up an Escrowed TXID</h3>
+            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
+            <ol>
+              <li>Create an escrow or multisig transaction in your wallet.</li>
+              <li>Confirm the recipient address, amount, and unlock conditions.</li>
+              <li>Copy the transaction ID (TXID) shown after submission.</li>
+              <li>Paste that TXID in the "Submit Transaction" form on XLMGuard.</li>
+              <li>Once the seller uploads the required documents, return to your wallet and release the escrow.</li>
+            </ol>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <img src="/escrow-diagram.png" alt="Escrow Diagram" style={{ maxWidth: '100%' }} />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button onClick={() => setShowModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
         <div style={{ marginBottom: '10px' }}>
           <Link to="/contact">
@@ -278,4 +314,5 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
