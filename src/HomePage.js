@@ -35,7 +35,6 @@ function HomePage() {
     return () => unsubscribe();
   }, []);
 
-  // Fetch prices
   useEffect(() => {
     const fetchPrices = async () => {
       try {
@@ -49,48 +48,40 @@ function HomePage() {
         setXrpPrice('N/A');
       }
     };
-
     fetchPrices();
   }, []);
 
-  // Fetch recent trades
   useEffect(() => {
     const fetchTrades = async () => {
       try {
         const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
         const dataXLM = await resXLM.json();
-        if (dataXLM.result && dataXLM.result.XXLMZUSD) {
-          const trades = dataXLM.result.XXLMZUSD.slice(-10).map(trade => ({
-            price: trade[0],
-            volume: trade[1],
-            side: trade[3] === 'b' ? 'Buy' : 'Sell'
-          }));
-          setXlmTrades(trades);
+        if (dataXLM.result?.XXLMZUSD) {
+          setXlmTrades(dataXLM.result.XXLMZUSD.slice(-10).map(t => ({
+            price: t[0],
+            volume: t[1],
+            side: t[3] === 'b' ? 'Buy' : 'Sell'
+          })));
         }
-
         const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
         const dataXRP = await resXRP.json();
-        if (dataXRP.result && dataXRP.result.XXRPZUSD) {
-          const trades = dataXRP.result.XXRPZUSD.slice(-10).map(trade => ({
-            price: trade[0],
-            volume: trade[1],
-            side: trade[3] === 'b' ? 'Buy' : 'Sell'
-          }));
-          setXrpTrades(trades);
+        if (dataXRP.result?.XXRPZUSD) {
+          setXrpTrades(dataXRP.result.XXRPZUSD.slice(-10).map(t => ({
+            price: t[0],
+            volume: t[1],
+            side: t[3] === 'b' ? 'Buy' : 'Sell'
+          })));
         }
       } catch (err) {
         console.error('Error fetching trades:', err);
       }
     };
-
     fetchTrades();
     const interval = setInterval(fetchTrades, 10000);
     return () => clearInterval(interval);
   }, []);
 
-  const handleLanguageChange = (e) => {
-    setLanguage(e.target.value);
-  };
+  const handleLanguageChange = (e) => setLanguage(e.target.value);
 
   const handleLogout = async () => {
     try {
@@ -110,7 +101,7 @@ function HomePage() {
       const snap = await getDoc(doc(db, 'users', currentUser.uid));
       if (snap.exists()) {
         const data = snap.data();
-        console.log('hasPaid:', data.hasPaid); // For debugging
+        console.log('hasPaid:', data.hasPaid);
         if (data.hasPaid) {
           navigate('/submit');
         } else {
@@ -140,19 +131,17 @@ function HomePage() {
   ];
 
   return (
-    <div
-      style={{
-        textAlign: 'center',
-        paddingTop: '60px',
-        backgroundImage: 'url("/earthbackgrownd.png")',
-        backgroundSize: 'contain',
-        backgroundRepeat: 'no-repeat',
-        backgroundPosition: 'center',
-        backgroundBlendMode: 'lighten',
-        opacity: '0.95',
-        minHeight: '100vh'
-      }}
-    >
+    <div style={{
+      textAlign: 'center',
+      paddingTop: '60px',
+      backgroundImage: 'url("/earthbackgrownd.png")',
+      backgroundSize: 'contain',
+      backgroundRepeat: 'no-repeat',
+      backgroundPosition: 'center',
+      backgroundBlendMode: 'lighten',
+      opacity: '0.95',
+      minHeight: '100vh'
+    }}>
       <Helmet>
         <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
         <meta
@@ -168,7 +157,7 @@ function HomePage() {
         `}</style>
       </Helmet>
 
-      {/* Ticker for XLM */}
+      {/* XLM Ticker */}
       <div style={{
         backgroundColor: '#333',
         color: 'yellow',
@@ -183,16 +172,15 @@ function HomePage() {
         }}>
           {xlmTrades.length === 0
             ? 'Loading recent XLM trades...'
-            : xlmTrades.map((trade, index) => (
-                <span key={index} style={{ marginRight: '50px' }}>
-                  XLM {trade.side}: {trade.volume} @ ${trade.price}
-                </span>
-              ))
-          }
+            : xlmTrades.map((trade, i) => (
+              <span key={i} style={{ marginRight: '50px' }}>
+                XLM {trade.side}: {trade.volume} @ ${trade.price}
+              </span>
+            ))}
         </div>
       </div>
 
-      {/* Ticker for XRP */}
+      {/* XRP Ticker */}
       <div style={{
         backgroundColor: '#333',
         color: 'yellow',
@@ -207,12 +195,11 @@ function HomePage() {
         }}>
           {xrpTrades.length === 0
             ? 'Loading recent XRP trades...'
-            : xrpTrades.map((trade, index) => (
-                <span key={index} style={{ marginRight: '50px' }}>
-                  XRP {trade.side}: {trade.volume} @ ${trade.price}
-                </span>
-              ))
-          }
+            : xrpTrades.map((trade, i) => (
+              <span key={i} style={{ marginRight: '50px' }}>
+                XRP {trade.side}: {trade.volume} @ ${trade.price}
+              </span>
+            ))}
         </div>
       </div>
 
@@ -225,7 +212,13 @@ function HomePage() {
             {userRole}: {userName}
           </button>
           {showDropdown && (
-            <div style={{ backgroundColor: 'white', border: '1px solid #ccc', borderRadius: '5px', padding: '10px', marginTop: '5px' }}>
+            <div style={{
+              backgroundColor: 'white',
+              border: '1px solid #ccc',
+              borderRadius: '5px',
+              padding: '10px',
+              marginTop: '5px'
+            }}>
               <p>Email: {currentUser.email}</p>
               <button onClick={handleLogout}>Logout</button>
             </div>
@@ -263,14 +256,32 @@ function HomePage() {
       </p>
 
       <div style={{ marginTop: '20px' }}>
-        <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
-        <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
-        {currentUser && (
-          <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+        {/* Buttons for guests */}
+        {!currentUser && (
+          <>
+            <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
+            <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
+          </>
         )}
-        <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
-        <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Buyer Transaction Lookup</button>
-        <button onClick={handleSubmitTransaction} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
+
+        {/* Buttons for buyers */}
+        {currentUser && userRole === 'buyer' && (
+          <>
+            <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Buyer Transaction Lookup</button>
+            <button onClick={handleSubmitTransaction} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
+            <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+          </>
+        )}
+
+        {/* Buttons for sellers */}
+        {currentUser && userRole === 'seller' && (
+          <>
+            <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
+            <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+          </>
+        )}
+
+        {/* Common buttons */}
         <Link to="/faq">
           <button style={{ marginRight: '10px' }}>FAQ</button>
         </Link>
@@ -338,6 +349,9 @@ function HomePage() {
 }
 
 export default HomePage;
+
+
+
 
 
 
