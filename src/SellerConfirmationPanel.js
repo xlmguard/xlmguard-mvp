@@ -20,6 +20,7 @@ const SellerConfirmationPanel = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
   const [amount, setAmount] = useState(null);
+  const [currency, setCurrency] = useState(null); // NEW: Currency state
 
   const auth = getAuth();
 
@@ -70,11 +71,13 @@ const SellerConfirmationPanel = () => {
       if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
       if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
       if (txData.amount) setAmount(txData.amount);
+      if (txData.currency) setCurrency(txData.currency); // NEW: Set currency
     } else {
       setContractURL(null);
       setExistingDocuments({});
       setExistingImages([]);
       setAmount(null);
+      setCurrency(null);
     }
   };
 
@@ -196,7 +199,7 @@ const SellerConfirmationPanel = () => {
       <h2 style={{ textAlign: 'center' }}>Seller Shipment Confirmation</h2>
       {amount && (
         <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '20px', marginBottom: '20px' }}>
-          Escrowed Value: {amount}
+          Escrowed Value: {amount} {currency || ''}
         </div>
       )}
       <input
@@ -214,6 +217,7 @@ const SellerConfirmationPanel = () => {
           <a href={contractURL} download>Download Contract</a>
         </div>
       )}
+
       {documentTypes.map((type) => (
         <div key={type} style={{ marginBottom: '10px' }}>
           <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
@@ -256,4 +260,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+
+
 
