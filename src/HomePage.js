@@ -145,7 +145,7 @@ function HomePage() {
         <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
         <meta
           name="description"
-          content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust. Protect your crypto with confidence."
+          content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust."
         />
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
@@ -240,6 +240,7 @@ function HomePage() {
         </div>
       </div>
 
+      {/* Description with Escrow Link */}
       <p style={{ maxWidth: '800px', margin: '20px auto 0', fontSize: '16px' }}>
         {descriptions[language] || descriptions['English']}
         <br /><br />
@@ -253,10 +254,93 @@ function HomePage() {
         </a>
       </p>
 
-      {/* Rest of your existing components */}
-      {/* Buttons, language selector, modal, footer */}
+      {/* Role-based Buttons */}
+      <div style={{ marginTop: '20px' }}>
+        {!currentUser && (
+          <>
+            <button onClick={() => navigate('/register')} style={{ marginRight: '10px' }}>Register</button>
+            <button onClick={() => navigate('/login')} style={{ marginRight: '10px' }}>Login</button>
+          </>
+        )}
+        {currentUser && userRole === 'buyer' && (
+          <>
+            <button onClick={() => navigate('/transaction-lookup')} style={{ marginRight: '10px' }}>Buyer Transaction Lookup</button>
+            <button onClick={handleSubmitTransaction} style={{ marginRight: '10px' }}>Buyer Submit Transaction</button>
+            <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+          </>
+        )}
+        {currentUser && userRole === 'seller' && (
+          <>
+            <button onClick={() => navigate('/seller-confirm')} style={{ marginRight: '10px' }}>Seller Shipment Confirmation</button>
+            <button onClick={handleLogout} style={{ marginRight: '10px' }}>Logout</button>
+          </>
+        )}
+        <Link to="/faq">
+          <button style={{ marginRight: '10px' }}>FAQ</button>
+        </Link>
+        <button onClick={() => navigate('/instructions')} style={{ marginRight: '10px' }}>Instructions for Use</button>
+        <button onClick={() => setShowModal(true)}>How to Escrow</button>
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <label htmlFor="language">Language:</label>
+        <select id="language" value={language} onChange={handleLanguageChange}>
+          {allLanguages.map((lang) => (
+            <option key={lang} value={lang}>{lang}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Modal */}
+      {showModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 9999
+        }}>
+          <div style={{
+            backgroundColor: '#fff',
+            padding: '30px',
+            borderRadius: '8px',
+            maxWidth: '600px'
+          }}>
+            <h3>How to Set Up an Escrowed TXID</h3>
+            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
+            <ol>
+              <li>Create an escrow or multisig transaction in your wallet.</li>
+              <li>Confirm the recipient address, amount, and unlock conditions.</li>
+              <li>Copy the transaction ID (TXID) shown after submission.</li>
+              <li>Paste that TXID in the "Submit Transaction" form on XLMGuard.</li>
+              <li>Once the seller uploads the required documents, return to your wallet and release the escrow.</li>
+            </ol>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <img src="/escrow-diagram.png" alt="Escrow Diagram" style={{ maxWidth: '100%' }} />
+            </div>
+            <div style={{ textAlign: 'center', marginTop: '20px' }}>
+              <button onClick={() => setShowModal(false)}>Close</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer style={{ marginTop: '60px', fontSize: '12px', color: '#666' }}>
+        <div style={{ marginBottom: '10px' }}>
+          <Link to="/contact">
+            <button style={{ fontSize: '12px', padding: '6px 12px' }}>Contact Us</button>
+          </Link>
+        </div>
+        &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
+      </footer>
     </div>
   );
 }
 
 export default HomePage;
+
