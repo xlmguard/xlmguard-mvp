@@ -148,6 +148,12 @@ function HomePage() {
           content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust."
         />
         <link rel="canonical" href="https://xlmguard.com/" />
+        <style>{`
+          @keyframes scroll-left {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+          }
+        `}</style>
       </Helmet>
 
       {/* XLM Ticker */}
@@ -240,21 +246,11 @@ function HomePage() {
         </div>
       </div>
 
-      {/* Description with Escrow Link */}
       <p style={{ maxWidth: '800px', margin: '20px auto 0', fontSize: '16px' }}>
         {descriptions[language] || descriptions['English']}
-        <br /><br />
-        <a
-          href="https://escrow.xlmguard.com"
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ color: '#007BFF', textDecoration: 'underline' }}
-        >
-          Click here to use our integrated XLMGuard Escrow Platform
-        </a>
       </p>
 
-      {/* Role-based Buttons */}
+      {/* Buttons remain unchanged */}
       <div style={{ marginTop: '20px' }}>
         {!currentUser && (
           <>
@@ -282,6 +278,7 @@ function HomePage() {
         <button onClick={() => setShowModal(true)}>How to Escrow</button>
       </div>
 
+      {/* Language selector */}
       <div style={{ marginTop: '20px' }}>
         <label htmlFor="language">Language:</label>
         <select id="language" value={language} onChange={handleLanguageChange}>
@@ -291,7 +288,7 @@ function HomePage() {
         </select>
       </div>
 
-      {/* Modal */}
+      {/* Modal with the escrow link */}
       {showModal && (
         <div style={{
           position: 'fixed',
@@ -312,7 +309,15 @@ function HomePage() {
             maxWidth: '600px'
           }}>
             <h3>How to Set Up an Escrowed TXID</h3>
-            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.</p>
+            <p>
+              To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts, such as <a href="https://lobstr.co/vault" target="_blank" rel="noopener noreferrer">LOBSTR Vault</a> or <a href="https://xrptoolkit.com" target="_blank" rel="noopener noreferrer">XRP Toolkit</a>.
+            </p>
+            <p>
+              Or use our platform here:<br />
+              <a href="https://escrow.xlmguard.com" target="_blank" rel="noopener noreferrer">
+                👉 Escrow.XLMGuard.com
+              </a>
+            </p>
             <ol>
               <li>Create an escrow or multisig transaction in your wallet.</li>
               <li>Confirm the recipient address, amount, and unlock conditions.</li>
@@ -336,11 +341,12 @@ function HomePage() {
             <button style={{ fontSize: '12px', padding: '6px 12px' }}>Contact Us</button>
           </Link>
         </div>
-        &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
+        &copy; {new Date().getFullYear()} XLMGuard.com – All information on this site is protected by U.S. copyright laws.
       </footer>
     </div>
   );
 }
 
 export default HomePage;
+
 
