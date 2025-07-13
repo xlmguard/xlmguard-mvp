@@ -47,7 +47,7 @@ const SellerConfirmationPanel = () => {
   ];
 
   const handleDocumentUpload = (type, file) => {
-    setDocuments((prevDocs) => ({ ...prevDocs, [type]: file }));
+    setDocuments((prev) => ({ ...prev, [type]: file }));
   };
 
   const deleteDocument = async (type) => {
@@ -66,12 +66,12 @@ const SellerConfirmationPanel = () => {
     const docRef = doc(db, 'transactions', transactionId);
     const snap = await getDoc(docRef);
     if (snap.exists()) {
-      const txData = snap.data();
-      if (txData.contractURL) setContractURL(txData.contractURL);
-      if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
-      if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
-      if (txData.amount) setAmount(txData.amount);
-      if (txData.currency) setCurrency(txData.currency);
+      const tx = snap.data();
+      setContractURL(tx.contractURL || null);
+      setExistingDocuments(tx.documentURLs || {});
+      setExistingImages(tx.shipmentImages || []);
+      setAmount(tx.amount || null);
+      setCurrency(tx.currency || null);
     } else {
       setContractURL(null);
       setExistingDocuments({});
@@ -98,13 +98,13 @@ const SellerConfirmationPanel = () => {
 
       const docURLs = { ...existingDocuments };
       const imageURLs = [...existingImages];
-      const uploadPromises = [];
+      const uploads = [];
 
       for (const type of documentTypes) {
         const file = documents[type];
         if (file) {
           const fileRef = ref(storage, `confirmations/${transactionId}_${type}_${file.name}`);
-          uploadPromises.push(
+          uploads.push(
             uploadBytes(fileRef, file)
               .then(() => getDownloadURL(fileRef))
               .then((url) => {
@@ -116,7 +116,7 @@ const SellerConfirmationPanel = () => {
 
       for (const image of shipmentImages) {
         const imageRef = ref(storage, `confirmations/${transactionId}_image_${image.name}`);
-        uploadPromises.push(
+        uploads.push(
           uploadBytes(imageRef, image)
             .then(() => getDownloadURL(imageRef))
             .then((url) => {
@@ -125,15 +125,16 @@ const SellerConfirmationPanel = () => {
         );
       }
 
-      await Promise.all(uploadPromises);
+      await Promise.all(uploads);
 
       await updateDoc(docRef, {
         sellerConfirmed: true,
         documentURLs: docURLs,
         shipmentImages: imageURLs,
-        confirmedAt: new Date().toISOString(),
+        confirmedAt: new Date().toISOString()
       });
 
+      // Email notifications
       const serviceID = 'service_xyj5n7d';
       const sellerTemplateID = 'template_pixnkqs';
       const buyerTemplateID = 'template_9ry4lu4';
@@ -144,28 +145,41 @@ const SellerConfirmationPanel = () => {
       const confirmationLink = `https://xlmguard.com/dashboard?txid=${transactionId}`;
 
       if (!buyerEmail) {
-        const buyerQuery = query(collection(db, 'users'), where('paymentHash', '==', transactionId));
-        const buyerSnap = await getDocs(buyerQuery);
-        if (!buyerSnap.empty) buyerEmail = buyerSnap.docs[0].data().email;
+        const buyerSnap = await getDocs(
+          query(collection(db, 'users'), where('paymentHash', '==', transactionId))
+        );
+        if (!buyerSnap.empty) {
+          buyerEmail = buyerSnap.docs[0].data().email;
+        }
       }
 
       if (sellerEmail) {
-        emailjs.send(serviceID, sellerTemplateID, {
-          seller_email: sellerEmail,
-          buyer_email: buyerEmail || 'n/a',
-          amount: txData.amount || 'N/A',
-          terms: txData.terms || 'N/A',
-          txid: transactionId,
-          link: confirmationLink,
-        }, publicKey);
+        emailjs.send(
+          serviceID,
+          sellerTemplateID,
+          {
+            seller_email: sellerEmail,
+            buyer_email: buyerEmail || 'n/a',
+            amount: txData.amount || 'N/A',
+            terms: txData.terms || 'N/A',
+            txid: transactionId,
+            link: confirmationLink
+          },
+          publicKey
+        );
       }
 
       if (buyerEmail) {
-        emailjs.send(serviceID, buyerTemplateID, {
-          buyer_email: buyerEmail,
-          txid: transactionId,
-          link: confirmationLink,
-        }, publicKey);
+        emailjs.send(
+          serviceID,
+          buyerTemplateID,
+          {
+            buyer_email: buyerEmail,
+            txid: transactionId,
+            link: confirmationLink
+          },
+          publicKey
+        );
       }
 
       setRedirect(true);
@@ -186,9 +200,8 @@ const SellerConfirmationPanel = () => {
   if (redirect) return (
     <div style={{ padding: '20px', textAlign: 'center' }}>
       <h2>Confirmation Received</h2>
-      <p>Thank you. Your documents have been submitted successfully.</p>
-      <a href="/">Return to Home</a><br /><br />
-      <button onClick={() => window.location.href = '/'}>Return to Home Page</button>
+      <p>Your documents have been submitted successfully.</p>
+      <a href="/">Return to Home</a>
     </div>
   );
 
@@ -215,7 +228,6 @@ const SellerConfirmationPanel = () => {
           <a href={contractURL} download>Download Contract</a>
         </div>
       )}
-
       {documentTypes.map((type) => (
         <div key={type} style={{ marginBottom: '10px' }}>
           <label>Upload {type.replace(/([A-Z])/g, ' $1').trim()}:</label>
@@ -258,3 +270,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+

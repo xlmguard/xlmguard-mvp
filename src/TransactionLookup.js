@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
-import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -20,16 +20,16 @@ function TransactionLookup() {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const snap = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
-        if (!snap.empty) {
-          const data = snap.docs[0].data();
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
           }
           setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(false);
+          setIsAuthenticated(true); // you could also set to false if you want to restrict
         }
       } else {
         setIsAuthenticated(false);
@@ -48,9 +48,9 @@ function TransactionLookup() {
       const querySnapshot = await getDocs(q);
 
       if (!querySnapshot.empty) {
-        const doc = querySnapshot.docs[0];
-        setTransaction({ ...doc.data(), docRef: doc.ref });
-        setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
+        const docRef = querySnapshot.docs[0].ref;
+        setTransaction({ ...querySnapshot.docs[0].data(), docRef });
+        setApprovalStatus(querySnapshot.docs[0].data().documentApprovalStatus || 'Pending');
       } else {
         setError("Transaction not found.");
       }
@@ -199,4 +199,5 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
 
