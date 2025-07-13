@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
-import { collection, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -23,13 +23,14 @@ function TransactionLookup() {
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           const data = snap.data();
+          // If buyer and hasPaid is false, deny access
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
           }
           setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(true); // you could also set to false if you want to restrict
+          setIsAuthenticated(false);
         }
       } else {
         setIsAuthenticated(false);
@@ -44,19 +45,17 @@ function TransactionLookup() {
     setError(null);
 
     try {
-      const q = query(collection(db, "transactions"), where("transactionId", "==", txid));
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
       const querySnapshot = await getDocs(q);
-
       if (!querySnapshot.empty) {
-        const docRef = querySnapshot.docs[0].ref;
-        setTransaction({ ...querySnapshot.docs[0].data(), docRef });
-        setApprovalStatus(querySnapshot.docs[0].data().documentApprovalStatus || 'Pending');
+        const doc = querySnapshot.docs[0];
+        setTransaction({ ...doc.data(), docRef: doc.ref });
+        setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
       } else {
-        setError("Transaction not found.");
+        setError('Transaction not found.');
       }
     } catch (err) {
-      console.error(err);
-      setError("Error retrieving transaction.");
+      setError('Error retrieving transaction.');
     } finally {
       setLoading(false);
     }
@@ -115,9 +114,7 @@ function TransactionLookup() {
           style={{ padding: '10px', width: '300px' }}
           required
         />
-        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>
-          Lookup
-        </button>
+        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>Lookup</button>
       </form>
 
       {loading && <p>Loading...</p>}
@@ -191,13 +188,9 @@ function TransactionLookup() {
         </div>
       )}
 
-      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>
-        Return to Home
-      </button>
+      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>Return to Home</button>
     </div>
   );
 }
 
 export default TransactionLookup;
-
-
