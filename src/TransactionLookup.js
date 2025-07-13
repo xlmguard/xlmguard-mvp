@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -20,9 +20,9 @@ function TransactionLookup() {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
+        const snap = await getDocs(query(collection(db, 'users'), where('uid', '==', user.uid)));
+        if (!snap.empty) {
+          const data = snap.docs[0].data();
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
@@ -44,18 +44,19 @@ function TransactionLookup() {
     setError(null);
 
     try {
-      const docRef = doc(db, 'transactions', txid);
-      const snap = await getDoc(docRef);
+      const q = query(collection(db, "transactions"), where("transactionId", "==", txid));
+      const querySnapshot = await getDocs(q);
 
-      if (snap.exists()) {
-        setTransaction({ ...snap.data(), docRef });
-        setApprovalStatus(snap.data().documentApprovalStatus || 'Pending');
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        setTransaction({ ...doc.data(), docRef: doc.ref });
+        setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
       } else {
-        setError('Transaction not found.');
+        setError("Transaction not found.");
       }
     } catch (err) {
       console.error(err);
-      setError('Error retrieving transaction.');
+      setError("Error retrieving transaction.");
     } finally {
       setLoading(false);
     }
@@ -198,3 +199,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
