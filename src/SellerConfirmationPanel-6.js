@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { getDoc, updateDoc, doc, collection, getDocs, query, where } from 'firebase/firestore';
+import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import emailjs from '@emailjs/browser';
 
@@ -20,7 +20,7 @@ const SellerConfirmationPanel = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
   const [amount, setAmount] = useState(null);
-  const [currency, setCurrency] = useState(null);
+  const [currency, setCurrency] = useState(null); // NEW: Currency state
 
   const auth = getAuth();
 
@@ -63,15 +63,15 @@ const SellerConfirmationPanel = () => {
 
   const fetchContractURL = async () => {
     if (!transactionId.trim()) return;
-    const docRef = doc(db, 'transactions', transactionId);
-    const snap = await getDoc(docRef);
-    if (snap.exists()) {
-      const txData = snap.data();
+    const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
+    const snapshot = await getDocs(q);
+    if (!snapshot.empty) {
+      const txData = snapshot.docs[0].data();
       if (txData.contractURL) setContractURL(txData.contractURL);
       if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
       if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
       if (txData.amount) setAmount(txData.amount);
-      if (txData.currency) setCurrency(txData.currency);
+      if (txData.currency) setCurrency(txData.currency); // NEW: Set currency
     } else {
       setContractURL(null);
       setExistingDocuments({});
@@ -90,11 +90,13 @@ const SellerConfirmationPanel = () => {
     try {
       setStatus('');
 
-      const docRef = doc(db, 'transactions', transactionId);
-      const snap = await getDoc(docRef);
-      if (!snap.exists()) return setStatus('Transaction not found.');
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', transactionId));
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) return setStatus('Transaction not found.');
 
-      const txData = snap.data();
+      const transactionDoc = querySnapshot.docs[0];
+      const docRef = transactionDoc.ref;
+      const txData = transactionDoc.data();
 
       const docURLs = { ...existingDocuments };
       const imageURLs = [...existingImages];
@@ -258,3 +260,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+
+
+

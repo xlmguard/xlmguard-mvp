@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
-import { doc, getDoc, updateDoc } from 'firebase/firestore';
+import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -23,6 +23,7 @@ function TransactionLookup() {
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           const data = snap.data();
+          // If buyer and hasPaid is false, deny access
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
@@ -44,17 +45,16 @@ function TransactionLookup() {
     setError(null);
 
     try {
-      const docRef = doc(db, 'transactions', txid);
-      const snap = await getDoc(docRef);
-
-      if (snap.exists()) {
-        setTransaction({ ...snap.data(), docRef });
-        setApprovalStatus(snap.data().documentApprovalStatus || 'Pending');
+      const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
+      const querySnapshot = await getDocs(q);
+      if (!querySnapshot.empty) {
+        const doc = querySnapshot.docs[0];
+        setTransaction({ ...doc.data(), docRef: doc.ref });
+        setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
       } else {
         setError('Transaction not found.');
       }
     } catch (err) {
-      console.error(err);
       setError('Error retrieving transaction.');
     } finally {
       setLoading(false);
@@ -114,9 +114,7 @@ function TransactionLookup() {
           style={{ padding: '10px', width: '300px' }}
           required
         />
-        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>
-          Lookup
-        </button>
+        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>Lookup</button>
       </form>
 
       {loading && <p>Loading...</p>}
@@ -190,9 +188,7 @@ function TransactionLookup() {
         </div>
       )}
 
-      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>
-        Return to Home
-      </button>
+      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>Return to Home</button>
     </div>
   );
 }
