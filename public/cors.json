@@ -1,8 +1,12 @@
 [
   {
-    "origin": ["https://xlmguard.com"],
-    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    "origin": [
+      "https://xlmguard.com",
+      "https://escrow.xlmguard.com"
+    ],
+    "method": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD"],
     "responseHeader": ["Content-Type"],
     "maxAgeSeconds": 3600
   }
 ]
+
