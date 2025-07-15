@@ -1,5 +1,4 @@
-// src/SellerConfirmationPanel.js
-
+// SellerConfirmationPanel.js
 import React, { useState, useEffect } from 'react';
 import { db, storage } from './firebase';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
@@ -21,8 +20,7 @@ const SellerConfirmationPanel = () => {
   const [authChecked, setAuthChecked] = useState(false);
   const [contractURL, setContractURL] = useState(null);
   const [amount, setAmount] = useState(null);
-  const [currency, setCurrency] = useState(null);
-  const [documentApprovalStatus, setDocumentApprovalStatus] = useState(null);
+  const [currency, setCurrency] = useState(null); // NEW: Currency state
 
   const auth = getAuth();
 
@@ -73,16 +71,13 @@ const SellerConfirmationPanel = () => {
       if (txData.documentURLs) setExistingDocuments(txData.documentURLs);
       if (txData.shipmentImages) setExistingImages(txData.shipmentImages);
       if (txData.amount) setAmount(txData.amount);
-      if (txData.currency) setCurrency(txData.currency);
-      if (txData.documentApprovalStatus) setDocumentApprovalStatus(txData.documentApprovalStatus);
-      else setDocumentApprovalStatus('Pending');
+      if (txData.currency) setCurrency(txData.currency); // NEW: Set currency
     } else {
       setContractURL(null);
       setExistingDocuments({});
       setExistingImages([]);
       setAmount(null);
       setCurrency(null);
-      setDocumentApprovalStatus(null);
     }
   };
 
@@ -203,15 +198,8 @@ const SellerConfirmationPanel = () => {
     <div style={{ padding: '20px' }}>
       <h2 style={{ textAlign: 'center' }}>Seller Shipment Confirmation</h2>
       {amount && (
-        <div style={{ textAlign: 'center', marginBottom: '20px' }}>
-          <div style={{ fontWeight: 'bold', fontSize: '20px' }}>
-            Escrowed Value: {amount} {currency || ''}
-          </div>
-          {documentApprovalStatus && (
-            <div style={{ marginTop: '5px', fontSize: '16px', color: '#333' }}>
-              Document Approval Status: {documentApprovalStatus}
-            </div>
-          )}
+        <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '20px', marginBottom: '20px' }}>
+          Escrowed Value: {amount} {currency || ''}
         </div>
       )}
       <input
@@ -272,3 +260,7 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
+
+
+
