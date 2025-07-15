@@ -23,6 +23,7 @@ function TransactionLookup() {
         const snap = await getDoc(doc(db, 'users', user.uid));
         if (snap.exists()) {
           const data = snap.data();
+          // If buyer and hasPaid is false, deny access
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
@@ -54,7 +55,6 @@ function TransactionLookup() {
         setError('Transaction not found.');
       }
     } catch (err) {
-      console.error(err);
       setError('Error retrieving transaction.');
     } finally {
       setLoading(false);
@@ -63,27 +63,10 @@ function TransactionLookup() {
 
   const handleApprovalUpdate = async () => {
     try {
-      if (!txid) {
-        setUpdateMessage('Transaction ID missing.');
-        return;
+      if (transaction && transaction.docRef) {
+        await updateDoc(transaction.docRef, { documentApprovalStatus: approvalStatus });
+        setUpdateMessage('Approval status updated successfully.');
       }
-
-      setUpdateMessage('Updating...');
-
-      // Always re-query the transaction doc
-      const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        setUpdateMessage('Transaction not found.');
-        return;
-      }
-
-      const docRef = querySnapshot.docs[0].ref;
-
-      await updateDoc(docRef, { documentApprovalStatus: approvalStatus });
-
-      setUpdateMessage('Approval status updated successfully.');
     } catch (err) {
       console.error(err);
       setUpdateMessage('Error updating approval status.');
@@ -131,9 +114,7 @@ function TransactionLookup() {
           style={{ padding: '10px', width: '300px' }}
           required
         />
-        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>
-          Lookup
-        </button>
+        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>Lookup</button>
       </form>
 
       {loading && <p>Loading...</p>}
@@ -186,9 +167,7 @@ function TransactionLookup() {
               <option value="Approved">Approved</option>
               <option value="Rejected">Rejected</option>
             </select>
-            <button onClick={handleApprovalUpdate} style={{ marginLeft: '10px' }}>
-              Update
-            </button>
+            <button onClick={handleApprovalUpdate} style={{ marginLeft: '10px' }}>Update</button>
             {updateMessage && <p>{updateMessage}</p>}
           </div>
 
@@ -209,9 +188,7 @@ function TransactionLookup() {
         </div>
       )}
 
-      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>
-        Return to Home
-      </button>
+      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>Return to Home</button>
     </div>
   );
 }
