@@ -52,7 +52,7 @@ function App() {
         setUser(null);
         setHasPaid(false);
         setRole(null);
-      }
+       }
 
       setLoading(false);
     });
