@@ -1,67 +1,58 @@
 // monitorStellarTx.js
 require('dotenv').config();
 const { Server } = require('@stellar/stellar-sdk');
-const { initializeApp } = require('firebase/app');
-const {
-  getFirestore,
-  collection,
-  query,
-  where,
-  getDocs,
-  addDoc
-} = require('firebase/firestore');
+const admin = require('firebase-admin');
+const fs = require('fs');
 
-// Initialize Firebase
-const firebaseConfig = {
-  apiKey: process.env.FIREBASE_API_KEY,
-  authDomain: process.env.FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.FIREBASE_PROJECT_ID,
-  storageBucket: process.env.FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.FIREBASE_APP_ID
-};
+// Load Firebase credentials
+const serviceAccount = require('./serviceAccountKey.json');
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
 
-// Initialize Stellar
-const server = new Server('https://horizon-testnet.stellar.org');
-const ESCROW_ACCOUNT = process.env.ESCROW_PUBLIC_KEY;
+const db = admin.firestore();
+const server = new Server('https://horizon.stellar.org'); // Use 'https://horizon-testnet.stellar.org' for testnet
 
-async function monitorTransactions() {
-  console.log('🔍 Checking for new escrow transactions...');
+const ESCROW_PUBLIC_KEY = process.env.ESCROW_PUBLIC_KEY;
 
-  try {
-    const transactions = await server.transactions()
-      .forAccount(ESCROW_ACCOUNT)
-      .order('desc')
-      .limit(10)
-      .call();
-
-    for (const tx of transactions.records) {
-      const txid = tx.id;
-
-      // Check if TX already exists
-      const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
-      const snapshot = await getDocs(q);
-
-      if (snapshot.empty) {
-        await addDoc(collection(db, 'transactions'), {
-          transactionId: txid,
-          createdAt: new Date(),
-          currency: 'XLM',
-          amount: 'Unknown',
-          notes: 'Auto-imported from Stellar',
-          documentApprovalStatus: 'Pending'
-        });
-        console.log(`✅ Added new TXID to Firestore: ${txid}`);
-      } else {
-        console.log(`⏭ TXID already exists: ${txid}`);
-      }
-    }
-  } catch (error) {
-    console.error('❌ Error monitoring transactions:', error);
-  }
+if (!ESCROW_PUBLIC_KEY) {
+  console.error('❌ ESCROW_PUBLIC_KEY is missing from .env');
+  process.exit(1);
 }
 
-monitorTransactions();
+console.log(`🔍 Monitoring Stellar account: ${ESCROW_PUBLIC_KEY}`);
+
+server
+  .payments()
+  .forAccount(ESCROW_PUBLIC_KEY)
+  .cursor('now')
+  .stream({
+    onmessage: async (payment) => {
+      if (payment.type !== 'payment' || payment.asset_type !== 'native') return;
+
+      const txId = payment.transaction_hash;
+      const amount = payment.amount;
+
+      console.log(`💰 Payment detected - TXID: ${txId}, Amount: ${amount}`);
+
+      try {
+        await db.collection('transactions').add({
+          escrow: ESCROW_PUBLIC_KEY,
+          transactionId: txId,
+          amount,
+          currency: 'XLM',
+          createdAt: admin.firestore.Timestamp.now(),
+          notes: 'Auto-imported from Stellar'
+        });
+
+        console.log('✅ Transaction inserted into Firestore');
+      } catch (err) {
+        console.error('❌ Firestore insert error:', err);
+      }
+    },
+    onerror: (error) => {
+      console.error('❌ Stellar stream error:', error);
+    }
+  });
+
