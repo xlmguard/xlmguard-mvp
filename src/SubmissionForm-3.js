@@ -7,7 +7,6 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SubmissionForm = () => {
   const [currency, setCurrency] = useState('XLM');
-  const [submissionMode, setSubmissionMode] = useState('auto'); // auto or manual
   const [txId, setTxId] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
@@ -40,11 +39,6 @@ const SubmissionForm = () => {
       return;
     }
 
-    if (submissionMode === 'manual' && txId.trim() === '') {
-      setMessage('Please enter a TXID.');
-      return;
-    }
-
     try {
       let contractURL = '';
       if (contractFile) {
@@ -53,14 +47,10 @@ const SubmissionForm = () => {
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      const newTxId = submissionMode === 'auto'
-        ? `auto_${user.uid}_${Date.now()}`
-        : txId;
-
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
-        transactionId: newTxId,
+        transactionId: txId,
         amount,
         notes,
         contractURL,
@@ -87,7 +77,6 @@ const SubmissionForm = () => {
   return (
     <div style={{ padding: '20px' }}>
       <h2>Submit Transaction</h2>
-
       <form onSubmit={handleSubmit}>
         <div>
           <label>Currency:</label>
@@ -96,72 +85,30 @@ const SubmissionForm = () => {
             <option value="XRP">XRP</option>
           </select>
         </div>
-
-        <div style={{ marginTop: '10px' }}>
-          <label>
-            <input
-              type="radio"
-              value="auto"
-              checked={submissionMode === 'auto'}
-              onChange={() => setSubmissionMode('auto')}
-            /> Lobstr/Vault (Auto-generate TXID)
-          </label>
-          <br />
-          <label>
-            <input
-              type="radio"
-              value="manual"
-              checked={submissionMode === 'manual'}
-              onChange={() => setSubmissionMode('manual')}
-            /> Manually enter TXID
-          </label>
+        <div>
+          <label>Transaction ID:</label>
+          <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} required />
         </div>
-
-        {submissionMode === 'manual' && (
-          <div>
-            <label>Transaction ID:</label>
-            <input
-              type="text"
-              value={txId}
-              onChange={(e) => setTxId(e.target.value)}
-              required={submissionMode === 'manual'}
-            />
-          </div>
-        )}
-
         <div>
           <label>Amount:</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-          />
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
         </div>
-
         <div>
           <label>Notes:</label>
           <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
         </div>
-
         <div>
           <label>Upload Contract (PDF, DOCX, etc.):</label>
           <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
         </div>
-
         <button type="submit">Submit</button>
       </form>
-
       {message && <p>{message}</p>}
-
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
       <hr />
-      <button
-        onClick={handleLogout}
-        style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}
-      >
+      <button onClick={handleLogout} style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}>
         Logout
       </button>
     </div>
