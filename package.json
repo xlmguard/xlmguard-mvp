@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@emailjs/browser": "^3.11.0",
+    "@stellar/stellar-sdk": "^13.3.0",
     "emailjs-com": "^3.2.0",
     "firebase": "^9.22.0",
     "qrcode.react": "^4.2.0",
