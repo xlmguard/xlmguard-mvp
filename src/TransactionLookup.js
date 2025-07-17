@@ -12,7 +12,6 @@ import {
   getDocs,
   updateDoc
 } from 'firebase/firestore';
-import * as StellarSdk from 'stellar-sdk';
 
 const TransactionLookup = () => {
   const [txid, setTxid] = useState('');
@@ -49,9 +48,6 @@ const TransactionLookup = () => {
     setError('');
 
     try {
-      const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
-      await server.transactions().transaction(txid).call();
-
       const txQuery = query(collection(db, 'transactions'), where('transactionId', '==', txid));
       const snapshot = await getDocs(txQuery);
 
@@ -64,7 +60,7 @@ const TransactionLookup = () => {
       }
     } catch (err) {
       console.error(err);
-      setError('TXID not found on Stellar or lookup failed.');
+      setError('Lookup failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -118,7 +114,7 @@ const TransactionLookup = () => {
         <input
           value={txid}
           onChange={(e) => setTxid(e.target.value)}
-          placeholder="Enter Stellar TXID"
+          placeholder="Enter TXID"
           style={{ width: 300, padding: 10 }}
           required
         />
@@ -187,4 +183,5 @@ const TransactionLookup = () => {
 };
 
 export default TransactionLookup;
+
 

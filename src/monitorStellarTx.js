@@ -1,12 +1,12 @@
 // monitorStellarTx.js
 require('dotenv').config();
-const { Server } = require('@stellar/stellar-sdk');
+const { Server } = require('@stellar/stellar-sdk'); // ✅ Use official SDK
 const admin = require('firebase-admin');
-const fs = require('fs');
 
-// Load Firebase credentials
+// Load Firebase service account key
 const serviceAccount = require('./serviceAccountKey.json');
 
+// Initialize Firebase Admin SDK
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
@@ -23,6 +23,7 @@ if (!ESCROW_PUBLIC_KEY) {
 
 console.log(`🔍 Monitoring Stellar account: ${ESCROW_PUBLIC_KEY}`);
 
+// Stream real-time payments to the escrow account
 server
   .payments()
   .forAccount(ESCROW_PUBLIC_KEY)
@@ -55,4 +56,6 @@ server
       console.error('❌ Stellar stream error:', error);
     }
   });
+
+
 
