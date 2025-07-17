@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { db } from './firebase';
 import { doc, getDoc, collection, query, where, getDocs, updateDoc } from 'firebase/firestore';
-import * as StellarSdk from 'stellar-sdk';
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -45,24 +44,18 @@ function TransactionLookup() {
     setError(null);
 
     try {
-      // First verify the TXID exists on Stellar Testnet
-      const server = new StellarSdk.Server('https://horizon-testnet.stellar.org');
-      await server.transactions().transaction(txid).call();
-
-      // If TXID exists, search Firestore
       const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
       const querySnapshot = await getDocs(q);
-
       if (!querySnapshot.empty) {
         const doc = querySnapshot.docs[0];
         setTransaction({ ...doc.data(), docRef: doc.ref });
         setApprovalStatus(doc.data().documentApprovalStatus || 'Pending');
       } else {
-        setError('Transaction not found in database.');
+        setError('Transaction not found.');
       }
     } catch (err) {
-      console.error('Error verifying transaction:', err);
-      setError('Transaction not found on Stellar Testnet.');
+      console.error(err);
+      setError('Error retrieving transaction.');
     } finally {
       setLoading(false);
     }
@@ -77,6 +70,7 @@ function TransactionLookup() {
 
       setUpdateMessage('Updating...');
 
+      // Always re-query the transaction doc
       const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
       const querySnapshot = await getDocs(q);
 
