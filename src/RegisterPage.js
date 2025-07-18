@@ -1,22 +1,35 @@
+// src/RegisterPage.js
+
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db } from './firebase.js'; // ✅ Ensure .js for ES module environments
 import { useNavigate } from 'react-router-dom';
 
-function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [role, setRole] = useState('buyer'); // default role
+const RegisterPage = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    role: 'buyer',
+  });
+
   const [error, setError] = useState('');
   const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value
+    }));
+  };
 
   const handleRegister = async (e) => {
     e.preventDefault();
     setError('');
 
     try {
+      const { email, password, name, role } = formData;
       const userCred = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCred.user;
 
@@ -27,11 +40,7 @@ function RegisterPage() {
         ...(role === 'buyer' && { hasPaid: false })
       });
 
-      if (role === 'seller') {
-        navigate('/seller-confirm'); // ✅ fixed route
-      } else {
-        navigate('/payment');
-      }
+      navigate(role === 'seller' ? '/seller-confirm' : '/payment');
     } catch (err) {
       setError(err.message);
     }
@@ -42,29 +51,33 @@ function RegisterPage() {
       <h1>Register</h1>
       <form onSubmit={handleRegister}>
         <input
+          name="name"
           type="text"
           placeholder="Full Name"
-          value={name}
+          value={formData.name}
+          onChange={handleChange}
           required
-          onChange={(e) => setName(e.target.value)}
         />
         <input
+          name="email"
           type="email"
           placeholder="Email"
-          value={email}
+          value={formData.email}
+          onChange={handleChange}
           required
-          onChange={(e) => setEmail(e.target.value)}
         />
         <input
+          name="password"
           type="password"
           placeholder="Password"
-          value={password}
+          value={formData.password}
+          onChange={handleChange}
           required
-          onChange={(e) => setPassword(e.target.value)}
         />
         <select
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
+          name="role"
+          value={formData.role}
+          onChange={handleChange}
           required
         >
           <option value="buyer">Buyer</option>
@@ -72,6 +85,7 @@ function RegisterPage() {
         </select>
         <button type="submit">Register</button>
       </form>
+
       {error && <p style={{ color: 'red' }}>{error}</p>}
 
       <div style={{ marginTop: '20px' }}>
@@ -79,8 +93,9 @@ function RegisterPage() {
       </div>
     </div>
   );
-}
+};
 
 export default RegisterPage;
+
 
 
