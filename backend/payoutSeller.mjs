@@ -3,7 +3,8 @@
 import 'dotenv/config';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { Keypair, Server, Networks, TransactionBuilder, Operation, Asset } from '@stellar/stellar-sdk';
+import StellarSdk from '@stellar/stellar-sdk';
+const { Keypair, Server, Networks, TransactionBuilder, Operation, Asset } = StellarSdk;
 import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
 
 // Initialize Firebase
@@ -79,5 +80,6 @@ async function payoutSellers() {
 }
 
 payoutSellers();
+
 
 
