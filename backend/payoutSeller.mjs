@@ -1,12 +1,12 @@
-import dotenv from 'dotenv';
-dotenv.config();
+// backend/payoutSeller.mjs
 
+import 'dotenv/config';
 import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
-import { Server, Keypair, Networks, TransactionBuilder, Operation, Asset } from '@stellar/stellar-sdk';
+import { Keypair, Server, Networks, TransactionBuilder, Operation, Asset } from '@stellar/stellar-sdk';
 import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
 
-// Initialize Firebase Admin SDK
+// Initialize Firebase
 initializeApp({
   credential: cert(serviceAccount),
 });
@@ -78,6 +78,6 @@ async function payoutSellers() {
   }
 }
 
-// Run immediately
 payoutSellers();
+
 
