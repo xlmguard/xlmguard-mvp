@@ -3,7 +3,7 @@
 require('dotenv').config();
 const { initializeApp, cert } = require('firebase-admin/app');
 const { getFirestore } = require('firebase-admin/firestore');
-const StellarSdk = require('stellar-sdk');
+const StellarSdk = require('@stellar/stellar-sdk');
 const serviceAccount = require('./serviceAccountKey.json');
 
 // Initialize Firebase Admin SDK
