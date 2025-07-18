@@ -2,6 +2,7 @@
   "name": "xlmguard-mvp",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "dependencies": {
     "@emailjs/browser": "^3.11.0",
     "@stellar/stellar-sdk": "^13.3.0",
@@ -22,8 +23,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "payout": "node backend/payoutSeller.js",
-    "run-payout-loop": "node backend/runPayoutLoop.js"
+    "payout": "node backend/payoutSeller.mjs",
+    "run-payout-loop": "node backend/runPayoutLoop.mjs"
   },
   "browserslist": {
     "production": [
@@ -38,6 +39,8 @@
     ]
   }
 }
+
+
 
 
 

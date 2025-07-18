@@ -1,10 +1,10 @@
-// backend/payoutSeller.js
+import dotenv from 'dotenv';
+dotenv.config();
 
-require('dotenv').config();
-const { initializeApp, cert } = require('firebase-admin/app');
-const { getFirestore } = require('firebase-admin/firestore');
-const StellarSdk = require('@stellar/stellar-sdk');
-const serviceAccount = require('./serviceAccountKey.json');
+import { initializeApp, cert } from 'firebase-admin/app';
+import { getFirestore } from 'firebase-admin/firestore';
+import { Server, Keypair, Networks, TransactionBuilder, Operation, Asset } from '@stellar/stellar-sdk';
+import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
 
 // Initialize Firebase Admin SDK
 initializeApp({
@@ -14,8 +14,8 @@ initializeApp({
 const db = getFirestore();
 
 // Stellar setup
-const server = new StellarSdk.Server('https://horizon.stellar.org');
-const sourceKeypair = StellarSdk.Keypair.fromSecret(process.env.STELLAR_SECRET);
+const server = new Server('https://horizon.stellar.org');
+const sourceKeypair = Keypair.fromSecret(process.env.STELLAR_SECRET);
 const sourcePublicKey = sourceKeypair.publicKey();
 
 async function payoutSellers() {
@@ -45,14 +45,14 @@ async function payoutSellers() {
       try {
         const account = await server.loadAccount(sourcePublicKey);
 
-        const transaction = new StellarSdk.TransactionBuilder(account, {
+        const transaction = new TransactionBuilder(account, {
           fee: await server.fetchBaseFee(),
-          networkPassphrase: StellarSdk.Networks.PUBLIC,
+          networkPassphrase: Networks.PUBLIC,
         })
           .addOperation(
-            StellarSdk.Operation.payment({
+            Operation.payment({
               destination: tx.sellerWallet,
-              asset: StellarSdk.Asset.native(),
+              asset: Asset.native(),
               amount: amountStr,
             })
           )
@@ -80,3 +80,4 @@ async function payoutSellers() {
 
 // Run immediately
 payoutSellers();
+
