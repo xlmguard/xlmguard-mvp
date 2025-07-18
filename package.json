@@ -13,13 +13,16 @@
     "react-ga4": "^2.1.0",
     "react-helmet": "^6.1.0",
     "react-router-dom": "^7.6.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "firebase-admin": "^11.11.1",
+    "dotenv": "^16.3.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "payout": "node backend/payoutSeller.js"
   },
   "browserslist": {
     "production": [
@@ -34,3 +37,4 @@
     ]
   }
 }
+
