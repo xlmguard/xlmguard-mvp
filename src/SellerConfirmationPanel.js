@@ -1,7 +1,7 @@
 // src/SellerConfirmationPanel.js
 
 import React, { useState, useEffect } from 'react';
-import { db, storage } from './firebase';
+import { db, storage } from './firebase.js';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc, doc, getDoc } from 'firebase/firestore';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
@@ -293,4 +293,5 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
 
