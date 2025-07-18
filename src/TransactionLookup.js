@@ -26,7 +26,7 @@ function TransactionLookup() {
           if (data.role === 'buyer' && data.hasPaid === false) {
             setAccessDenied(true);
             return;
-          }
+           }
           setIsAuthenticated(true);
         } else {
           setIsAuthenticated(false);
