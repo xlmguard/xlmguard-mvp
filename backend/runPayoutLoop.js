@@ -19,7 +19,8 @@ function runPayoutScript() {
   });
 }
 
-// Run every 5 minutes (300,000 ms)
-setInterval(runPayoutScript, 300000);
+// Run once immediately
+runPayoutScript();
 
-console.log('🟢 Payout loop started. Running every 5 minutes...');
+// Run every 5 minutes
+setInterval(runPayoutScript, 5 * 60 * 1000);

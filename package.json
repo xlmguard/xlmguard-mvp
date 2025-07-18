@@ -23,7 +23,7 @@
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "payout": "node backend/payoutSeller.js",
-    "payout-loop": "node backend/runPayoutLoop.js"
+    "run-payout-loop": "node backend/runPayoutLoop.js"
   },
   "browserslist": {
     "production": [
@@ -38,6 +38,7 @@
     ]
   }
 }
+
 
 
 
