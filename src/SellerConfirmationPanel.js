@@ -23,6 +23,8 @@ const SellerConfirmationPanel = () => {
   const [amount, setAmount] = useState(null);
   const [currency, setCurrency] = useState(null);
   const [documentApprovalStatus, setDocumentApprovalStatus] = useState(null);
+  const [walletAddress, setWalletAddress] = useState('');
+  const [walletMemo, setWalletMemo] = useState('');
 
   const auth = getAuth();
 
@@ -90,6 +92,7 @@ const SellerConfirmationPanel = () => {
     if (!transactionId.trim()) return setStatus('Transaction ID is required.');
     if (!captchaChecked) return setStatus('Please verify the CAPTCHA.');
     if (!acceptTerms) return setStatus('You must accept the contract terms.');
+    if (!walletAddress.trim()) return setStatus('Please enter your wallet address.');
     if (!auth.currentUser) return setStatus('Upload blocked: user not authenticated.');
 
     try {
@@ -139,6 +142,8 @@ const SellerConfirmationPanel = () => {
         documentURLs: docURLs,
         shipmentImages: imageURLs,
         confirmedAt: new Date().toISOString(),
+        walletAddress,
+        walletMemo
       });
 
       const serviceID = 'service_xyj5n7d';
@@ -222,6 +227,22 @@ const SellerConfirmationPanel = () => {
         placeholder="Enter Transaction ID"
         style={{ marginBottom: '10px', width: '300px' }}
       />
+
+      <input
+        type="text"
+        value={walletAddress}
+        onChange={(e) => setWalletAddress(e.target.value)}
+        placeholder="Enter your wallet address"
+        style={{ marginBottom: '10px', width: '300px' }}
+      />
+      <input
+        type="text"
+        value={walletMemo}
+        onChange={(e) => setWalletMemo(e.target.value)}
+        placeholder="Enter your wallet memo (if any)"
+        style={{ marginBottom: '20px', width: '300px' }}
+      />
+
       {contractURL && (
         <div style={{ marginBottom: '20px' }}>
           <h4>Contract Document</h4>
@@ -272,3 +293,4 @@ const SellerConfirmationPanel = () => {
 };
 
 export default SellerConfirmationPanel;
+
