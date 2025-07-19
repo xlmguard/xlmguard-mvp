@@ -13,6 +13,7 @@ function HomePage() {
   const [userName, setUserName] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [xlmPrice, setXlmPrice] = useState(null);
   const [xrpPrice, setXrpPrice] = useState(null);
   const [xlmTrades, setXlmTrades] = useState([]);
@@ -73,8 +74,6 @@ function HomePage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleLanguageChange = (e) => setLanguage(e.target.value);
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -119,40 +118,53 @@ function HomePage() {
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
-      <nav style={{ position: 'fixed', top: 0, width: '100%', backgroundColor: 'rgba(255,255,255,0.9)', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 2rem', zIndex: 1000 }}>
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '80px' }} />
-        <div>
-          <a href="https://escrow.xlmguard.com" style={{ margin: '0 1rem' }}>Go to Escrow</a>
-          <Link to="/faq" style={{ margin: '0 1rem' }}>FAQ</Link>
-          <Link to="/contact" style={{ margin: '0 1rem' }}>Contact Us</Link>
-          <Link to="/seller-confirm" style={{ margin: '0 1rem' }}>Seller Panel</Link>
-          <Link to="/instructions" style={{ margin: '0 1rem' }}>User Instructions</Link>
+      <nav style={{ position: 'fixed', top: 0, width: '100%', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+          <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '120px' }} />
+          {currentUser && (
+            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', marginRight: '10px' }}>
+              {userName?.charAt(0).toUpperCase() || '?'}
+            </div>
+          )}
+          <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', fontSize: '1.5rem' }}>&#9776;</div>
         </div>
-        {currentUser && (
-          <div>
-            <button onClick={() => setShowDropdown(!showDropdown)}>{userRole}: {userName}</button>
-            {showDropdown && (
-              <div style={{ position: 'absolute', top: '60px', right: '2rem', background: '#fff', border: '1px solid #ccc', padding: '1rem' }}>
-                <p>{currentUser.email}</p>
-                <button onClick={handleLogout}>Logout</button>
-              </div>
-            )}
-          </div>
-        )}
+        <div style={{
+          maxHeight: menuOpen ? '400px' : '0',
+          overflow: 'hidden',
+          transition: 'max-height 0.4s ease',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'flex-start',
+          marginTop: '0.5rem'
+        }}>
+          <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0' }}>Go to Escrow</a>
+          <Link to="/faq" style={{ margin: '0.25rem 0' }}>FAQ</Link>
+          <Link to="/contact" style={{ margin: '0.25rem 0' }}>Contact Us</Link>
+          <Link to="/seller-confirm" style={{ margin: '0.25rem 0' }}>Seller Panel</Link>
+          <Link to="/instructions" style={{ margin: '0.25rem 0' }}>User Instructions</Link>
+          <button onClick={handleLogout} style={{ margin: '0.25rem 0' }}>Logout</button>
+        </div>
       </nav>
 
-      <main style={{ marginTop: '100px' }}>
+      <main style={{ marginTop: '140px' }}>
         <h1>Welcome to XLMGuard</h1>
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
-        <div style={{ backgroundColor: '#000', color: '#0f0', padding: '10px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-          <div style={{ display: 'inline-block', animation: 'scroll-left 60s linear infinite' }}>
+        <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
+          <div style={{ display: 'inline-block', animation: 'scroll-left 30s linear infinite' }}>
             {[...xlmTrades, ...xrpTrades].map((t, i) => (
-              <span key={i} style={{ marginRight: '50px' }}>{t.side}: {t.volume} @ ${t.price}</span>
+              <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>{t.side}: {t.volume} @ ${t.price}</span>
             ))}
           </div>
         </div>
+
+        <style>
+          {`@keyframes scroll-left {
+              0% { transform: translateX(100%); }
+              100% { transform: translateX(-100%); }
+          }`}
+        </style>
 
         {!currentUser && (
           <div style={{ marginTop: '1rem' }}>
@@ -179,10 +191,11 @@ function HomePage() {
         &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
       </footer>
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
 
