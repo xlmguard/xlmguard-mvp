@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
-import ReactGA from 'react-ga';
 import { Helmet } from 'react-helmet';
 
 import HomePage from './HomePage.js';
@@ -21,8 +20,6 @@ import FAQPage from './FAQPage.js';
 import ContactPage from './ContactPage.js';
 import InstructionsPage from './InstructionsPage.js';
 
-ReactGA.initialize('G-HDR20HZ7Z9');
-
 function App() {
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
@@ -30,8 +27,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    ReactGA.pageview(window.location.pathname + window.location.search);
-
     const unsub = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         const userRef = doc(db, 'users', currentUser.uid);
@@ -138,5 +133,6 @@ function App() {
 }
 
 export default App;
+
 
 
