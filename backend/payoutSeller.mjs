@@ -5,11 +5,14 @@ import { initializeApp, cert } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import StellarSdk from '@stellar/stellar-sdk';
 const { Keypair, Server, Networks, TransactionBuilder, Operation, Asset } = StellarSdk;
-import serviceAccount from './serviceAccountKey.json' assert { type: 'json' };
 
-// Initialize Firebase
+// Initialize Firebase using .env variables
 initializeApp({
-  credential: cert(serviceAccount),
+  credential: cert({
+    projectId: process.env.FIREBASE_PROJECT_ID,
+    clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+    privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n'),
+  }),
 });
 
 const db = getFirestore();
@@ -80,6 +83,7 @@ async function payoutSellers() {
 }
 
 payoutSellers();
+
 
 
 

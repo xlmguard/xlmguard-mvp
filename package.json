@@ -23,8 +23,8 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "payout": "node backend/payoutSeller.mjs",
-    "run-payout-loop": "node backend/runPayoutLoop.mjs"
+    "payout": "node --env-file=.env backend/payoutSeller.mjs",
+    "run-payout-loop": "node --env-file=.env backend/runPayoutLoop.mjs"
   },
   "browserslist": {
     "production": [
