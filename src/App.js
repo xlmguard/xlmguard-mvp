@@ -1,25 +1,24 @@
-// App.js
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { auth, db } from './firebase';
+import { auth, db } from './firebase.js';
 import ReactGA from 'react-ga4';
 import { Helmet } from 'react-helmet';
 
-import HomePage from './HomePage';
-import RegisterPage from './RegisterPage';
-import LoginPage from './LoginPage';
-import PaymentPage from './PaymentPage';
-import SubmissionForm from './SubmissionForm';
-import Dashboard from './Dashboard';
-import AdminLogin from './AdminLogin';
-import AdminPanel from './AdminPanel';
-import SellerConfirmationPanel from './SellerConfirmationPanel';
-import TransactionLookup from './TransactionLookup';
-import FAQPage from './FAQPage';
-import ContactPage from './ContactPage';
-import InstructionsPage from './InstructionsPage'; // ✅ NEW import
+import HomePage from './HomePage.js';
+import RegisterPage from './RegisterPage.js';
+import LoginPage from './LoginPage.js';
+import PaymentPage from './PaymentPage.js';
+import SubmissionForm from './SubmissionForm.js';
+import Dashboard from './Dashboard.js';
+import AdminLogin from './AdminLogin.js';
+import AdminPanel from './AdminPanel.js';
+import SellerConfirmationPanel from './SellerConfirmationPanel.js';
+import TransactionLookup from './TransactionLookup.js';
+import FAQPage from './FAQPage.js';
+import ContactPage from './ContactPage.js';
+import InstructionsPage from './InstructionsPage.js';
 
 function App() {
   const [user, setUser] = useState(null);
@@ -28,7 +27,6 @@ function App() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Initialize Google Analytics
     ReactGA.initialize('G-HDR20HZ7Z9');
     ReactGA.send({ hitType: 'pageview', page: window.location.pathname });
 
@@ -52,7 +50,7 @@ function App() {
         setUser(null);
         setHasPaid(false);
         setRole(null);
-       }
+      }
 
       setLoading(false);
     });
@@ -73,7 +71,7 @@ function App() {
               "name": "XLMGuard",
               "url": "https://xlmguard.com",
               "logo": "https://xlmguard.com/logo.png",
-              "description": "A global blockchain-based escrow and payment-verification platform for XLM and XRP.",
+              "description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
               "areaServed": {
                 "@type": "GeoCircle",
                 "geoMidpoint": {
@@ -131,10 +129,11 @@ function App() {
         <Route path="/transaction-lookup" element={<TransactionLookup />} />
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/contact" element={<ContactPage />} />
-        <Route path="/instructions" element={<InstructionsPage />} /> {/* ✅ NEW route */}
+        <Route path="/instructions" element={<InstructionsPage />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
