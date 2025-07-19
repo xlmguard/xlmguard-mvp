@@ -57,12 +57,12 @@ function HomePage() {
         const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
         const dataXLM = await resXLM.json();
         if (dataXLM.result?.XXLMZUSD) {
-          setXlmTrades(dataXLM.result.XXLMZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: t[3] === 'b' ? 'Buy' : 'Sell' })));
+          setXlmTrades(dataXLM.result.XXLMZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XLM Buy' })));
         }
         const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
         const dataXRP = await resXRP.json();
         if (dataXRP.result?.XXRPZUSD) {
-          setXrpTrades(dataXRP.result.XXRPZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: t[3] === 'b' ? 'Buy' : 'Sell' })));
+          setXrpTrades(dataXRP.result.XXRPZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XRP Buy' })));
         }
       } catch (err) {
         console.error('Error fetching trades:', err);
@@ -120,13 +120,13 @@ function HomePage() {
       </Helmet>
 
       <nav style={{ position: 'fixed', top: 0, width: '100%', backgroundColor: 'rgba(255,255,255,0.9)', borderBottom: '1px solid #ddd', display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.75rem 2rem', zIndex: 1000 }}>
-        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '40px' }} />
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '80px' }} />
         <div>
           <a href="https://escrow.xlmguard.com" style={{ margin: '0 1rem' }}>Go to Escrow</a>
           <Link to="/faq" style={{ margin: '0 1rem' }}>FAQ</Link>
           <Link to="/contact" style={{ margin: '0 1rem' }}>Contact Us</Link>
           <Link to="/seller-confirm" style={{ margin: '0 1rem' }}>Seller Panel</Link>
-          <button onClick={() => setShowModal(true)}>Escrow Help</button>
+          <Link to="/instructions" style={{ margin: '0 1rem' }}>User Instructions</Link>
         </div>
         {currentUser && (
           <div>
@@ -147,12 +147,9 @@ function HomePage() {
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
         <div style={{ backgroundColor: '#000', color: '#0f0', padding: '10px', whiteSpace: 'nowrap', overflow: 'hidden' }}>
-          <div style={{ display: 'inline-block', animation: 'scroll-left 40s linear infinite' }}>
-            {xlmTrades.map((t, i) => (
-              <span key={i} style={{ marginRight: '50px' }}>XLM {t.side}: {t.volume} @ ${t.price}</span>
-            ))}
-            {xrpTrades.map((t, i) => (
-              <span key={i} style={{ marginRight: '50px' }}>XRP {t.side}: {t.volume} @ ${t.price}</span>
+          <div style={{ display: 'inline-block', animation: 'scroll-left 60s linear infinite' }}>
+            {[...xlmTrades, ...xrpTrades].map((t, i) => (
+              <span key={i} style={{ marginRight: '50px' }}>{t.side}: {t.volume} @ ${t.price}</span>
             ))}
           </div>
         </div>
@@ -182,10 +179,11 @@ function HomePage() {
         &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
       </footer>
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
 
