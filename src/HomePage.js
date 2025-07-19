@@ -11,8 +11,6 @@ function HomePage() {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [userName, setUserName] = useState('');
-  const [showModal, setShowModal] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [xlmPrice, setXlmPrice] = useState(null);
   const [xrpPrice, setXrpPrice] = useState(null);
@@ -70,7 +68,7 @@ function HomePage() {
       }
     };
     fetchTrades();
-    const interval = setInterval(fetchTrades, 10000);
+    const interval = setInterval(fetchTrades, 30000);
     return () => clearInterval(interval);
   }, []);
 
@@ -120,13 +118,17 @@ function HomePage() {
 
       <nav style={{ position: 'fixed', top: 0, width: '100%', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-          <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '120px' }} />
+          <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '200px' }} />
           {currentUser && (
-            <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', marginRight: '10px' }}>
+            <div style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
               {userName?.charAt(0).toUpperCase() || '?'}
             </div>
           )}
-          <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', fontSize: '1.5rem' }}>&#9776;</div>
+          <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', fontSize: '2rem', marginLeft: '1rem' }}>
+            <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
+            <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
+            <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
+          </div>
         </div>
         <div style={{
           maxHeight: menuOpen ? '400px' : '0',
@@ -142,17 +144,16 @@ function HomePage() {
           <Link to="/contact" style={{ margin: '0.25rem 0' }}>Contact Us</Link>
           <Link to="/seller-confirm" style={{ margin: '0.25rem 0' }}>Seller Panel</Link>
           <Link to="/instructions" style={{ margin: '0.25rem 0' }}>User Instructions</Link>
-          <button onClick={handleLogout} style={{ margin: '0.25rem 0' }}>Logout</button>
         </div>
       </nav>
 
-      <main style={{ marginTop: '140px' }}>
-        <h1>Welcome to XLMGuard</h1>
+      <main style={{ marginTop: '220px' }}>
+        <h1 style={{ marginBottom: '10px' }}>XLMGuard<sup style={{ fontSize: '0.5em' }}>™</sup></h1>
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
-          <div style={{ display: 'inline-block', animation: 'scroll-left 30s linear infinite' }}>
+          <div style={{ display: 'inline-block', animation: 'scroll-left 60s linear infinite' }}>
             {[...xlmTrades, ...xrpTrades].map((t, i) => (
               <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>{t.side}: {t.volume} @ ${t.price}</span>
             ))}
@@ -195,6 +196,7 @@ function HomePage() {
 }
 
 export default HomePage;
+
 
 
 
