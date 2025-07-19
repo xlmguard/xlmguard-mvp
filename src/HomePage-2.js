@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth } from './firebase';
+import { auth } from './firebase.js';
 
 function HomePage() {
   const [language, setLanguage] = useState('English');

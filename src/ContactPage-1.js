@@ -1,6 +1,6 @@
 // ContactPage.js
 import React, { useState } from 'react';
-import { db } from './firebase';
+import { db } from './firebase.js';
 import { collection, addDoc, Timestamp } from 'firebase/firestore';
 
 export default function ContactPage() {

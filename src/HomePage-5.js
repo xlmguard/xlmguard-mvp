@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { signOut } from 'firebase/auth';
-import { auth, db } from './firebase';
+import { auth, db } from './firebase.js';
 import { doc, getDoc } from 'firebase/firestore';
 
 function HomePage() {

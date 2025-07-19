@@ -1,6 +1,6 @@
 // SellerConfirmationPanel.js
 import React, { useState } from 'react';
-import { db, storage } from './firebase';
+import { db, storage } from './firebase.js';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { query, where, getDocs, collection, updateDoc } from 'firebase/firestore';
 import emailjs from '@emailjs/browser';

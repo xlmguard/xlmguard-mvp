@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { db } from './firebase';
+import { db } from './firebase.js';
 import { collection, query, where, getDocs, updateDoc, doc, getDoc } from 'firebase/firestore';
 
 function TransactionLookup() {
