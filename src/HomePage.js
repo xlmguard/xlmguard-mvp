@@ -68,7 +68,7 @@ function HomePage() {
       }
     };
     fetchTrades();
-    const interval = setInterval(fetchTrades, 30000);
+    const interval = setInterval(fetchTrades, 90000);
     return () => clearInterval(interval);
   }, []);
 
@@ -109,26 +109,26 @@ function HomePage() {
   };
 
   return (
-    <div style={{ textAlign: 'center', paddingTop: '60px', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh' }}>
+    <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh' }}>
       <Helmet>
         <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
         <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." />
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
-      <nav style={{ position: 'fixed', top: 0, width: '100%', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+      <nav style={{ position: 'relative', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
           <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '200px' }} />
-          {currentUser && (
-            <div style={{ position: 'absolute', top: '20px', right: '20px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
-              {userName?.charAt(0).toUpperCase() || '?'}
-            </div>
-          )}
-          <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', fontSize: '2rem', marginLeft: '1rem' }}>
+          <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', marginLeft: 'auto' }}>
             <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
             <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
             <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
           </div>
+          {currentUser && (
+            <div style={{ marginLeft: '1rem', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
+              {userName?.charAt(0).toUpperCase() || '?'}
+            </div>
+          )}
         </div>
         <div style={{
           maxHeight: menuOpen ? '400px' : '0',
@@ -147,13 +147,13 @@ function HomePage() {
         </div>
       </nav>
 
-      <main style={{ marginTop: '220px' }}>
+      <main style={{ paddingTop: '40px' }}>
         <h1 style={{ marginBottom: '10px' }}>XLMGuard<sup style={{ fontSize: '0.5em' }}>™</sup></h1>
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
-          <div style={{ display: 'inline-block', animation: 'scroll-left 60s linear infinite' }}>
+          <div style={{ display: 'inline-block', animation: 'scroll-left 90s linear infinite' }}>
             {[...xlmTrades, ...xrpTrades].map((t, i) => (
               <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>{t.side}: {t.volume} @ ${t.price}</span>
             ))}
@@ -192,10 +192,11 @@ function HomePage() {
         &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
       </footer>
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
 
