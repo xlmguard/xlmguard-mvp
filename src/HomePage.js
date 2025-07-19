@@ -109,23 +109,16 @@ function HomePage() {
   };
 
   return (
-    <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', minHeight: '100vh' }}>
+    <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
       <Helmet>
         <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
         <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." />
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
-      <nav style={{ position: 'relative', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-        <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-          <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '200px' }} />
-          {currentUser && (
-            <div style={{ position: 'absolute', right: '10px', top: '10px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
-              {userName?.charAt(0).toUpperCase() || '?'}
-            </div>
-          )}
-        </div>
-        <div onClick={() => setMenuOpen(!menuOpen)} style={{ cursor: 'pointer', marginTop: '-3rem', marginLeft: '1rem' }}>
+      <nav style={{ position: 'relative', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '200px', marginBottom: '0.5rem' }} />
+        <div style={{ position: 'absolute', left: '10px', top: '210px', cursor: 'pointer' }} onClick={() => setMenuOpen(!menuOpen)}>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
@@ -136,7 +129,7 @@ function HomePage() {
           transition: 'max-height 0.4s ease',
           display: 'flex',
           flexDirection: 'column',
-          alignItems: 'flex-start',
+          alignItems: 'center',
           marginTop: '0.5rem'
         }}>
           <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0' }}>Escrow</a>
@@ -145,15 +138,20 @@ function HomePage() {
           <Link to="/seller-confirm" style={{ margin: '0.25rem 0' }}>Seller Panel</Link>
           <Link to="/instructions" style={{ margin: '0.25rem 0' }}>User Instructions</Link>
         </div>
+        {currentUser && (
+          <div style={{ position: 'absolute', right: '10px', top: '10px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
+            {userName?.charAt(0).toUpperCase() || '?'}
+          </div>
+        )}
       </nav>
 
-      <main style={{ paddingTop: '20px' }}>
+      <main style={{ paddingTop: '10px' }}>
         <h1 style={{ marginTop: '0', marginBottom: '10px' }}>XLMGuard<sup style={{ fontSize: '0.5em' }}>™</sup></h1>
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
-          <div style={{ display: 'inline-block', animation: 'scroll-left 120s linear infinite' }}>
+          <div style={{ display: 'inline-block', animation: 'scroll-left 360s linear infinite' }}>
             {[...xlmTrades, ...xrpTrades].map((t, i) => (
               <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>{t.side}: {t.volume} @ ${t.price}</span>
             ))}
@@ -196,3 +194,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
