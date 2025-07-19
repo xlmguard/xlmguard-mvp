@@ -192,7 +192,7 @@ function HomePage() {
         &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
       </footer>
     </div>
-  );
+   );
 }
 
 export default HomePage;
