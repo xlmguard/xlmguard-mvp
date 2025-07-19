@@ -11,11 +11,8 @@ function HomePage() {
   const [userRole, setUserRole] = useState(null);
   const [userName, setUserName] = useState('');
   const [showModal, setShowModal] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
   const [xlmPrice, setXlmPrice] = useState(null);
   const [xrpPrice, setXrpPrice] = useState(null);
-  const [xlmTrades, setXlmTrades] = useState([]);
-  const [xrpTrades, setXrpTrades] = useState([]);
 
   const navigate = useNavigate();
 
@@ -50,38 +47,6 @@ function HomePage() {
     fetchPrices();
   }, []);
 
-  useEffect(() => {
-    const fetchTrades = async () => {
-      try {
-        const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
-        const dataXLM = await resXLM.json();
-        if (dataXLM.result?.XXLMZUSD) {
-          setXlmTrades(dataXLM.result.XXLMZUSD.slice(-10).map(t => ({
-            price: t[0],
-            volume: t[1],
-            side: t[3] === 'b' ? 'Buy' : 'Sell'
-          })));
-        }
-        const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
-        const dataXRP = await resXRP.json();
-        if (dataXRP.result?.XXRPZUSD) {
-          setXrpTrades(dataXRP.result.XXRPZUSD.slice(-10).map(t => ({
-            price: t[0],
-            volume: t[1],
-            side: t[3] === 'b' ? 'Buy' : 'Sell'
-          })));
-        }
-      } catch (err) {
-        console.error('Error fetching trades:', err);
-      }
-    };
-    fetchTrades();
-    const interval = setInterval(fetchTrades, 10000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleLanguageChange = (e) => setLanguage(e.target.value);
-
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -109,61 +74,81 @@ function HomePage() {
     }
   };
 
-  const descriptions = { /* same as before */ };
-  const allLanguages = ['English', 'French', 'Spanish', 'German', 'Chinese', 'Arabic', 'Hindi'];
-
   return (
-    <div style={{ /* styles omitted for brevity */ }}>
+    <div style={{ fontFamily: 'Arial, sans-serif' }}>
       <Helmet>
-        {/* metadata */}
+        <title>XLMGuard | Secure Your Crypto Transactions</title>
       </Helmet>
 
-      {/* tickers and header code omitted */}
+      {/* Header */}
+      <header style={{ padding: '1rem', backgroundColor: '#1a1a1a', color: 'white', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '40px' }} />
+        </div>
+        <nav style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <Link to="/" style={{ color: 'white' }}>Home</Link>
+          <Link to="/faq" style={{ color: 'white' }}>FAQ</Link>
+          <Link to="/instructions" style={{ color: 'white' }}>Instructions</Link>
+          <Link to="/contact" style={{ color: 'white' }}>Contact</Link>
+          {!currentUser && <Link to="/login" style={{ color: 'white' }}>Login</Link>}
+          {currentUser && (
+            <button onClick={handleLogout} style={{ background: 'none', color: 'white', border: 'none', cursor: 'pointer' }}>
+              Logout
+            </button>
+          )}
+        </nav>
+      </header>
 
-      {/* Modal toggle */}
-      <button onClick={() => setShowModal(true)}>How to Escrow</button>
+      {/* Hero */}
+      <section style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+        <h1>Welcome to XLMGuard</h1>
+        <p>Blockchain-powered escrow and verification for XLM & XRP transactions.</p>
+        <p><strong>XLM:</strong> ${xlmPrice} | <strong>XRP:</strong> ${xrpPrice}</p>
+        <div style={{ marginTop: '2rem' }}>
+          <button onClick={handleSubmitTransaction} style={{ padding: '10px 20px', marginRight: '10px' }}>
+            Submit Escrow
+          </button>
+          <button onClick={() => setShowModal(true)} style={{ padding: '10px 20px' }}>
+            How to Escrow
+          </button>
+        </div>
+      </section>
 
+      {/* Escrow Instructions Modal */}
       {showModal && (
         <>
-          {/* Modal backdrop */}
+          <div onClick={() => setShowModal(false)} style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.6)', zIndex: 999
+          }} />
           <div style={{
-            position: 'fixed', top: 0, left: 0,
-            width: '100%', height: '100%',
-            backgroundColor: 'rgba(0,0,0,0.6)'
-          }} onClick={() => setShowModal(false)} />
-
-          {/* Modal content */}
-          <div style={{
-            position: 'fixed',
-            top: '50%', left: '50%',
+            position: 'fixed', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
-            backgroundColor: 'white',
-            padding: '30px',
-            borderRadius: '8px',
-            maxWidth: '600px',
-            zIndex: 1000
+            backgroundColor: 'white', padding: '2rem', borderRadius: '10px', zIndex: 1000, width: '90%', maxWidth: '500px'
           }}>
             <h3>How to Set Up an Escrowed TXID</h3>
-            <p>To manually escrow XLM or XRP, use a wallet that supports multisignature or smart contracts...</p>
             <ol>
               <li>Create an escrow or multisig transaction in your wallet.</li>
               <li>Confirm the recipient address, amount, and unlock conditions.</li>
               <li>Copy the transaction ID (TXID) shown after submission.</li>
-              <li>Paste that TXID in the "Submit Transaction" form on XLMGuard.</li>
-              <li>Once the seller uploads the required documents, return to your wallet and release the escrow.</li>
+              <li>Paste the TXID in the "Submit Transaction" form on XLMGuard.</li>
+              <li>Once the seller uploads required docs, return and release the escrow.</li>
             </ol>
-            <button onClick={() => setShowModal(false)}>Close</button>
+            <button onClick={() => setShowModal(false)} style={{ marginTop: '1rem' }}>Close</button>
           </div>
         </>
       )}
 
-      {/* footer code omitted */}
-
+      {/* Footer */}
+      <footer style={{ textAlign: 'center', padding: '2rem', backgroundColor: '#f0f0f0', marginTop: '2rem' }}>
+        <p>&copy; {new Date().getFullYear()} XLMGuard. All rights reserved.</p>
+      </footer>
     </div>
   );
 }
 
 export default HomePage;
+
 
 
 
