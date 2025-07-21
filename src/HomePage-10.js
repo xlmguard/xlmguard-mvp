@@ -125,33 +125,12 @@ function HomePage() {
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
-      <nav style={{
-        background: 'linear-gradient(to right, #0f0f0f, #1a1a1a)',
-        borderBottom: '1px solid #333',
-        padding: '1rem 1rem 2rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative'
-      }}>
-        <img
-          src="/logo.png"
-          alt="XLMGuard Logo"
-          style={{
-            height: '140px',
-            padding: '10px 20px',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
-            marginBottom: '0.5rem'
-          }}
-        />
-        <div style={{ position: 'absolute', left: '10px', top: '20px', cursor: 'pointer' }} onClick={() => setMenuOpen(!menuOpen)}>
-          <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
-          <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
-          <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
+      <nav style={{ position: 'relative', backgroundColor: 'rgba(255,255,255,0.95)', borderBottom: '1px solid #ddd', padding: '0.5rem 1rem', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <img src="/logo.png" alt="XLMGuard Logo" style={{ height: '200px', marginBottom: '0.5rem' }} />
+        <div style={{ position: 'absolute', left: '10px', top: '210px', cursor: 'pointer' }} onClick={() => setMenuOpen(!menuOpen)}>
+          <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
+          <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
+          <div style={{ width: '25px', height: '3px', backgroundColor: 'black', margin: '4px 0' }}></div>
         </div>
         <div style={{
           maxHeight: menuOpen ? '400px' : '0',
@@ -162,11 +141,11 @@ function HomePage() {
           alignItems: 'center',
           marginTop: '0.5rem'
         }}>
-          <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0', color: '#fff' }}>Escrow</a>
-          <Link to="/faq" style={{ margin: '0.25rem 0', color: '#fff' }}>FAQ</Link>
-          <Link to="/contact" style={{ margin: '0.25rem 0', color: '#fff' }}>Contact Us</Link>
-          <Link to="/seller-confirm" style={{ margin: '0.25rem 0', color: '#fff' }}>Seller Panel</Link>
-          <Link to="/instructions" style={{ margin: '0.25rem 0', color: '#fff' }}>User Instructions</Link>
+          <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0' }}>Escrow</a>
+          <Link to="/faq" style={{ margin: '0.25rem 0' }}>FAQ</Link>
+          <Link to="/contact" style={{ margin: '0.25rem 0' }}>Contact Us</Link>
+          <Link to="/seller-confirm" style={{ margin: '0.25rem 0' }}>Seller Panel</Link>
+          <Link to="/instructions" style={{ margin: '0.25rem 0' }}>User Instructions</Link>
         </div>
         {currentUser && (
           <div style={{ position: 'absolute', right: '10px', top: '10px', width: '40px', height: '40px', borderRadius: '50%', backgroundColor: '#007BFF', color: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', fontWeight: 'bold', fontSize: '1.2rem', cursor: 'pointer' }} onClick={handleLogout}>
@@ -180,6 +159,7 @@ function HomePage() {
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
+        {/* Ticker Carousel */}
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
           <div style={{ display: 'inline-block', animation: 'scroll-left 360s linear infinite' }}>
             {tickerContent}
@@ -219,7 +199,10 @@ function HomePage() {
         <em>Patent Pending</em>
       </footer>
     </div>
-  );
+   );
 }
 
 export default HomePage;
+
+
+
