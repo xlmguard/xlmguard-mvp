@@ -141,10 +141,10 @@ function HomePage() {
           alt="XLMGuard Logo"
           style={{
             height: '140px',
-            padding: '10px 20px',
-            backgroundColor: '#ffffff',
-            borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.25)',
+            backgroundColor: 'transparent',
+            border: 'none',
+            borderRadius: '0px',
+            filter: 'drop-shadow(0 0 10px #00f2ff)',
             marginBottom: '0.5rem'
           }}
         />
@@ -223,3 +223,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
