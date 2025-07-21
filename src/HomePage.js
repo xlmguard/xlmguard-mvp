@@ -187,11 +187,13 @@ function HomePage() {
       </main>
 
       <footer style={{ marginTop: '3rem', padding: '1rem 0', fontSize: '0.8rem', color: '#777', backgroundColor: 'rgba(255,255,255,0.9)', borderTop: '1px solid #ddd' }}>
-        &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved.
+        &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved. <br />
+        <em>Patent Pending</em>
       </footer>
     </div>
   );
 }
 
 export default HomePage;
+
 
