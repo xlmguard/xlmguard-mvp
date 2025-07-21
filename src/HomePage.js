@@ -199,7 +199,7 @@ function HomePage() {
         <em>Patent Pending</em>
       </footer>
     </div>
-  );
+   );
 }
 
 export default HomePage;
