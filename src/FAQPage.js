@@ -585,6 +585,6 @@ const FAQPage = () => {
       </div>
     </div>
   );
-};
+ }; 
 
 export default FAQPage;
