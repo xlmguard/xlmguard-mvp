@@ -108,6 +108,15 @@ function HomePage() {
     English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.'
   };
 
+  const allTrades = [...xlmTrades, ...xrpTrades];
+  const tickerContent = allTrades.length > 0
+    ? allTrades.map((t, i) => (
+        <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>
+          {t.side}: {t.volume} @ ${t.price}
+        </span>
+      ))
+    : <span style={{ padding: '0 2rem' }}>Loading latest trades...</span>;
+
   return (
     <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
       <Helmet>
@@ -150,11 +159,10 @@ function HomePage() {
         <p>{descriptions[language]}</p>
         <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
+        {/* Ticker Carousel */}
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
           <div style={{ display: 'inline-block', animation: 'scroll-left 360s linear infinite' }}>
-            {[...xlmTrades, ...xrpTrades].map((t, i) => (
-              <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>{t.side}: {t.volume} @ ${t.price}</span>
-            ))}
+            {tickerContent}
           </div>
         </div>
 
@@ -191,9 +199,10 @@ function HomePage() {
         <em>Patent Pending</em>
       </footer>
     </div>
-   );
+  );
 }
 
 export default HomePage;
+
 
 
