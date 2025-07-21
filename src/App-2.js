@@ -40,7 +40,7 @@ function App() {
       } else {
         setUser(null);
         setHasPaid(false);
-      }
+       }
 
       setLoading(false);
     });
