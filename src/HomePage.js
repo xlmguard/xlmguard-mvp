@@ -1,4 +1,4 @@
-HomePage.js
+// HomePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -187,10 +187,10 @@ function HomePage() {
         </div>
 
         <style>
-          {@keyframes scroll-left {
+          {`@keyframes scroll-left {
               0% { transform: translateX(100%); }
               100% { transform: translateX(-100%); }
-          }}
+          }`}
         </style>
 
         {!currentUser && (
@@ -225,3 +225,4 @@ function HomePage() {
 export default HomePage;
 
 
+nd
