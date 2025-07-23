@@ -125,43 +125,18 @@ function HomePage() {
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
-      <nav style={{
-        background: 'linear-gradient(to right, #0f0f0f, #1a1a1a)',
-        borderBottom: '1px solid #333',
-        padding: '1rem 1rem 2rem',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)',
-        zIndex: 1000,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        position: 'relative'
-      }}>
+      <nav style={{ background: 'linear-gradient(to right, #0f0f0f, #1a1a1a)', borderBottom: '1px solid #333', padding: '1rem 1rem 2rem', boxShadow: '0 4px 12px rgba(0, 0, 0, 0.4)', zIndex: 1000, display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative' }}>
         <img
           src="/logo.png"
           alt="XLMGuard Logo"
-          style={{
-            height: '140px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            borderRadius: '0px',
-            filter: 'drop-shadow(0 0 10px #00f2ff)',
-            marginBottom: '0.5rem'
-          }}
+          style={{ height: '140px', backgroundColor: 'transparent', border: 'none', borderRadius: '0px', filter: 'drop-shadow(0 0 10px #00f2ff)', marginBottom: '0.5rem' }}
         />
         <div style={{ position: 'absolute', left: '10px', top: '20px', cursor: 'pointer' }} onClick={() => setMenuOpen(!menuOpen)}>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
           <div style={{ width: '25px', height: '3px', backgroundColor: 'white', margin: '4px 0' }}></div>
         </div>
-        <div style={{
-          maxHeight: menuOpen ? '400px' : '0',
-          overflow: 'hidden',
-          transition: 'max-height 0.4s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          marginTop: '0.5rem'
-        }}>
+        <div style={{ maxHeight: menuOpen ? '400px' : '0', overflow: 'hidden', transition: 'max-height 0.4s ease', display: 'flex', flexDirection: 'column', alignItems: 'center', marginTop: '0.5rem' }}>
           <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0', color: '#fff' }}>Escrow</a>
           <Link to="/faq" style={{ margin: '0.25rem 0', color: '#fff' }}>FAQ</Link>
           <Link to="/contact" style={{ margin: '0.25rem 0', color: '#fff' }}>Contact Us</Link>
@@ -186,12 +161,12 @@ function HomePage() {
           </div>
         </div>
 
-        <style>
-          {`@keyframes scroll-left {
+        <style>{`
+          @keyframes scroll-left {
               0% { transform: translateX(100%); }
               100% { transform: translateX(-100%); }
-          }`}
-        </style>
+          }
+        `}</style>
 
         {!currentUser && (
           <div style={{ marginTop: '1rem' }}>
@@ -219,10 +194,8 @@ function HomePage() {
         <em>Patent Pending</em>
       </footer>
     </div>
-   );
+  );
 }
 
 export default HomePage;
 
-
-nd
