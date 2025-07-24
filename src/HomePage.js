@@ -6,7 +6,7 @@ import { signOut } from 'firebase/auth';
 import { auth, db } from './firebase.js';
 import { doc, getDoc } from 'firebase/firestore';
 
-function HomePage() {
+function HomePage() { 
   const [language, setLanguage] = useState('English');
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
