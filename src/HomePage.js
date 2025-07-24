@@ -159,7 +159,7 @@ return (
                   "@type": "AggregateRating",
                   "ratingValue": "4.9",
                   "reviewCount": "48"
-                },
+                 },
                 "inLanguage": ["en", "es", "de", "fr", "ar", "zh", "ru", "pt", "hi", "ja"]
               }
             ]
