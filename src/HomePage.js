@@ -117,7 +117,7 @@ const tickerContent = allTrades.length > 0
 : \<span style={{ padding: '0 2rem' }}>Loading latest trades...</span>;
 
 return (
-\<div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}> <Helmet> <title>XLMGuard – Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">{`           {
+\<div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}> <Helmet> <title>XLMGuard - Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard - blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">{`           {
             "@context": "https://schema.org",
             "@graph": [
               {
@@ -165,15 +165,11 @@ return (
             ]
           }
         `}</script> </Helmet>
-
-```
-  {/* ... rest of the JSX remains unchanged ... */}
-</div>
-```
-
+{/\* ...rest of JSX remains unchanged \*/} </div>
 );
 }
 
 export default HomePage;
+
 
 
