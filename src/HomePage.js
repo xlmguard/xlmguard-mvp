@@ -165,12 +165,14 @@ const schemaData = {
 };
 
 return (
-\<div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}> <Helmet> <title>XLMGuard – Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">{JSON.stringify(schemaData)}</script> </Helmet>
-{/\* ... existing JSX continues here ... \*/} </div>
+\<div style={{ textAlign: 'center' }}> <Helmet> <title>XLMGuard – Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">
+{JSON.stringify(schemaData)} </script> </Helmet>
+{/\* Continue with JSX layout as before \*/} </div>
 );
 }
 
 export default HomePage;
+
 
 
 
