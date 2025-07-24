@@ -19,6 +19,54 @@ const \[xrpTrades, setXrpTrades] = useState(\[]);
 
 const navigate = useNavigate();
 
+const schemaData = {
+"@context": "[https://schema.org](https://schema.org)",
+"@graph": \[
+{
+"@type": "Organization",
+"name": "XLMGuard",
+"url": "[https://xlmguard.com/](https://xlmguard.com/)",
+"logo": "[https://xlmguard.com/logo.png](https://xlmguard.com/logo.png)",
+"description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
+"sameAs": \[
+"[https://twitter.com/xlmguard](https://twitter.com/xlmguard)",
+"[https://linkedin.com/company/xlmguard](https://linkedin.com/company/xlmguard)"
+],
+"location": {
+"@type": "Place",
+"address": {
+"@type": "PostalAddress",
+"addressLocality": "Charlotte",
+"addressRegion": "NC",
+"addressCountry": "US"
+}
+}
+},
+{
+"@type": "WebApplication",
+"name": "XLMGuard Platform",
+"applicationCategory": "FinancialApplication",
+"operatingSystem": "All",
+"url": "[https://xlmguard.com/](https://xlmguard.com/)",
+"softwareHelp": "[https://xlmguard.com/instructions](https://xlmguard.com/instructions)",
+"featureList": "Escrow Protection, Stellar (XLM) and XRP Payment Validation, Seller Document Verification, Secure Multi-Asset Transfers",
+"offers": {
+"@type": "Offer",
+"price": "10",
+"priceCurrency": "USD",
+"availability": "[https://schema.org/InStock](https://schema.org/InStock)",
+"url": "[https://xlmguard.com/register](https://xlmguard.com/register)"
+},
+"aggregateRating": {
+"@type": "AggregateRating",
+"ratingValue": "4.9",
+"reviewCount": "48"
+},
+"inLanguage": \["en", "es", "de", "fr", "ar", "zh", "ru", "pt", "hi", "ja"]
+}
+]
+};
+
 useEffect(() => {
 const unsubscribe = auth.onAuthStateChanged(async (user) => {
 if (user) {
@@ -117,59 +165,18 @@ const tickerContent = allTrades.length > 0
 : \<span style={{ padding: '0 2rem' }}>Loading latest trades...</span>;
 
 return (
-\<div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}> <Helmet> <title>XLMGuard - Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard - blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">{`           {
-            "@context": "https://schema.org",
-            "@graph": [
-              {
-                "@type": "Organization",
-                "name": "XLMGuard",
-                "url": "https://xlmguard.com/",
-                "logo": "https://xlmguard.com/logo.png",
-                "description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
-                "sameAs": [
-                  "https://twitter.com/xlmguard",
-                  "https://linkedin.com/company/xlmguard"
-                ],
-                "location": {
-                  "@type": "Place",
-                  "address": {
-                    "@type": "PostalAddress",
-                    "addressLocality": "Charlotte",
-                    "addressRegion": "NC",
-                    "addressCountry": "US"
-                  }
-                }
-              },
-              {
-                "@type": "WebApplication",
-                "name": "XLMGuard Platform",
-                "applicationCategory": "FinancialApplication",
-                "operatingSystem": "All",
-                "url": "https://xlmguard.com/",
-                "softwareHelp": "https://xlmguard.com/instructions",
-                "featureList": "Escrow Protection, Stellar (XLM) and XRP Payment Validation, Seller Document Verification, Secure Multi-Asset Transfers",
-                "offers": {
-                  "@type": "Offer",
-                  "price": "10",
-                  "priceCurrency": "USD",
-                  "availability": "https://schema.org/InStock",
-                  "url": "https://xlmguard.com/register"
-                },
-                "aggregateRating": {
-                  "@type": "AggregateRating",
-                  "ratingValue": "4.9",
-                  "reviewCount": "48"
-                 },
-                "inLanguage": ["en", "es", "de", "fr", "ar", "zh", "ru", "pt", "hi", "ja"]
-              }
-            ]
-          }
-        `}</script> </Helmet>
-{/\* ...rest of JSX remains unchanged \*/} </div>
+\<div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}> <Helmet> <title>XLMGuard – Secure Your XLM and XRP Transactions</title> <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." /> <link rel="canonical" href="https://xlmguard.com/" /> <script type="application/ld+json">{JSON.stringify(schemaData)}</script> </Helmet>
+
+```
+  {/* ... rest of the JSX remains unchanged ... */}
+</div>
+```
+
 );
 }
 
 export default HomePage;
+
 
 
 
