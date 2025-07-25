@@ -182,7 +182,7 @@ function HomePage() {
       {/* You can now continue rendering the rest of the layout (nav, buttons, etc.) */}
       {/* Register button is unchanged, this is your base file */}
     </div>
-  );
+   );
 }
 
 export default HomePage;
