@@ -2,7 +2,14 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
-import { collection, addDoc, Timestamp } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  doc,
+  getDoc,
+  updateDoc
+} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -91,12 +98,29 @@ const SubmissionForm = () => {
 
       setMessage('Transaction submitted successfully.');
 
-      // Fetch real escrow TXID after submission
       if (submissionMode === 'auto') {
         setLoadingTxId(true);
-        const realTx = await fetchRecentTxId(user.email);
-        setRealTxId(realTx);
-        setShowTxBlock(true);
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+          const walletAddress = userSnap.exists() ? userSnap.data().walletAddress : null;
+
+          if (walletAddress) {
+            const realTx = await fetchRecentTxId(walletAddress);
+            setRealTxId(realTx);
+            setShowTxBlock(true);
+
+            // ✅ Store it in Firestore
+            if (realTx) {
+              await updateDoc(userRef, { escrowTxId: realTx });
+            }
+          } else {
+            setMessage('⚠️ Wallet address not found in user profile.');
+          }
+        } catch (err) {
+          console.error('Error retrieving wallet address or storing TXID:', err);
+          setMessage('⚠️ Could not retrieve wallet address or store TXID.');
+        }
         setLoadingTxId(false);
       }
     } catch (error) {
@@ -218,6 +242,7 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
 
