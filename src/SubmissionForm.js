@@ -1,4 +1,3 @@
-// SubmissionForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
@@ -25,6 +24,7 @@ const SubmissionForm = () => {
   const [showTxBlock, setShowTxBlock] = useState(false);
   const [realTxId, setRealTxId] = useState(null);
   const [loadingTxId, setLoadingTxId] = useState(false);
+  const [fetchTxFlag, setFetchTxFlag] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -46,9 +46,7 @@ const SubmissionForm = () => {
 
   const fetchRecentTxId = async (walletAddress) => {
     try {
-      const res = await fetch(
-        `https://api.steexp.com/account/${walletAddress}/payments?limit=1`
-      );
+      const res = await fetch(`https://api.steexp.com/account/${walletAddress}/payments?limit=1`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0 && data[0].hash) {
         return data[0].hash;
@@ -58,6 +56,38 @@ const SubmissionForm = () => {
     }
     return null;
   };
+
+  useEffect(() => {
+    const fetchAndStoreTxID = async () => {
+      if (!fetchTxFlag || !user) return;
+      setLoadingTxId(true);
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const walletAddress = userSnap.exists() ? userSnap.data().walletAddress : null;
+
+        if (!walletAddress) {
+          setMessage('⚠️ Wallet address not found in user profile.');
+          return;
+        }
+
+        const realTx = await fetchRecentTxId(walletAddress);
+        setRealTxId(realTx);
+        setShowTxBlock(true);
+        setLoadingTxId(false);
+
+        if (realTx) {
+          await updateDoc(userRef, { escrowTxId: realTx });
+        }
+      } catch (err) {
+        console.error('Error fetching/storing TXID:', err);
+        setMessage('⚠️ Error fetching or storing TXID.');
+        setLoadingTxId(false);
+      }
+    };
+
+    fetchAndStoreTxID();
+  }, [fetchTxFlag, user]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,17 +104,12 @@ const SubmissionForm = () => {
     try {
       let contractURL = '';
       if (contractFile) {
-        const storageRef = ref(
-          storage,
-          `contracts/${user.uid}_${Date.now()}_${contractFile.name}`
-        );
+        const storageRef = ref(storage, `contracts/${user.uid}_${Date.now()}_${contractFile.name}`);
         const snapshot = await uploadBytes(storageRef, contractFile);
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      const newTxId = submissionMode === 'auto'
-        ? `auto_${user.uid}_${Date.now()}`
-        : txId;
+      const newTxId = submissionMode === 'auto' ? `auto_${user.uid}_${Date.now()}` : txId;
 
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
@@ -99,32 +124,10 @@ const SubmissionForm = () => {
       setMessage('Transaction submitted successfully.');
 
       if (submissionMode === 'auto') {
-        setLoadingTxId(true);
-        try {
-          const userRef = doc(db, 'users', user.uid);
-          const userSnap = await getDoc(userRef);
-          const walletAddress = userSnap.exists() ? userSnap.data().walletAddress : null;
-
-          if (walletAddress) {
-            const realTx = await fetchRecentTxId(walletAddress);
-            setRealTxId(realTx);
-            setShowTxBlock(true);
-
-            // ✅ Store it in Firestore
-            if (realTx) {
-              await updateDoc(userRef, { escrowTxId: realTx });
-            }
-          } else {
-            setMessage('⚠️ Wallet address not found in user profile.');
-          }
-        } catch (err) {
-          console.error('Error retrieving wallet address or storing TXID:', err);
-          setMessage('⚠️ Could not retrieve wallet address or store TXID.');
-        }
-        setLoadingTxId(false);
+        setFetchTxFlag(true); // Triggers useEffect to fetch real TXID
       }
     } catch (error) {
-      console.error('Error submitting transaction:', error);
+      console.error('Submission error:', error);
       setMessage('Failed to submit transaction. Please try again.');
     }
   };
@@ -159,44 +162,25 @@ const SubmissionForm = () => {
 
         <div style={{ marginTop: '10px' }}>
           <label>
-            <input
-              type="radio"
-              value="auto"
-              checked={submissionMode === 'auto'}
-              onChange={() => setSubmissionMode('auto')}
-            /> Lobstr/Vault (Auto-generate TXID)
-          </label>
-          <br />
+            <input type="radio" value="auto" checked={submissionMode === 'auto'} onChange={() => setSubmissionMode('auto')} />
+            Lobstr/Vault (Auto-generate TXID)
+          </label><br />
           <label>
-            <input
-              type="radio"
-              value="manual"
-              checked={submissionMode === 'manual'}
-              onChange={() => setSubmissionMode('manual')}
-            /> Manually enter TXID
+            <input type="radio" value="manual" checked={submissionMode === 'manual'} onChange={() => setSubmissionMode('manual')} />
+            Manually enter TXID
           </label>
         </div>
 
         {submissionMode === 'manual' && (
           <div>
             <label>Transaction ID:</label>
-            <input
-              type="text"
-              value={txId}
-              onChange={(e) => setTxId(e.target.value)}
-              required
-            />
+            <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} required />
           </div>
         )}
 
         <div>
           <label>Amount:</label>
-          <input
-            type="number"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-            required
-          />
+          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
         </div>
 
         <div>
@@ -213,16 +197,15 @@ const SubmissionForm = () => {
       </form>
 
       {message && <p>{message}</p>}
-
-      {loadingTxId && <p>Fetching TXID from Stellar... ⏳</p>}
+      {loadingTxId && <p>Fetching Escrow TXID from Stellar... ⏳</p>}
 
       {showTxBlock && realTxId && (
         <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '15px' }}>
           <h4>Escrow TXID</h4>
           <p>{realTxId}</p>
           <button onClick={copyToClipboard}>Copy to Clipboard</button>
-          <p>Copy and Paste this TXID and send it to the Seller for order confirmation.</p>
-          <p>A copy of this Escrow TXID is available under the Escrow menu on transaction lookup.</p>
+          <p>Copy and paste this TXID and send it to the seller for order confirmation.</p>
+          <p>This TXID will also appear on the Escrow Lookup page.</p>
         </div>
       )}
 
@@ -231,10 +214,7 @@ const SubmissionForm = () => {
       </div>
 
       <hr />
-      <button
-        onClick={handleLogout}
-        style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}
-      >
+      <button onClick={handleLogout} style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}>
         Logout
       </button>
     </div>
@@ -242,6 +222,7 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
 
