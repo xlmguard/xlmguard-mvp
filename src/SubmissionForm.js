@@ -2,9 +2,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
-import { collection, addDoc, Timestamp, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection,
+  addDoc,
+  Timestamp,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs
+} from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SubmissionForm = () => {
   const [currency, setCurrency] = useState('XLM');
@@ -21,22 +30,9 @@ const SubmissionForm = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-
-        // Auto-fetch TXID after user is confirmed
-        const txid = await fetchRecentTxId(currentUser.email);
-        if (txid) {
-          setRealTxId(txid);
-          setShowTxBlock(true);
-
-          // Optional: store TXID in Firestore
-          const txDocRef = doc(db, 'users', currentUser.uid);
-          await updateDoc(txDocRef, {
-            realTxId: txid
-          });
-        }
       } else {
         setUser(null);
         setMessage('User not authenticated. Redirecting to login...');
@@ -50,17 +46,21 @@ const SubmissionForm = () => {
     setContractFile(e.target.files[0]);
   };
 
-  const fetchRecentTxId = async (walletAddress) => {
+  const fetchRecentTxId = async (uid) => {
     try {
-      const res = await fetch(
-        `https://api.steexp.com/account/${walletAddress}/payments?limit=1`
+      const q = query(
+        collection(db, 'transactions'),
+        where('uid', '==', uid),
+        orderBy('createdAt', 'desc'),
+        limit(1)
       );
-      const data = await res.json();
-      if (Array.isArray(data) && data.length > 0 && data[0].hash) {
-        return data[0].hash;
+      const snapshot = await getDocs(q);
+      if (!snapshot.empty) {
+        const docData = snapshot.docs[0].data();
+        return docData.transactionId || null;
       }
     } catch (err) {
-      console.error('Error fetching TXID:', err);
+      console.error('Error fetching TXID from Firestore:', err);
     }
     return null;
   };
@@ -103,6 +103,14 @@ const SubmissionForm = () => {
       });
 
       setMessage('Transaction submitted successfully.');
+
+      if (submissionMode === 'auto') {
+        setLoadingTxId(true);
+        const realTx = await fetchRecentTxId(user.uid);
+        setRealTxId(realTx);
+        setShowTxBlock(true);
+        setLoadingTxId(false);
+      }
     } catch (error) {
       console.error('Error submitting transaction:', error);
       setMessage('Failed to submit transaction. Please try again.');
@@ -111,7 +119,7 @@ const SubmissionForm = () => {
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      await signOut(auth);
       navigate('/login');
     } catch (err) {
       console.error('Logout failed:', err);
@@ -193,8 +201,7 @@ const SubmissionForm = () => {
       </form>
 
       {message && <p>{message}</p>}
-
-      {loadingTxId && <p>Fetching TXID from Stellar... ⏳</p>}
+      {loadingTxId && <p>Fetching TXID from Firestore... ⏳</p>}
 
       {showTxBlock && realTxId && (
         <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '15px' }}>
@@ -218,10 +225,11 @@ const SubmissionForm = () => {
         Logout
       </button>
     </div>
-   );
+  );
 };
 
 export default SubmissionForm;
+
 
 
 
