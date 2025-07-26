@@ -21,7 +21,10 @@ const SubmissionForm = () => {
   const [contractFile, setContractFile] = useState(null);
   const [message, setMessage] = useState('');
   const [escrowTxId, setEscrowTxId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [user, setUser] = useState(null);
+  const [showResult, setShowResult] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -51,6 +54,12 @@ const SubmissionForm = () => {
     }
   };
 
+  const handleCopy = () => {
+    navigator.clipboard.writeText(escrowTxId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) return setMessage('User not authenticated.');
@@ -60,11 +69,13 @@ const SubmissionForm = () => {
     }
 
     try {
+      setIsLoading(true);
       const userDoc = await getDoc(doc(db, 'users', user.uid));
       const walletAddress = userDoc.exists() ? userDoc.data().walletAddress : null;
       const walletMemo = userDoc.exists() ? userDoc.data().walletMemo : null;
 
       if (!walletAddress && submissionMode === 'auto') {
+        setIsLoading(false);
         return setMessage('Wallet address not found in user profile.');
       }
 
@@ -79,7 +90,6 @@ const SubmissionForm = () => {
         ? txId
         : `auto_${user.uid}_${Date.now()}`;
 
-      // Step 1: Add Firestore transaction entry
       const txDocRef = await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
@@ -92,7 +102,6 @@ const SubmissionForm = () => {
         walletMemo,
       });
 
-      // Step 2: Fetch real escrow TXID from Stellar
       const realTxId = submissionMode === 'auto' ? await fetchLatestStellarTxID(walletAddress) : txId;
 
       if (realTxId) {
@@ -100,10 +109,12 @@ const SubmissionForm = () => {
         setEscrowTxId(realTxId);
       }
 
-      setMessage('Transaction submitted successfully.');
+      setShowResult(true);
+      setIsLoading(false);
     } catch (error) {
       console.error('Submission error:', error);
       setMessage('Failed to submit transaction.');
+      setIsLoading(false);
     }
   };
 
@@ -118,60 +129,78 @@ const SubmissionForm = () => {
 
   return (
     <div style={{ padding: '20px' }}>
-      <h2>Submit Transaction</h2>
-      <form onSubmit={handleSubmit}>
-        <label>Currency:</label>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          <option value="XLM">XLM</option>
-          <option value="XRP">XRP</option>
-        </select>
+      {!showResult ? (
+        <>
+          <h2>Submit Transaction</h2>
+          <form onSubmit={handleSubmit}>
+            <label>Currency:</label>
+            <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+              <option value="XLM">XLM</option>
+              <option value="XRP">XRP</option>
+            </select>
 
-        <div style={{ marginTop: '10px' }}>
-          <label>
-            <input type="radio" value="auto" checked={submissionMode === 'auto'} onChange={() => setSubmissionMode('auto')} />
-            Lobstr/Vault (Auto-generate TXID)
-          </label>
-          <br />
-          <label>
-            <input type="radio" value="manual" checked={submissionMode === 'manual'} onChange={() => setSubmissionMode('manual')} />
-            Manually enter TXID
-          </label>
-        </div>
+            <div style={{ marginTop: '10px' }}>
+              <label>
+                <input type="radio" value="auto" checked={submissionMode === 'auto'} onChange={() => setSubmissionMode('auto')} />
+                Lobstr/Vault (Auto-generate TXID)
+              </label>
+              <br />
+              <label>
+                <input type="radio" value="manual" checked={submissionMode === 'manual'} onChange={() => setSubmissionMode('manual')} />
+                Manually enter TXID
+              </label>
+            </div>
 
-        {submissionMode === 'manual' && (
-          <>
-            <label>Transaction ID:</label>
-            <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} />
-          </>
-        )}
+            {submissionMode === 'manual' && (
+              <>
+                <label>Transaction ID:</label>
+                <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} />
+              </>
+            )}
 
-        <label>Amount:</label>
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <label>Amount:</label>
+            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
 
-        <label>Notes:</label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+            <label>Notes:</label>
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
 
-        <label>Upload Contract:</label>
-        <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
+            <label>Upload Contract:</label>
+            <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
 
-        <button type="submit">Submit</button>
-      </form>
-
-      {message && <p>{message}</p>}
-
-      {escrowTxId && (
-        <div style={{ marginTop: '20px', padding: '12px', border: '1px solid #ccc' }}>
-          <h4>Escrow TXID from Stellar:</h4>
-          <code style={{ wordWrap: 'break-word' }}>{escrowTxId}</code>
-          <p><strong>Copy and paste this TXID and send it to the Seller for order confirmation.</strong></p>
-          <p>This TXID is also available under the <strong>Escrow</strong> menu in Transaction Lookup.</p>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Submitting...' : 'Submit'}
+            </button>
+          </form>
+          {message && <p>{message}</p>}
+        </>
+      ) : (
+        <div style={{ border: '1px solid #ccc', padding: '20px', marginTop: '20px' }}>
+          <h3>Transaction Submitted!</h3>
+          {isLoading ? (
+            <p>⏳ Fetching escrow TXID...</p>
+          ) : escrowTxId ? (
+            <>
+              <p><strong>Escrow TXID:</strong></p>
+              <code style={{ wordBreak: 'break-word', display: 'block', margin: '10px 0' }}>{escrowTxId}</code>
+              <button onClick={handleCopy}>
+                {copied ? 'Copied!' : 'Copy to Clipboard'}
+              </button>
+              <p style={{ marginTop: '10px' }}>
+                <strong>Copy and paste this TXID and send it to the Seller for order confirmation.</strong>
+              </p>
+              <p>This TXID is also available under the <strong>Escrow</strong> menu in Transaction Lookup.</p>
+              <button onClick={() => navigate('/')} style={{ marginTop: '20px' }}>
+                Return to Home Page
+              </button>
+            </>
+          ) : (
+            <p>⚠️ No TXID retrieved. Please check back in the Escrow menu.</p>
+          )}
         </div>
       )}
 
       <hr />
-      <button onClick={() => navigate('/')}>Return to Home Page</button>
-      <br />
-      <button onClick={handleLogout} style={{ marginTop: '10px', backgroundColor: '#f00', color: '#fff' }}>
+      <button onClick={handleLogout} style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}>
         Logout
       </button>
     </div>
@@ -179,3 +208,4 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
