@@ -24,20 +24,17 @@ const SubmissionForm = () => {
   const [showTxBlock, setShowTxBlock] = useState(false);
   const [realTxId, setRealTxId] = useState(null);
   const [loadingTxId, setLoadingTxId] = useState(false);
-  const [fetchTxFlag, setFetchTxFlag] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
       } else {
-        setUser(null);
-        setMessage('User not authenticated. Redirecting to login...');
-        setTimeout(() => navigate('/login'), 2000);
+        navigate('/login');
       }
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, [navigate]);
 
   const handleFileChange = (e) => {
@@ -57,40 +54,7 @@ const SubmissionForm = () => {
     return null;
   };
 
-  useEffect(() => {
-    const fetchAndStoreTxID = async () => {
-      if (!fetchTxFlag || !user) return;
-      setLoadingTxId(true);
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const userSnap = await getDoc(userRef);
-        const walletAddress = userSnap.exists() ? userSnap.data().walletAddress : null;
-
-        if (!walletAddress) {
-          setMessage('⚠️ Wallet address not found in user profile.');
-          return;
-        }
-
-        const realTx = await fetchRecentTxId(walletAddress);
-        setRealTxId(realTx);
-        setShowTxBlock(true);
-        setLoadingTxId(false);
-
-        if (realTx) {
-          await updateDoc(userRef, { escrowTxId: realTx });
-        }
-      } catch (err) {
-        console.error('Error fetching/storing TXID:', err);
-        setMessage('⚠️ Error fetching or storing TXID.');
-        setLoadingTxId(false);
-      }
-    };
-
-    fetchAndStoreTxID();
-  }, [fetchTxFlag, user]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSubmit = async () => {
     if (!user) {
       setMessage('User not authenticated.');
       return;
@@ -118,27 +82,37 @@ const SubmissionForm = () => {
         amount,
         notes,
         contractURL,
-        createdAt: Timestamp.now(),
+        createdAt: Timestamp.now()
       });
 
       setMessage('Transaction submitted successfully.');
 
       if (submissionMode === 'auto') {
-        setFetchTxFlag(true); // Triggers useEffect to fetch real TXID
+        setLoadingTxId(true);
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+        const walletAddress = userSnap.exists() ? userSnap.data().walletAddress : null;
+
+        if (walletAddress) {
+          const realTx = await fetchRecentTxId(walletAddress);
+          setRealTxId(realTx);
+          setShowTxBlock(true);
+          await updateDoc(userRef, { escrowTxId: realTx });
+        } else {
+          setMessage('⚠️ Wallet address not found in user profile.');
+        }
+
+        setLoadingTxId(false);
       }
-    } catch (error) {
-      console.error('Submission error:', error);
-      setMessage('Failed to submit transaction. Please try again.');
+    } catch (err) {
+      console.error('Error submitting transaction:', err);
+      setMessage('❌ Submission failed. Please try again.');
     }
   };
 
   const handleLogout = async () => {
-    try {
-      await signOut(auth);
-      navigate('/login');
-    } catch (err) {
-      console.error('Logout failed:', err);
-    }
+    await signOut(auth);
+    navigate('/login');
   };
 
   const copyToClipboard = () => {
@@ -151,77 +125,71 @@ const SubmissionForm = () => {
     <div style={{ padding: '20px' }}>
       <h2>Submit Transaction</h2>
 
-      <form onSubmit={handleSubmit}>
+      <div>
+        <label>Currency:</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <option value="XLM">XLM</option>
+          <option value="XRP">XRP</option>
+        </select>
+      </div>
+
+      <div style={{ marginTop: '10px' }}>
+        <label>
+          <input type="radio" value="auto" checked={submissionMode === 'auto'} onChange={() => setSubmissionMode('auto')} />
+          Lobstr/Vault (Auto TXID)
+        </label>
+        <br />
+        <label>
+          <input type="radio" value="manual" checked={submissionMode === 'manual'} onChange={() => setSubmissionMode('manual')} />
+          Manual Entry
+        </label>
+      </div>
+
+      {submissionMode === 'manual' && (
         <div>
-          <label>Currency:</label>
-          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-            <option value="XLM">XLM</option>
-            <option value="XRP">XRP</option>
-          </select>
+          <label>Transaction ID:</label>
+          <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} />
         </div>
+      )}
 
-        <div style={{ marginTop: '10px' }}>
-          <label>
-            <input type="radio" value="auto" checked={submissionMode === 'auto'} onChange={() => setSubmissionMode('auto')} />
-            Lobstr/Vault (Auto-generate TXID)
-          </label><br />
-          <label>
-            <input type="radio" value="manual" checked={submissionMode === 'manual'} onChange={() => setSubmissionMode('manual')} />
-            Manually enter TXID
-          </label>
-        </div>
+      <div>
+        <label>Amount:</label>
+        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
+      </div>
 
-        {submissionMode === 'manual' && (
-          <div>
-            <label>Transaction ID:</label>
-            <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} required />
-          </div>
-        )}
+      <div>
+        <label>Notes:</label>
+        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+      </div>
 
-        <div>
-          <label>Amount:</label>
-          <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
-        </div>
+      <div>
+        <label>Upload Contract (PDF, DOCX, etc.):</label>
+        <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
+      </div>
 
-        <div>
-          <label>Notes:</label>
-          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
-        </div>
-
-        <div>
-          <label>Upload Contract (PDF, DOCX, etc.):</label>
-          <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
-        </div>
-
-        <button type="submit">Submit</button>
-      </form>
+      <button onClick={handleSubmit} style={{ marginTop: '10px' }}>Submit Transaction</button>
 
       {message && <p>{message}</p>}
-      {loadingTxId && <p>Fetching Escrow TXID from Stellar... ⏳</p>}
+      {loadingTxId && <p>🔄 Fetching escrow TXID from Stellar...</p>}
 
       {showTxBlock && realTxId && (
-        <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '15px' }}>
+        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid gray' }}>
           <h4>Escrow TXID</h4>
           <p>{realTxId}</p>
-          <button onClick={copyToClipboard}>Copy to Clipboard</button>
-          <p>Copy and paste this TXID and send it to the seller for order confirmation.</p>
+          <button onClick={copyToClipboard}>📋 Copy to Clipboard</button>
           <p>This TXID will also appear on the Escrow Lookup page.</p>
         </div>
       )}
 
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={() => navigate('/')}>Return to Home Page</button>
-      </div>
-
+      <button onClick={() => navigate('/')} style={{ marginTop: '20px' }}>Return to Homepage</button>
       <hr />
-      <button onClick={handleLogout} style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}>
-        Logout
-      </button>
+      <button onClick={handleLogout} style={{ backgroundColor: 'red', color: 'white' }}>Logout</button>
     </div>
   );
 };
 
 export default SubmissionForm;
+
 
 
 
