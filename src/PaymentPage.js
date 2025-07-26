@@ -120,20 +120,12 @@ const PaymentPage = () => {
     }
 
     let result = { success: true };
+    const { address, tag, amount } = walletDetails[currency];
+
     if (currency === "XLM") {
-      result = await validateXLMTransaction(
-        trimmedTx,
-        walletDetails.XLM.tag,
-        walletDetails.XLM.amount,
-        walletDetails.XLM.address
-      );
+      result = await validateXLMTransaction(trimmedTx, tag, amount, address);
     } else if (currency === "XRP") {
-      result = await validateXRPTransaction(
-        trimmedTx,
-        walletDetails.XRP.tag,
-        walletDetails.XRP.amount,
-        walletDetails.XRP.address
-      );
+      result = await validateXRPTransaction(trimmedTx, tag, amount, address);
     }
 
     if (!result.success) {
@@ -143,8 +135,6 @@ const PaymentPage = () => {
       return;
     }
 
-    const { address, tag } = walletDetails[currency];
-
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, {
       hasPaid: true,
@@ -152,7 +142,7 @@ const PaymentPage = () => {
       paymentHash: trimmedTx,
       walletAddress: address,
       walletMemo: tag,
-      paidAt: new Date()
+      paidAt: new Date(),
     });
 
     setConfirmationMessage('✅ Payment confirmed! Redirecting...');
@@ -243,3 +233,4 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
