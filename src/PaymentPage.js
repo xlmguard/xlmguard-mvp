@@ -120,12 +120,20 @@ const PaymentPage = () => {
     }
 
     let result = { success: true };
-    const { address, tag, amount } = walletDetails[currency];
-
     if (currency === "XLM") {
-      result = await validateXLMTransaction(trimmedTx, tag, amount, address);
+      result = await validateXLMTransaction(
+        trimmedTx,
+        walletDetails.XLM.tag,
+        walletDetails.XLM.amount,
+        walletDetails.XLM.address
+      );
     } else if (currency === "XRP") {
-      result = await validateXRPTransaction(trimmedTx, tag, amount, address);
+      result = await validateXRPTransaction(
+        trimmedTx,
+        walletDetails.XRP.tag,
+        walletDetails.XRP.amount,
+        walletDetails.XRP.address
+      );
     }
 
     if (!result.success) {
@@ -140,13 +148,11 @@ const PaymentPage = () => {
       hasPaid: true,
       currency,
       paymentHash: trimmedTx,
-      walletAddress: address,
-      walletMemo: tag,
       paidAt: new Date(),
     });
 
     setConfirmationMessage('✅ Payment confirmed! Redirecting...');
-    setTimeout(() => navigate('/submit'), 1500);
+    setTimeout(() => navigate('/submit-temp'), 1500);
     setLoading(false);
   };
 
@@ -233,4 +239,5 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 

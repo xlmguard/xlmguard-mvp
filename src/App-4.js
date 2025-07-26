@@ -117,11 +117,7 @@ function App() {
         />
         <Route
           path="/submit"
-          element={user && hasPaid ? <Navigate to="/submit-temp" /> : <Navigate to="/login" />}
-        />
-        <Route
-          path="/submit-temp"
-          element={user ? <SubmissionForm /> : <Navigate to="/login" />}
+          element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />}
         />
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
@@ -137,3 +133,6 @@ function App() {
 }
 
 export default App;
+
+
+
