@@ -143,16 +143,12 @@ const PaymentPage = () => {
       return;
     }
 
-    const { address, tag } = walletDetails[currency];
-
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, {
       hasPaid: true,
       currency,
       paymentHash: trimmedTx,
-      walletAddress: address,
-      walletMemo: tag,
-      paidAt: new Date()
+      paidAt: new Date(),
     });
 
     setConfirmationMessage('✅ Payment confirmed! Redirecting...');
@@ -243,3 +239,8 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
+
+
+
+
