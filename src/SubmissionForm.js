@@ -236,7 +236,7 @@ const SubmissionForm = () => {
         Logout
       </button>
     </div>
-  );
+   );
 };
 
 export default SubmissionForm;
