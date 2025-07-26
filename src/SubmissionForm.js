@@ -32,9 +32,8 @@ const SubmissionForm = () => {
       if (currentUser) {
         setUser(currentUser);
       } else {
-        setUser(null);
-        setMessage('User not authenticated. Redirecting to login...');
-        setTimeout(() => navigate('/login'), 2000);
+        setMessage('User not authenticated.');
+        navigate('/login');
       }
     });
     return () => unsubscribe();
@@ -52,7 +51,7 @@ const SubmissionForm = () => {
       const data = await res.json();
       return data._embedded?.records?.[0]?.transaction_hash || '';
     } catch (err) {
-      console.error('Failed to fetch TXID:', err);
+      console.error('Failed to fetch TXID from Stellar:', err);
       return '';
     }
   };
@@ -72,13 +71,14 @@ const SubmissionForm = () => {
 
     try {
       setIsLoading(true);
+      setMessage('');
 
       const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const walletAddress = userDoc.exists() ? userDoc.data().walletAddress : null;
-      const walletMemo = userDoc.exists() ? userDoc.data().walletMemo : null;
+      const walletAddress = userDoc.exists() ? userDoc.data().walletAddress : '';
+      const walletMemo = userDoc.exists() ? userDoc.data().walletMemo : '';
 
       if (submissionMode === 'auto' && !walletAddress) {
-        throw new Error('Wallet address not found for auto TXID fetch.');
+        throw new Error('Wallet address not found for TXID lookup.');
       }
 
       let contractURL = '';
@@ -91,15 +91,13 @@ const SubmissionForm = () => {
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      const newTxId =
-        submissionMode === 'manual'
-          ? txId
-          : `auto_${user.uid}_${Date.now()}`;
+      const internalTxId =
+        submissionMode === 'manual' ? txId : `auto_${user.uid}_${Date.now()}`;
 
       const txRef = await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
-        transactionId: newTxId,
+        transactionId: internalTxId,
         amount,
         notes,
         contractURL,
@@ -108,22 +106,21 @@ const SubmissionForm = () => {
         walletMemo,
       });
 
-      let fetchedTxId = '';
+      let finalTxId = internalTxId;
+
       if (submissionMode === 'auto') {
-        fetchedTxId = await fetchLatestTxIdFromStellar(walletAddress);
+        const fetchedTxId = await fetchLatestTxIdFromStellar(walletAddress);
         if (fetchedTxId) {
           await updateDoc(txRef, { escrowTxId: fetchedTxId });
-          setEscrowTxId(fetchedTxId);
+          finalTxId = fetchedTxId;
         }
-      } else {
-        setEscrowTxId(txId);
       }
 
-      setMessage('Transaction submitted successfully.');
+      setEscrowTxId(finalTxId);
       setShowResult(true);
     } catch (error) {
-      console.error('Error submitting transaction:', error);
-      setMessage(`Submission failed: ${error.message}`);
+      console.error('Submission error:', error);
+      setMessage('Submission failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -205,44 +202,32 @@ const SubmissionForm = () => {
 
           <div>
             <label>Notes:</label>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-            />
+            <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           <div>
-            <label>Upload Contract (PDF, DOCX, etc.):</label>
-            <input
-              type="file"
-              onChange={handleFileChange}
-              accept=".pdf,.doc,.docx,.txt"
-            />
+            <label>Upload Contract:</label>
+            <input type="file" onChange={handleFileChange} />
           </div>
 
           <button type="submit">Submit</button>
-          {isLoading && <p>⏳ Submitting and retrieving TXID from Stellar...</p>}
+          {isLoading && <p>⏳ Submitting and retrieving TXID...</p>}
         </form>
       ) : (
         <div>
           <h3>✅ Transaction Submitted</h3>
-          {escrowTxId && (
-            <>
-              <p><strong>Escrow TXID:</strong> {escrowTxId}</p>
-              <button onClick={handleCopy}>Copy to Clipboard</button>
-              <p style={{ marginTop: '10px' }}>
-                Copy and paste this TXID and send it to the Seller for order confirmation.  
-                A copy of this Escrow TXID is available under the Escrow menu on transaction lookup.
-              </p>
-            </>
-          )}
-          <button onClick={() => navigate('/')} style={{ marginTop: '20px' }}>
-            Return to Home Page
-          </button>
+          <p><strong>Escrow TXID:</strong> {escrowTxId}</p>
+          <button onClick={handleCopy}>Copy to Clipboard</button>
+          <p style={{ marginTop: '10px' }}>
+            Copy and paste this TXID and send it to the Seller for order confirmation.
+            A copy of this Escrow TXID is available under the Escrow menu on transaction lookup.
+          </p>
+          <button onClick={() => navigate('/')}>Return to Home Page</button>
         </div>
       )}
 
-      {message && <p>{message}</p>}
+      {message && <p style={{ color: 'red' }}>{message}</p>}
+
       <hr />
       <button
         onClick={handleLogout}
@@ -255,5 +240,6 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
