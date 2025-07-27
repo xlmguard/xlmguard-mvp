@@ -15,7 +15,6 @@ const SubmissionForm = () => {
   const [contractFile, setContractFile] = useState(null);
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
-  const [showInstructions, setShowInstructions] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -72,16 +71,10 @@ const SubmissionForm = () => {
         createdAt: Timestamp.now(),
       });
 
-      setMessage('✅ Transaction submitted successfully.');
-      setShowInstructions(true);
-
-      setTimeout(() => {
-        window.location.href = 'https://escrow.xlmguard.com/lookup';
-      }, 4000);
-
+      setMessage('Transaction submitted successfully.');
     } catch (error) {
       console.error('Error submitting transaction:', error);
-      setMessage('❌ Failed to submit transaction. Please try again.');
+      setMessage('Failed to submit transaction. Please try again.');
     }
   };
 
@@ -114,7 +107,17 @@ const SubmissionForm = () => {
               value="auto"
               checked={submissionMode === 'auto'}
               onChange={() => setSubmissionMode('auto')}
-            /> Lobstr/Vault (Auto-generate TXID)
+            />{' '}
+            <strong>Lobstr/Vault (Auto-generate TXID)</strong>{' '}
+            <span style={{ fontSize: '0.9em', color: '#555' }}>
+              (<a href="https://escrow.xlmguard.com/lookup" target="_blank" rel="noopener noreferrer">
+                Escrow Lookup page
+              </a>)
+            </span>
+            <br />
+            <span style={{ fontSize: '0.85em', color: '#666' }}>
+              After submission, go to the Escrow Lookup page to copy your Escrow TXID and send it to the seller.
+            </span>
           </label>
           <br />
           <label>
@@ -123,7 +126,8 @@ const SubmissionForm = () => {
               value="manual"
               checked={submissionMode === 'manual'}
               onChange={() => setSubmissionMode('manual')}
-            /> Manually enter TXID
+            />{' '}
+            Manually enter TXID
           </label>
         </div>
 
@@ -162,14 +166,7 @@ const SubmissionForm = () => {
         <button type="submit">Submit</button>
       </form>
 
-      {message && <p style={{ marginTop: '20px' }}>{message}</p>}
-
-      {showInstructions && (
-        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ccc' }}>
-          <p>📌 <strong>Important:</strong> Copy and paste the TXID and send it to the seller to confirm the order.</p>
-          <p>You will now be redirected to the Escrow Lookup page.</p>
-        </div>
-      )}
+      {message && <p>{message}</p>}
 
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
@@ -187,6 +184,7 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
 
