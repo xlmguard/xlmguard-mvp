@@ -1,4 +1,3 @@
-// SubmissionForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
@@ -8,7 +7,7 @@ import { onAuthStateChanged, signOut } from 'firebase/auth';
 
 const SubmissionForm = () => {
   const [currency, setCurrency] = useState('XLM');
-  const [submissionMode, setSubmissionMode] = useState('auto');
+  const [submissionMode, setSubmissionMode] = useState('auto'); // auto or manual
   const [txId, setTxId] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
@@ -49,10 +48,7 @@ const SubmissionForm = () => {
     try {
       let contractURL = '';
       if (contractFile) {
-        const storageRef = ref(
-          storage,
-          `contracts/${user.uid}_${Date.now()}_${contractFile.name}`
-        );
+        const storageRef = ref(storage, `contracts/${user.uid}_${Date.now()}_${contractFile.name}`);
         const snapshot = await uploadBytes(storageRef, contractFile);
         contractURL = await getDownloadURL(snapshot.ref);
       }
@@ -72,6 +68,7 @@ const SubmissionForm = () => {
       });
 
       setMessage('Transaction submitted successfully.');
+      setTimeout(() => navigate('/'), 2000);
     } catch (error) {
       console.error('Error submitting transaction:', error);
       setMessage('Failed to submit transaction. Please try again.');
@@ -107,17 +104,7 @@ const SubmissionForm = () => {
               value="auto"
               checked={submissionMode === 'auto'}
               onChange={() => setSubmissionMode('auto')}
-            />{' '}
-            <strong>Lobstr/Vault (Auto-generate TXID) - After submission, go to the Escrow Lookup page to copy your Escrow TXID and send it to the seller</strong>{' '}
-            <span style={{ fontSize: '0.9em', color: '#555' }}>
-              (<a href="https://escrow.xlmguard.com/lookup" target="_blank" rel="noopener noreferrer">
-                Escrow Lookup page
-              </a>)
-            </span>
-            <br />
-            <span style={{ fontSize: '0.85em', color: '#666' }}>
-              After submission, go to the Escrow Lookup page to copy your Escrow TXID and send it to the seller.
-            </span>
+            /> Lobstr/Vault (Auto-generate TXID)
           </label>
           <br />
           <label>
@@ -126,8 +113,7 @@ const SubmissionForm = () => {
               value="manual"
               checked={submissionMode === 'manual'}
               onChange={() => setSubmissionMode('manual')}
-            />{' '}
-            Manually enter TXID
+            /> Manually enter TXID
           </label>
         </div>
 
@@ -138,10 +124,10 @@ const SubmissionForm = () => {
               type="text"
               value={txId}
               onChange={(e) => setTxId(e.target.value)}
-              required
+              required={submissionMode === 'manual'}
             />
           </div>
-        ) }
+        )}
 
         <div>
           <label>Amount:</label>
@@ -171,7 +157,6 @@ const SubmissionForm = () => {
       <div style={{ marginTop: '20px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
-
       <hr />
       <button
         onClick={handleLogout}
@@ -180,21 +165,7 @@ const SubmissionForm = () => {
         Logout
       </button>
     </div>
-   );
+  );
 };
 
 export default SubmissionForm;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
