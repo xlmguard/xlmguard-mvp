@@ -2,16 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
-import {
-  collection,
-  addDoc,
-  Timestamp,
-  query,
-  where,
-  orderBy,
-  limit,
-  getDocs
-} from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 
@@ -24,9 +15,7 @@ const SubmissionForm = () => {
   const [contractFile, setContractFile] = useState(null);
   const [message, setMessage] = useState('');
   const [user, setUser] = useState(null);
-  const [showTxBlock, setShowTxBlock] = useState(false);
-  const [realTxId, setRealTxId] = useState(null);
-  const [loadingTxId, setLoadingTxId] = useState(false);
+  const [showInstructions, setShowInstructions] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -44,25 +33,6 @@ const SubmissionForm = () => {
 
   const handleFileChange = (e) => {
     setContractFile(e.target.files[0]);
-  };
-
-  const fetchRecentTxId = async (uid) => {
-    try {
-      const q = query(
-        collection(db, 'transactions'),
-        where('uid', '==', uid),
-        orderBy('createdAt', 'desc'),
-        limit(1)
-      );
-      const snapshot = await getDocs(q);
-      if (!snapshot.empty) {
-        const docData = snapshot.docs[0].data();
-        return docData.transactionId || null;
-      }
-    } catch (err) {
-      console.error('Error fetching TXID from Firestore:', err);
-    }
-    return null;
   };
 
   const handleSubmit = async (e) => {
@@ -102,18 +72,16 @@ const SubmissionForm = () => {
         createdAt: Timestamp.now(),
       });
 
-      setMessage('Transaction submitted successfully.');
+      setMessage('✅ Transaction submitted successfully.');
+      setShowInstructions(true);
 
-      if (submissionMode === 'auto') {
-        setLoadingTxId(true);
-        const realTx = await fetchRecentTxId(user.uid);
-        setRealTxId(realTx);
-        setShowTxBlock(true);
-        setLoadingTxId(false);
-      }
+      setTimeout(() => {
+        window.location.href = 'https://escrow.xlmguard.com/lookup';
+      }, 4000);
+
     } catch (error) {
       console.error('Error submitting transaction:', error);
-      setMessage('Failed to submit transaction. Please try again.');
+      setMessage('❌ Failed to submit transaction. Please try again.');
     }
   };
 
@@ -123,12 +91,6 @@ const SubmissionForm = () => {
       navigate('/login');
     } catch (err) {
       console.error('Logout failed:', err);
-    }
-  };
-
-  const copyToClipboard = () => {
-    if (realTxId) {
-      navigator.clipboard.writeText(realTxId);
     }
   };
 
@@ -200,16 +162,12 @@ const SubmissionForm = () => {
         <button type="submit">Submit</button>
       </form>
 
-      {message && <p>{message}</p>}
-      {loadingTxId && <p>Fetching TXID from Firestore... ⏳</p>}
+      {message && <p style={{ marginTop: '20px' }}>{message}</p>}
 
-      {showTxBlock && realTxId && (
-        <div style={{ marginTop: '20px', border: '1px solid #ccc', padding: '15px' }}>
-          <h4>Escrow TXID</h4>
-          <p>{realTxId}</p>
-          <button onClick={copyToClipboard}>Copy to Clipboard</button>
-          <p>Copy and Paste this TXID and send it to the Seller for order confirmation.</p>
-          <p>A copy of this Escrow TXID is available under the Escrow menu on transaction lookup.</p>
+      {showInstructions && (
+        <div style={{ marginTop: '20px', padding: '15px', border: '1px solid #ccc' }}>
+          <p>📌 <strong>Important:</strong> Copy and paste the TXID and send it to the seller to confirm the order.</p>
+          <p>You will now be redirected to the Escrow Lookup page.</p>
         </div>
       )}
 
@@ -229,6 +187,7 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
 
 
 
