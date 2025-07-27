@@ -141,7 +141,7 @@ const SubmissionForm = () => {
               required
             />
           </div>
-        )}
+        ) }
 
         <div>
           <label>Amount:</label>
