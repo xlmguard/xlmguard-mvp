@@ -108,7 +108,7 @@ const SubmissionForm = () => {
               checked={submissionMode === 'auto'}
               onChange={() => setSubmissionMode('auto')}
             />{' '}
-            <strong>Lobstr/Vault (Auto-generate TXID)</strong>{' '}
+            <strong>Lobstr/Vault (Auto-generate TXID) - After submission, go to the Escrow Lookup page to copy your Escrow TXID and send it to the seller</strong>{' '}
             <span style={{ fontSize: '0.9em', color: '#555' }}>
               (<a href="https://escrow.xlmguard.com/lookup" target="_blank" rel="noopener noreferrer">
                 Escrow Lookup page
