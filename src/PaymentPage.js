@@ -237,7 +237,7 @@ const PaymentPage = () => {
         <button onClick={() => navigate('/login')}>Login</button>
       </div>
     </div>
-  );
+   );
 };
 
 export default PaymentPage;
