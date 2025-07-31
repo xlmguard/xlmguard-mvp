@@ -149,6 +149,8 @@ const PaymentPage = () => {
       currency,
       paymentHash: trimmedTx,
       paidAt: new Date(),
+      walletAddress: walletDetails[currency].address,
+      walletMemo: walletDetails[currency].tag
     });
 
     setConfirmationMessage('✅ Payment confirmed! Redirecting...');
@@ -239,6 +241,7 @@ const PaymentPage = () => {
 };
 
 export default PaymentPage;
+
 
 
 
