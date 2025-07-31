@@ -228,7 +228,7 @@ const PaymentPage = () => {
         >
           {confirmationMessage}
         </div>
-      )}
+       )}
 
       <div style={{ marginTop: '30px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
