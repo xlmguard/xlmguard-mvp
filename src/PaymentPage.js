@@ -1,4 +1,3 @@
-// PaymentPage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase.js';
@@ -32,6 +31,11 @@ const PaymentPage = () => {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
       tag: '1952896539',
       amount: 10
+    },
+    USDC: {
+      address: 'GCFR6W6HKJGHRNMH3PB45TWD4ASVPJZY3KUUIYUXAKZ6MFNUS5VDJVYW', // Replace with your official USDC address
+      tag: 'stablecoin-payment',
+      amount: 100
     }
   };
 
@@ -59,14 +63,14 @@ const PaymentPage = () => {
       const payment = opData._embedded.records.find(op =>
         op.type === "payment" &&
         op.to === destinationAddress &&
-        op.amount === expectedAmount.toString()
+        parseFloat(op.amount) === parseFloat(expectedAmount)
       );
       if (!payment) {
         return { success: false, message: "Payment not found or does not match expected amount/address." };
       }
       return { success: true };
     } catch (error) {
-      return { success: false, message: "Error validating XLM transaction." };
+      return { success: false, message: "Error validating Stellar transaction." };
     }
   };
 
@@ -120,12 +124,12 @@ const PaymentPage = () => {
     }
 
     let result = { success: true };
-    if (currency === "XLM") {
+    if (currency === "XLM" || currency === "USDC") {
       result = await validateXLMTransaction(
         trimmedTx,
-        walletDetails.XLM.tag,
-        walletDetails.XLM.amount,
-        walletDetails.XLM.address
+        walletDetails[currency].tag,
+        walletDetails[currency].amount,
+        walletDetails[currency].address
       );
     } else if (currency === "XRP") {
       result = await validateXRPTransaction(
@@ -175,6 +179,7 @@ const PaymentPage = () => {
         <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
           <option value="XLM">XLM</option>
           <option value="XRP">XRP</option>
+          <option value="USDC">USDC</option>
         </select>
       </div>
 
@@ -187,8 +192,10 @@ const PaymentPage = () => {
         <h4>Scan QR Code to Pay:</h4>
         <QRCodeCanvas
           value={
-            currency === "XLM"
-              ? `web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}`
+            currency === "XLM" || currency === "USDC"
+              ? `web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}${
+                  currency === "USDC" ? '&asset_code=USDC' : ''
+                }`
               : `ripple:${address}?amount=${amount}&dt=${tag}`
           }
           size={200}
@@ -228,7 +235,7 @@ const PaymentPage = () => {
         >
           {confirmationMessage}
         </div>
-       )}
+      )}
 
       <div style={{ marginTop: '30px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
@@ -237,10 +244,11 @@ const PaymentPage = () => {
         <button onClick={() => navigate('/login')}>Login</button>
       </div>
     </div>
-   );
+  );
 };
 
 export default PaymentPage;
+
 
 
 
