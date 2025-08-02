@@ -1,3 +1,4 @@
+// HomePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -13,7 +14,6 @@ function HomePage() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [xlmPrice, setXlmPrice] = useState(null);
   const [xrpPrice, setXrpPrice] = useState(null);
-  const [usdcPrice, setUsdcPrice] = useState(null);
   const [xlmTrades, setXlmTrades] = useState([]);
   const [xrpTrades, setXrpTrades] = useState([]);
 
@@ -37,16 +37,14 @@ function HomePage() {
   useEffect(() => {
     const fetchPrices = async () => {
       try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar,stellar-lumens,ripple,usd-coin&vs_currencies=usd');
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=stellar,stellar-lumens,ripple&vs_currencies=usd');
         const data = await res.json();
         setXlmPrice(data['stellar-lumens']?.usd || data['stellar']?.usd || 'N/A');
         setXrpPrice(data['ripple']?.usd || 'N/A');
-        setUsdcPrice(data['usd-coin']?.usd || 'N/A');
       } catch (err) {
         console.error('Error fetching prices:', err);
         setXlmPrice('N/A');
         setXrpPrice('N/A');
-        setUsdcPrice('N/A');
       }
     };
     fetchPrices();
@@ -107,7 +105,7 @@ function HomePage() {
   };
 
   const descriptions = {
-    English: 'XLMGuard protects your XLM, XRP, and Stablecoin transactions with timestamped transaction verification and secure seller confirmations.'
+    English: 'XLMGuard protects your XLM and XRP transactions with timestamped transaction verification and secure seller confirmations.'
   };
 
   const allTrades = [...xlmTrades, ...xrpTrades];
@@ -120,10 +118,10 @@ function HomePage() {
     : <span style={{ padding: '0 2rem' }}>Loading latest trades...</span>;
 
   return (
-    <div style={{ textAlign: 'center', backgroundImage: 'url(\"/earthbackgrownd.png\")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
+    <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
       <Helmet>
-        <title>XLMGuard – Secure XLM, XRP & Stablecoin Transactions</title>
-        <meta name="description" content="Secure your Stellar (XLM), XRP, and Stablecoin transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." />
+        <title>XLMGuard – Secure Your XLM and XRP Transactions</title>
+        <meta name="description" content="Secure your Stellar (XLM) and XRP transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." />
         <link rel="canonical" href="https://xlmguard.com/" />
       </Helmet>
 
@@ -155,7 +153,7 @@ function HomePage() {
       <main style={{ paddingTop: '10px' }}>
         <h1 style={{ marginTop: '0', marginBottom: '10px' }}>XLMGuard<sup style={{ fontSize: '0.5em' }}>™</sup></h1>
         <p>{descriptions[language]}</p>
-        <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice} | <strong>USDC:</strong> {usdcPrice}</p>
+        <p><strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice}</p>
 
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
           <div style={{ display: 'inline-block', animation: 'scroll-left 360s linear infinite' }}>
@@ -165,8 +163,8 @@ function HomePage() {
 
         <style>{`
           @keyframes scroll-left {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+              0% { transform: translateX(100%); }
+              100% { transform: translateX(-100%); }
           }
         `}</style>
 
@@ -196,7 +194,8 @@ function HomePage() {
         <em>Patent Pending</em>
       </footer>
     </div>
-  );
+   );
 }
 
 export default HomePage;
+
