@@ -1,4 +1,3 @@
-// PaymentPage.js – $100 USD Dynamic Pricing for XLM/XRP/USDC
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase.js';
@@ -15,27 +14,28 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { QRCodeCanvas } from 'qrcode.react';
 
 const PaymentPage = () => {
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [requiredAmount, setRequiredAmount] = useState(100); // Default fallback
-  const baseUSDPrice = 100;
+  const navigate = useNavigate();
 
   const walletDetails = {
     XLM: {
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
-      tag: '1095582935'
+      tag: '1095582935',
+      amount: 100
     },
     XRP: {
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
-      tag: '1952896539'
+      tag: '1952896539',
+      amount: 10
     },
     USDC: {
-      address: 'GCFR6W6HKJGHRNMH3PB45TWD4ASVPJZY3KUUIYUXAKZ6MFNUS5VDJVYW',
-      tag: 'stablecoin-payment'
+      address: 'GCFR6W6HKJGHRNMH3PB45TWD4ASVPJZY3KUUIYUXAKZ6MFNUS5VDJVYW', // Replace with your official USDC address
+      tag: 'stablecoin-payment',
+      amount: 100
     }
   };
 
@@ -50,28 +50,6 @@ const PaymentPage = () => {
     return () => unsub();
   }, [navigate]);
 
-  useEffect(() => {
-    fetchPrice(currency);
-  }, [currency]);
-
-  const fetchPrice = async (cur) => {
-    const idMap = {
-      XLM: 'stellar',
-      XRP: 'ripple',
-      USDC: 'usd-coin'
-    };
-
-    try {
-      const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${idMap[cur]}&vs_currencies=usd`);
-      const data = await res.json();
-      const usdRate = data[idMap[cur]].usd;
-      const amount = baseUSDPrice / usdRate;
-      setRequiredAmount(amount.toFixed(4));
-    } catch (error) {
-      console.error('Error fetching price:', error);
-    }
-  };
-
   const validateXLMTransaction = async (txid, expectedMemo, expectedAmount, destinationAddress) => {
     try {
       const txRes = await fetch(`https://horizon.stellar.org/transactions/${txid}`);
@@ -85,13 +63,13 @@ const PaymentPage = () => {
       const payment = opData._embedded.records.find(op =>
         op.type === "payment" &&
         op.to === destinationAddress &&
-        parseFloat(op.amount) >= parseFloat(expectedAmount)
+        parseFloat(op.amount) === parseFloat(expectedAmount)
       );
       if (!payment) {
         return { success: false, message: "Payment not found or does not match expected amount/address." };
       }
       return { success: true };
-    } catch {
+    } catch (error) {
       return { success: false, message: "Error validating Stellar transaction." };
     }
   };
@@ -109,7 +87,7 @@ const PaymentPage = () => {
         return { success: false, message: "Transaction does not match expected destination, tag, or amount." };
       }
       return { success: true };
-    } catch {
+    } catch (error) {
       return { success: false, message: "Error validating XRP transaction." };
     }
   };
@@ -150,14 +128,14 @@ const PaymentPage = () => {
       result = await validateXLMTransaction(
         trimmedTx,
         walletDetails[currency].tag,
-        requiredAmount,
+        walletDetails[currency].amount,
         walletDetails[currency].address
       );
     } else if (currency === "XRP") {
       result = await validateXRPTransaction(
         trimmedTx,
         walletDetails.XRP.tag,
-        requiredAmount,
+        walletDetails.XRP.amount,
         walletDetails.XRP.address
       );
     }
@@ -176,9 +154,7 @@ const PaymentPage = () => {
       paymentHash: trimmedTx,
       paidAt: new Date(),
       walletAddress: walletDetails[currency].address,
-      walletMemo: walletDetails[currency].tag,
-      usdValue: baseUSDPrice,
-      cryptoAmount: requiredAmount
+      walletMemo: walletDetails[currency].tag
     });
 
     setConfirmationMessage('✅ Payment confirmed! Redirecting...');
@@ -186,25 +162,26 @@ const PaymentPage = () => {
     setLoading(false);
   };
 
-  const { address, tag } = walletDetails[currency];
+  const { address, tag, amount } = walletDetails[currency];
 
   return (
     <div style={{ padding: '20px' }}>
       <h2>Make a Payment</h2>
-      <p><strong>Service Price: ${baseUSDPrice} USD</strong></p>
       <p style={{ color: 'red', fontWeight: 'bold' }}>
         Note: Refresh your browser after payment is made if the page doesn't redirect automatically.
       </p>
       <p>
-        Please send <strong>{requiredAmount} {currency}</strong> to the wallet below. Then enter your transaction hash.
+        Please send <strong>{amount} {currency}</strong> to the wallet below. Then enter your transaction hash.
       </p>
 
-      <label>Choose currency:</label>
-      <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-        <option value="XLM">XLM</option>
-        <option value="XRP">XRP</option>
-        <option value="USDC">USDC</option>
-      </select>
+      <div style={{ marginBottom: '15px' }}>
+        <label>Choose currency:</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <option value="XLM">XLM</option>
+          <option value="XRP">XRP</option>
+          <option value="USDC">USDC</option>
+        </select>
+      </div>
 
       <div>
         <strong>Wallet Address:</strong> <code>{address}</code><br />
@@ -216,13 +193,18 @@ const PaymentPage = () => {
         <QRCodeCanvas
           value={
             currency === "XLM" || currency === "USDC"
-              ? `web+stellar:pay?destination=${address}&amount=${requiredAmount}&memo=${tag}${currency === "USDC" ? '&asset_code=USDC' : ''}`
-              : `ripple:${address}?amount=${requiredAmount}&dt=${tag}`
+              ? `web+stellar:pay?destination=${address}&amount=${amount}&memo=${tag}${
+                  currency === "USDC" ? '&asset_code=USDC' : ''
+                }`
+              : `ripple:${address}?amount=${amount}&dt=${tag}`
           }
           size={200}
           level="H"
           includeMargin={true}
         />
+        <p style={{ marginTop: '10px', fontSize: '0.9em' }}>
+          Scan this code in your wallet app to auto-fill address, amount, and memo/tag.
+        </p>
       </div>
 
       <div style={{ marginTop: '20px' }}>
@@ -258,8 +240,18 @@ const PaymentPage = () => {
       <div style={{ marginTop: '30px' }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
+      <div style={{ marginTop: '10px' }}>
+        <button onClick={() => navigate('/login')}>Login</button>
+      </div>
     </div>
   );
 };
 
 export default PaymentPage;
+
+
+
+
+
+
+
