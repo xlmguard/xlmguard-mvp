@@ -94,6 +94,7 @@ const SubmissionForm = () => {
           <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
             <option value="XLM">XLM</option>
             <option value="XRP">XRP</option>
+            <option value="USDC">USDC</option>
           </select>
         </div>
 
@@ -169,3 +170,4 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
