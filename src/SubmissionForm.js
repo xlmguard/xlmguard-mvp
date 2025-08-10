@@ -1,4 +1,4 @@
-React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
 import {
@@ -184,4 +184,3 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
-
