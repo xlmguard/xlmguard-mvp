@@ -1,20 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
-import {
-  collection,
-  addDoc,
-  Timestamp,
-  doc,
-  getDoc
-} from 'firebase/firestore';
+import { collection, addDoc, Timestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import axios from 'axios';
 
 const SubmissionForm = () => {
   const [currency, setCurrency] = useState('XLM');
-  const [submissionMode, setSubmissionMode] = useState('auto');
+  const [submissionMode, setSubmissionMode] = useState('auto'); // auto or manual
   const [txId, setTxId] = useState('');
   const [amount, setAmount] = useState('');
   const [notes, setNotes] = useState('');
@@ -40,72 +33,45 @@ const SubmissionForm = () => {
     setContractFile(e.target.files[0]);
   };
 
-  const fetchRealTxHash = async (walletAddress, walletMemo) => {
-    try {
-      const response = await axios.get(
-        https://api.stellar.expert/explorer/public/account/${walletAddress}/transactions?limit=20
-      );
-      const records = response.data._embedded.records;
-      const match = records.find(
-        (tx) => tx.memo === walletMemo
-      );
-      return match ? match.hash : null;
-    } catch (err) {
-      console.error("Error fetching Stellar TX:", err);
-      return null;
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!user) return setMessage('User not authenticated.');
+    if (!user) {
+      setMessage('User not authenticated.');
+      return;
+    }
 
     if (submissionMode === 'manual' && txId.trim() === '') {
-      return setMessage('Please enter a TXID.');
+      setMessage('Please enter a TXID.');
+      return;
     }
 
     try {
-      // Get wallet info
-      const userDoc = await getDoc(doc(db, 'users', user.uid));
-      const { walletAddress, walletMemo } = userDoc.data();
-
-      // Upload contract file
       let contractURL = '';
       if (contractFile) {
-        const storageRef = ref(storage, contracts/${user.uid}_${Date.now()}_${contractFile.name});
+        const storageRef = ref(storage, `contracts/${user.uid}_${Date.now()}_${contractFile.name}`);
         const snapshot = await uploadBytes(storageRef, contractFile);
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      let finalTxId = txId;
-      let validated = false;
-
-      if (submissionMode === 'auto') {
-        const realTxHash = await fetchRealTxHash(walletAddress, walletMemo);
-        if (realTxHash) {
-          finalTxId = realTxHash;
-          validated = true;
-        } else {
-          finalTxId = auto_${user.uid}_${Date.now()};
-        }
-      }
+      const newTxId = submissionMode === 'auto'
+        ? `auto_${user.uid}_${Date.now()}`
+        : txId;
 
       await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
+        transactionId: newTxId,
         amount,
         notes,
         contractURL,
-        transactionId: finalTxId,
-        txValidated: validated,
-        createdAt: Timestamp.now()
+        createdAt: Timestamp.now(),
       });
 
-      setMessage(Transaction submitted ${validated ? 'and verified' : '(awaiting chain match)'}.);
+      setMessage('Transaction submitted successfully.');
       setTimeout(() => navigate('/'), 2000);
     } catch (error) {
       console.error('Error submitting transaction:', error);
-      setMessage('Failed to submit transaction.');
+      setMessage('Failed to submit transaction. Please try again.');
     }
   };
 
@@ -119,66 +85,86 @@ const SubmissionForm = () => {
   };
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'Arial' }}>
+    <div style={{ padding: '20px' }}>
       <h2>Submit Transaction</h2>
-      <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', maxWidth: '400px' }}>
-        <label style={{ marginTop: '10px' }}>Currency:</label>
-        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-          <option value="XLM">XLM</option>
-          <option value="XRP">XRP</option>
-          <option value="USDC">USDC</option>
-        </select>
 
-        <label style={{ marginTop: '10px' }}>Transaction Type:</label>
-        <label>
-          <input
-            type="radio"
-            value="auto"
-            checked={submissionMode === 'auto'}
-            onChange={() => setSubmissionMode('auto')}
-          /> Auto: Detect from Lobstr/Vault or Explorer
-        </label>
-        <label>
-          <input
-            type="radio"
-            value="manual"
-            checked={submissionMode === 'manual'}
-            onChange={() => setSubmissionMode('manual')}
-          /> Manual: Enter your TXID
-        </label>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Currency:</label>
+          <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+            <option value="XLM">XLM</option>
+            <option value="XRP">XRP</option>
+            <option value="USDC">USDC</option>
+          </select>
+        </div>
+
+        <div style={{ marginTop: '10px' }}>
+          <label>
+            <input
+              type="radio"
+              value="auto"
+              checked={submissionMode === 'auto'}
+              onChange={() => setSubmissionMode('auto')}
+            /> Lobstr/Vault (Auto-generate TXID)
+          </label>
+          <br />
+          <label>
+            <input
+              type="radio"
+              value="manual"
+              checked={submissionMode === 'manual'}
+              onChange={() => setSubmissionMode('manual')}
+            /> Manually enter TXID
+          </label>
+        </div>
 
         {submissionMode === 'manual' && (
-          <>
-            <label style={{ marginTop: '10px' }}>Transaction ID:</label>
-            <input type="text" value={txId} onChange={(e) => setTxId(e.target.value)} />
-          </>
+          <div>
+            <label>Transaction ID:</label>
+            <input
+              type="text"
+              value={txId}
+              onChange={(e) => setTxId(e.target.value)}
+              required={submissionMode === 'manual'}
+            />
+          </div>
         )}
 
-        <label style={{ marginTop: '10px' }}>Amount:</label>
-        <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+        <div>
+          <label>Amount:</label>
+          <input
+            type="number"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+        </div>
 
-        <label style={{ marginTop: '10px' }}>Notes:</label>
-        <textarea value={notes} onChange={(e) => setNotes(e.target.value)} style={{ height: '60px' }} />
+        <div>
+          <label>Notes:</label>
+          <textarea value={notes} onChange={(e) => setNotes(e.target.value)} />
+        </div>
 
-        <label style={{ marginTop: '10px' }}>Upload Contract (PDF/DOC):</label>
-        <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
+        <div>
+          <label>Upload Contract (PDF, DOCX, etc.):</label>
+          <input type="file" onChange={handleFileChange} accept=".pdf,.doc,.docx,.txt" />
+        </div>
 
-        <button type="submit" style={{ marginTop: '20px' }}>Submit</button>
+        <button type="submit">Submit</button>
       </form>
 
-      {message && <p style={{ marginTop: '10px' }}>{message}</p>}
+      {message && <p>{message}</p>}
 
-      <div style={{ marginTop: '30px' }}>
-        <button onClick={() => navigate('/')} style={{ marginRight: '10px' }}>
-          Return to Home Page
-        </button>
-        <button
-          onClick={handleLogout}
-          style={{ backgroundColor: '#f00', color: '#fff' }}
-        >
-          Logout
-        </button>
+      <div style={{ marginTop: '20px' }}>
+        <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
+      <hr />
+      <button
+        onClick={handleLogout}
+        style={{ marginTop: '20px', backgroundColor: '#f00', color: '#fff' }}
+      >
+        Logout
+      </button>
     </div>
   );
 };
