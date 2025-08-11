@@ -1,4 +1,3 @@
-// HomePage.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
@@ -12,14 +11,11 @@ function HomePage() {
   const [userRole, setUserRole] = useState(null);
   const [userName, setUserName] = useState('');
   const [menuOpen, setMenuOpen] = useState(false);
-
   const [xlmPrice, setXlmPrice] = useState(null);
   const [xrpPrice, setXrpPrice] = useState(null);
   const [usdcPrice, setUsdcPrice] = useState(null);
-
   const [xlmTrades, setXlmTrades] = useState([]);
   const [xrpTrades, setXrpTrades] = useState([]);
-  const [usdcTrades, setUsdcTrades] = useState([]); // <-- NEW
 
   const navigate = useNavigate();
 
@@ -59,49 +55,22 @@ function HomePage() {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
-        // -------- XLM/USD --------
-        const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD', { cache: 'no-store' });
+        const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD');
         const dataXLM = await resXLM.json();
-        if (dataXLM.result) {
-          const key = Object.keys(dataXLM.result)[0]; // robust to pair code changes
-          if (key && Array.isArray(dataXLM.result[key])) {
-            setXlmTrades(
-              dataXLM.result[key].slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XLM Buy' }))
-            );
-          }
+        if (dataXLM.result?.XXLMZUSD) {
+          setXlmTrades(dataXLM.result.XXLMZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XLM Buy' })));
         }
-
-        // -------- XRP/USD --------
-        const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD', { cache: 'no-store' });
+        const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD');
         const dataXRP = await resXRP.json();
-        if (dataXRP.result) {
-          const key = Object.keys(dataXRP.result)[0];
-          if (key && Array.isArray(dataXRP.result[key])) {
-            setXrpTrades(
-              dataXRP.result[key].slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XRP Buy' }))
-            );
-          }
-        }
-
-        // -------- USDC/USD --------
-        // Kraken typically uses "USDCUSD"; we still detect dynamically to be safe.
-        const resUSDC = await fetch('https://api.kraken.com/0/public/Trades?pair=USDCUSD', { cache: 'no-store' });
-        const dataUSDC = await resUSDC.json();
-        if (dataUSDC.result) {
-          const key = Object.keys(dataUSDC.result)[0];
-          if (key && Array.isArray(dataUSDC.result[key])) {
-            setUsdcTrades(
-              dataUSDC.result[key].slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'USDC Buy' }))
-            );
-          }
+        if (dataXRP.result?.XXRPZUSD) {
+          setXrpTrades(dataXRP.result.XXRPZUSD.slice(-10).map(t => ({ price: t[0], volume: t[1], side: 'XRP Buy' })));
         }
       } catch (err) {
         console.error('Error fetching trades:', err);
       }
     };
-
     fetchTrades();
-    const interval = setInterval(fetchTrades, 120000); // refresh every 2 minutes
+    const interval = setInterval(fetchTrades, 120000);
     return () => clearInterval(interval);
   }, []);
 
@@ -141,8 +110,7 @@ function HomePage() {
     English: 'XLMGuard protects your XLM, XRP, and Stablecoin transactions with timestamped transaction verification and secure seller confirmations.'
   };
 
-  // Build the composite ticker, now including USDC trades
-  const allTrades = [...xlmTrades, ...xrpTrades, ...usdcTrades];
+  const allTrades = [...xlmTrades, ...xrpTrades];
   const tickerContent = allTrades.length > 0
     ? allTrades.map((t, i) => (
         <span key={i} style={{ display: 'inline-block', padding: '0 2rem' }}>
@@ -152,7 +120,7 @@ function HomePage() {
     : <span style={{ padding: '0 2rem' }}>Loading latest trades...</span>;
 
   return (
-    <div style={{ textAlign: 'center', backgroundImage: 'url("/earthbackgrownd.png")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
+    <div style={{ textAlign: 'center', backgroundImage: 'url(\"/earthbackgrownd.png\")', backgroundSize: 'cover', backgroundPosition: 'center', backgroundRepeat: 'no-repeat', minHeight: '100vh', backgroundAttachment: 'fixed' }}>
       <Helmet>
         <title>XLMGuard – Secure XLM, XRP & Stablecoin Transactions</title>
         <meta name="description" content="Secure your Stellar (XLM), XRP, and Stablecoin transactions with XLMGuard—blockchain-based escrow and payment verification you can trust." />
