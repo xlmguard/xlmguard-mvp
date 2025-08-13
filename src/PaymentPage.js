@@ -192,7 +192,7 @@ const PaymentPage = () => {
         destination: walletDetails.USDC.address, // Coinbase Stellar address
         assetCode: 'USDC',
         assetIssuer: USDC_STELLAR_ISSUER || undefined
-      });
+       });
     } else if (currency === 'XRP') {
       result = await validateXRPTransaction(
         trimmedTx,
