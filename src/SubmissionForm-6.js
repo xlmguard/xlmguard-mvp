@@ -1,4 +1,4 @@
-// SubmissionForm.js  (adds buyer wallet capture + save)
+// SubmissionForm.js
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
@@ -54,17 +54,11 @@ const styles = {
 
 // ----- Helpers -----
 
-// (kept) conservative buffer if you ever use a balance check
-const XLM_BUFFER = 1.0;
-
-const isValidWallet = (addr, cur) => {
-  if (!addr) return false;
-  if (cur === 'XLM' || cur === 'USDC') return /^G[A-Z2-7]{55}$/.test(addr.trim()); // Stellar pubkey
-  if (cur === 'XRP') return /^r[1-9A-HJ-NP-Za-km-z]{25,35}$/.test(addr.trim());   // XRP classic address
-  return false;
-};
+// Conservative buffer to cover fees/reserve wiggle room
+const XLM_BUFFER = 1.0; // XLM
 
 async function fetchXlmNativeBalance(accountId) {
+  // Horizon public network
   const url = `https://horizon.stellar.org/accounts/${accountId}`;
   const { data } = await axios.get(url);
   const balances = data?.balances || [];
@@ -73,14 +67,19 @@ async function fetchXlmNativeBalance(accountId) {
 }
 
 async function hasSufficientBalance({ currency, walletAddress, amountNumber }) {
-  // NOTE: left as-is (checks receiver address). You can disable this if not needed.
-  if (currency !== 'XLM') return { ok: true, reason: '' };
+  if (currency !== 'XLM') {
+    // TODO: Add XRP/USDC checks if/when needed
+    return { ok: true, reason: '' };
+  }
   try {
     const bal = await fetchXlmNativeBalance(walletAddress);
     const needed = amountNumber + XLM_BUFFER;
     if (isNaN(bal)) return { ok: false, reason: 'Could not read XLM balance from Horizon.' };
     if (bal >= needed) return { ok: true, reason: '' };
-    return { ok: false, reason: `Insufficient XLM: balance ${bal.toFixed(4)} < required ${needed.toFixed(4)}.` };
+    return {
+      ok: false,
+      reason: `Insufficient XLM: balance ${bal.toFixed(4)} < required ${needed.toFixed(4)} (amount + buffer).`
+    };
   } catch (e) {
     console.error('Balance check failed:', e);
     return { ok: false, reason: 'Failed to query Horizon for XLM balance.' };
@@ -99,29 +98,12 @@ const SubmissionForm = () => {
   const [message, setMessage] = useState('');
   const [checking, setChecking] = useState(false);
   const [user, setUser] = useState(null);
-
-  // NEW: buyer wallet fields
-  const [buyerWalletAddress, setBuyerWalletAddress] = useState('');
-  const [buyerMemoTag, setBuyerMemoTag] = useState('');
-
   const navigate = useNavigate();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       if (currentUser) {
         setUser(currentUser);
-        // Prefill from user doc if Payment page auto-captured the payer
-        try {
-          const snap = await getDoc(doc(db, 'users', currentUser.uid));
-          if (snap.exists()) {
-            const d = snap.data();
-            if (d.currency) setCurrency(d.currency);
-            if (d.buyerWalletAddress && !buyerWalletAddress) setBuyerWalletAddress(d.buyerWalletAddress);
-            if (d.buyerMemoTag && !buyerMemoTag) setBuyerMemoTag(d.buyerMemoTag);
-          }
-        } catch (e) {
-          console.warn('Prefill failed:', e);
-        }
       } else {
         setUser(null);
         setMessage('User not authenticated. Redirecting to login...');
@@ -129,11 +111,12 @@ const SubmissionForm = () => {
       }
     });
     return () => unsubscribe();
-  }, [navigate]); // eslint-disable-line
+  }, [navigate]);
 
-  const handleFileChange = (e) => setContractFile(e.target.files[0]);
+  const handleFileChange = (e) => {
+    setContractFile(e.target.files[0]);
+  };
 
-  // Detect a matching tx on YOUR receiving Stellar address by memo
   const fetchRealTxHash = async (walletAddress, walletMemo) => {
     try {
       const response = await axios.get(
@@ -160,39 +143,28 @@ const SubmissionForm = () => {
       return setMessage('Please enter a TXID.');
     }
 
-    // Validate buyer wallet if provided (optional fallback to what Payment page captured)
-    let buyerAddr = buyerWalletAddress?.trim() || '';
-    let buyerTag = buyerMemoTag?.trim() || '';
-
-    // Pull receiver wallet (saved by Payment page after validation)
-    const userSnap = await getDoc(doc(db, 'users', user.uid));
-    const userData = userSnap.exists() ? userSnap.data() : {};
-    const receiverAddress = userData.walletAddress || '';
-    const receiverMemo = userData.walletMemo || '';
-
-    if (!receiverAddress) {
-      return setMessage('No destination wallet found on your profile. Please complete payment first.');
-    }
-
-    // If Payment page already captured buyer address and user didn’t type one, use it
-    if (!buyerAddr && userData.buyerWalletAddress) buyerAddr = userData.buyerWalletAddress;
-    if (!buyerTag && userData.buyerMemoTag) buyerTag = userData.buyerMemoTag;
-
-    if (buyerAddr && !isValidWallet(buyerAddr, currency)) {
-      return setMessage(`Please enter a valid ${currency} wallet address.`);
-    }
-
     try {
       setChecking(true);
 
-      // Optional receiver-balance check (leaving original behavior)
-      const pre = await hasSufficientBalance({ currency, walletAddress: receiverAddress, amountNumber });
+      // Pull wallet info from user doc
+      const userSnap = await getDoc(doc(db, 'users', user.uid));
+      const userData = userSnap.exists() ? userSnap.data() : {};
+      const walletAddress = userData.walletAddress || '';
+      const walletMemo = userData.walletMemo || '';
+
+      if (!walletAddress) {
+        setChecking(false);
+        return setMessage('No walletAddress found on your profile.');
+      }
+
+      // -------- Pre-check funding (XLM) --------
+      const pre = await hasSufficientBalance({ currency, walletAddress, amountNumber });
       if (!pre.ok) {
         setChecking(false);
         return setMessage(`Cannot submit: ${pre.reason}`);
       }
 
-      // Upload contract file (optional)
+      // -------- Upload contract file (optional) --------
       let contractURL = '';
       if (contractFile) {
         const safeName = contractFile.name.replace(/\s+/g, '_');
@@ -201,12 +173,12 @@ const SubmissionForm = () => {
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      // Determine TXID
+      // -------- Determine TXID --------
       let finalTxId = txId.trim();
       let validated = false;
 
-      if (submissionMode === 'auto' && (currency === 'XLM' || currency === 'USDC')) {
-        const realTxHash = await fetchRealTxHash(receiverAddress, receiverMemo);
+      if (submissionMode === 'auto') {
+        const realTxHash = await fetchRealTxHash(walletAddress, walletMemo);
         if (realTxHash) {
           finalTxId = realTxHash;
           validated = true;
@@ -215,8 +187,8 @@ const SubmissionForm = () => {
         }
       }
 
-      // Save transaction
-      const txRef = await addDoc(collection(db, 'transactions'), {
+      // -------- Save transaction --------
+      const docRef = await addDoc(collection(db, 'transactions'), {
         uid: user.uid,
         currency,
         amount,
@@ -224,34 +196,21 @@ const SubmissionForm = () => {
         contractURL,
         transactionId: finalTxId,
         txValidated: validated,
-        // receiver (your) wallet
-        walletAddress: receiverAddress,
-        walletMemo: receiverMemo,
-        // buyer wallet (from Payment page auto-capture or from this form)
-        buyerWalletAddress: buyerAddr || null,
-        buyerMemoTag: buyerTag || null,
-        buyerWalletCurrency: currency,
+        walletAddress,
+        walletMemo,
         createdAt: Timestamp.now()
       });
-
-      // Also persist buyer wallet on the user doc if newly provided
-      const updates = {};
-      if (buyerAddr && buyerAddr !== userData.buyerWalletAddress) updates.buyerWalletAddress = buyerAddr;
-      if (buyerTag && buyerTag !== userData.buyerMemoTag) updates.buyerMemoTag = buyerTag;
-      if (Object.keys(updates).length) {
-        await updateDoc(doc(db, 'users', user.uid), updates);
-      }
 
       setMessage(`Transaction submitted ${validated ? 'and verified' : '(awaiting chain match)'}.`);
       setChecking(false);
 
-      // Lightweight poll to upgrade to verified (XLM/USDC)
-      if (!validated && submissionMode === 'auto' && (currency === 'XLM' || currency === 'USDC') && receiverAddress && receiverMemo) {
+      // Optional: lightweight poll to upgrade to verified
+      if (!validated && submissionMode === 'auto' && walletAddress && walletMemo) {
         for (let i = 0; i < 10; i++) {
           await sleep(7000);
-          const real = await fetchRealTxHash(receiverAddress, receiverMemo);
+          const real = await fetchRealTxHash(walletAddress, walletMemo);
           if (real) {
-            await updateDoc(txRef, { transactionId: real, txValidated: true, verifiedAt: Timestamp.now() });
+            await updateDoc(docRef, { transactionId: real, txValidated: true, verifiedAt: Timestamp.now() });
             setMessage('Transaction submitted and verified.');
             break;
           }
@@ -273,15 +232,9 @@ const SubmissionForm = () => {
     }
   };
 
-  const addressPlaceholder = currency === 'XRP' ? 'r...' : 'G...';
-  const memoHint =
-    currency === 'XRP'
-      ? 'Destination Tag (optional)'
-      : 'Memo (optional)';
-
   return (
     <div style={styles.page}>
-      {/* Top bar */}
+      {/* Top bar with Return to Home Page */}
       <div style={styles.topBar}>
         <h2 style={styles.title}>Submit Transaction</h2>
         <div style={styles.btnRow}>
@@ -307,26 +260,6 @@ const SubmissionForm = () => {
           <option value="USDC">USDC</option>
         </select>
 
-        {/* NEW: Buyer wallet fields (optional if auto-captured) */}
-        <label style={styles.label} htmlFor="buyerWallet">Your Wallet Address (the one you paid from)</label>
-        <input
-          id="buyerWallet"
-          type="text"
-          value={buyerWalletAddress}
-          onChange={(e) => setBuyerWalletAddress(e.target.value)}
-          style={styles.input}
-          placeholder={addressPlaceholder}
-        />
-        <label style={styles.label} htmlFor="buyerMemo">Your Memo/Tag (optional)</label>
-        <input
-          id="buyerMemo"
-          type="text"
-          value={buyerMemoTag}
-          onChange={(e) => setBuyerMemoTag(e.target.value)}
-          style={styles.input}
-          placeholder={memoHint}
-        />
-
         <label style={styles.label}>Transaction Type</label>
         <div style={styles.radioGroup}>
           <label>
@@ -336,7 +269,7 @@ const SubmissionForm = () => {
               checked={submissionMode === 'auto'}
               onChange={() => setSubmissionMode('auto')}
             />{' '}
-            Auto: Detect from Lobstr/Vault or Explorer (XLM/USDC on Stellar)
+            Auto: Detect from Lobstr/Vault or Explorer
           </label>
           <label>
             <input
@@ -363,6 +296,7 @@ const SubmissionForm = () => {
           </>
         )}
 
+        {/* Amount — everything else is under this */}
         <label style={styles.label} htmlFor="amount">Amount</label>
         <input
           id="amount"
@@ -395,7 +329,7 @@ const SubmissionForm = () => {
         />
 
         <button type="submit" style={styles.submitBtn} disabled={checking}>
-          {checking ? 'Checking…' : 'Submit'}
+          {checking ? 'Checking balance…' : 'Submit'}
         </button>
       </form>
 
@@ -414,3 +348,4 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
