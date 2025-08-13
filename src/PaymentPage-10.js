@@ -1,6 +1,4 @@
 // PaymentPage.js – $100 USD Dynamic Pricing (XLM / XRP / USDC → Coinbase on Stellar)
-// Adds auto-capture of the payer's wallet address on successful validation.
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase.js';
@@ -11,7 +9,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import { QRCodeCanvas } from 'qrcode.react';
 
 // Optional (recommended): enforce USDC issuer on Stellar
-// Put in .env and rebuild: REACT_APP_STELLAR_USDC_ISSUER=<USDC issuer G... key>
+// Add to .env and rebuild: REACT_APP_STELLAR_USDC_ISSUER=<USDC issuer G... key>
 const USDC_STELLAR_ISSUER = process.env.REACT_APP_STELLAR_USDC_ISSUER || '';
 
 const PaymentPage = () => {
@@ -24,7 +22,7 @@ const PaymentPage = () => {
   const [requiredAmount, setRequiredAmount] = useState('100.00');
   const baseUSDPrice = 100;
 
-  // === DESTINATIONS (your receiving wallets) ===
+  // === DESTINATIONS ===
   const walletDetails = {
     XLM: {
       network: 'Stellar',
@@ -38,8 +36,8 @@ const PaymentPage = () => {
     },
     USDC: {
       network: 'Stellar (Coinbase)',
-      address: 'GDZHDOITT5W2S35LVJZRLUAUXLU7UEDEAN4R7O4VA5FFGKG7RHC4NPSC', // Coinbase USDC (Stellar) address
-      tag: '350349871' // Coinbase USDC memo (required)
+      address: 'GDZHDOITT5W2S35LVJZRLUAUXLU7UEDEAN4R7O4VA5FFGKG7RHC4NPSC', // your Coinbase USDC (Stellar) address
+      tag: '350349871' // your Coinbase USDC memo (required)
     }
   };
 
@@ -72,8 +70,7 @@ const PaymentPage = () => {
   };
 
   // —— Validators ————————————————————————————————
-  // Stellar validator for native XLM and assets (USDC on Stellar).
-  // Returns { success, payer? } where payer is the sender address (G...)
+  // Stellar validator for native XLM and for assets (USDC on Stellar)
   const validateStellarTx = async ({
     txid,
     expectedMemo,
@@ -110,17 +107,13 @@ const PaymentPage = () => {
         }
       });
 
-      if (!match) {
-        return { success: false, message: 'Payment not found or asset/address/amount mismatch.' };
-      }
-      const payer = match.from || tx.source_account || null; // sender on Stellar
-      return { success: true, payer };
+      return match ? { success: true } : { success: false, message: 'Payment not found or asset/address/amount mismatch.' };
     } catch {
       return { success: false, message: 'Error validating Stellar transaction.' };
     }
   };
 
-  // XRP validator. Returns { success, payer? } where payer is the sender r-address.
+  // XRP validator (unchanged)
   const validateXRPTransaction = async (txid, expectedTag, expectedAmount, destinationAddress) => {
     try {
       const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
@@ -131,10 +124,9 @@ const PaymentPage = () => {
       const tagOk = (data.DestinationTag?.toString() || '') === expectedTag.toString();
       const amtOk = parseFloat(data.Amount) / 1_000_000 >= parseFloat(requiredAmount);
 
-      if (!toOk || !tagOk || !amtOk) {
-        return { success: false, message: 'Destination, tag, or amount mismatch.' };
-      }
-      return { success: true, payer: data.Account };
+      return toOk && tagOk && amtOk
+        ? { success: true }
+        : { success: false, message: 'Destination, tag, or amount mismatch.' };
     } catch {
       return { success: false, message: 'Error validating XRP transaction.' };
     }
@@ -175,7 +167,6 @@ const PaymentPage = () => {
     }
 
     let result = { success: false, message: 'Unsupported currency.' };
-    let payerAddress = null;
 
     if (currency === 'XLM') {
       result = await validateStellarTx({
@@ -208,7 +199,6 @@ const PaymentPage = () => {
       setLoading(false);
       return;
     }
-    payerAddress = result.payer || null;
 
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, {
@@ -216,17 +206,13 @@ const PaymentPage = () => {
       currency,
       paymentHash: trimmedTx,
       paidAt: new Date(),
-      walletAddress: walletDetails[currency].address, // your receiving address
-      walletMemo: walletDetails[currency].tag || null, // your memo/tag
-      buyerWalletAddress: payerAddress,                // <-- auto-captured payer address
-      buyerWalletCurrency: currency,                   // <-- for clarity
+      walletAddress: walletDetails[currency].address,
+      walletMemo: walletDetails[currency].tag || null,
       usdValue: baseUSDPrice,
       cryptoAmount: requiredAmount
     });
 
-    setConfirmationMessage(
-      `✅ Payment confirmed!${payerAddress ? ' Payer: ' + payerAddress : ''} Redirecting...`
-    );
+    setConfirmationMessage('✅ Payment confirmed! Redirecting...');
     setTimeout(() => navigate('/submit'), 1500);
     setLoading(false);
   };
