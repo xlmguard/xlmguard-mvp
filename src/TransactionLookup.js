@@ -16,7 +16,7 @@ function TransactionLookup() {
   const [accessDenied, setAccessDenied] = useState(false);
   const navigate = useNavigate();
 
-  // ---- auth gate (unchanged) ----
+  // ---- auth gate ----
   useEffect(() => {
     const auth = getAuth();
     onAuthStateChanged(auth, async (user) => {
@@ -42,8 +42,10 @@ function TransactionLookup() {
   const getSellerPayoutInfo = (tx) => {
     if (!tx) return { address: null, memo: null };
 
-    // Possible field names we may have used across screens / versions
+    // IMPORTANT: include your actual top-level keys from Firestore:
+    // walletAddress, walletMemo (per your screenshot).
     const addrCandidates = [
+      tx.walletAddress,           // <---- your schema
       tx.sellerWalletAddress,
       tx.sellerWallet,
       tx.payoutAddress,
@@ -52,24 +54,27 @@ function TransactionLookup() {
       tx.seller?.walletAddress,
       tx.seller?.payoutAddress,
     ];
+
     const memoCandidates = [
+      tx.walletMemo,              // <---- your schema
       tx.sellerWalletMemo,
       tx.sellerMemo,
       tx.payoutMemo,
       tx.destinationMemo,
       tx.destinationTag,
       tx.coinbaseMemo,
-      tx.memo, // beware: buyer's memo in some schemas; used as last resort
       tx.seller?.walletMemo,
       tx.seller?.payoutMemo,
     ];
 
     const address =
       addrCandidates.find((v) => typeof v === 'string' && v.trim().length > 0) || null;
-    const memo =
-      memoCandidates.find((v) => (typeof v === 'string' || typeof v === 'number') && String(v).trim().length > 0) ?? null;
+    const memoVal =
+      memoCandidates.find(
+        (v) => (typeof v === 'string' || typeof v === 'number') && String(v).trim().length > 0
+      ) ?? null;
 
-    return { address, memo: memo === null ? null : String(memo) };
+    return { address, memo: memoVal === null ? null : String(memoVal) };
   };
 
   const { address: sellerAddress, memo: sellerMemo } = useMemo(
@@ -110,7 +115,6 @@ function TransactionLookup() {
       }
       setUpdateMessage('Updating...');
 
-      // Always re-query the transaction doc
       const q = query(collection(db, 'transactions'), where('transactionId', '==', txid));
       const querySnapshot = await getDocs(q);
 
@@ -134,7 +138,6 @@ function TransactionLookup() {
       await navigator.clipboard.writeText(text);
       alert('Copied to clipboard');
     } catch {
-      // Fallback
       const ta = document.createElement('textarea');
       ta.value = text;
       document.body.appendChild(ta);
@@ -154,7 +157,8 @@ function TransactionLookup() {
   const Monospace = ({ text }) => (
     <span
       style={{
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
+        fontFamily:
+          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
         wordBreak: 'break-all',
       }}
     >
@@ -235,7 +239,7 @@ function TransactionLookup() {
           <Field label="Currency">{transaction.currency}</Field>
           {transaction.notes && <Field label="Notes">{transaction.notes}</Field>}
 
-          {/* NEW: Seller payout info (address + memo/tag) */}
+          {/* Seller payout info (address + memo/tag) */}
           <Box title="Seller Payout (for Buyer to Pay)">
             <Field label="Wallet Address">
               {sellerAddress ? (
@@ -264,7 +268,8 @@ function TransactionLookup() {
             </Field>
 
             <div style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
-              Tip: For Coinbase/XLM and many custodial wallets, the <em>Memo/Tag</em> is required. Omitting it can delay or misroute funds.
+              Tip: For Coinbase/XLM and many custodial wallets, the <em>Memo/Tag</em> is required.
+              Omitting it can delay or misroute funds.
             </div>
           </Box>
 
@@ -361,3 +366,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
