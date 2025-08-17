@@ -1,5 +1,7 @@
-// PaymentPage.js
-import React, { useState, useEffect } from 'react';
+// PaymentPage.js – 0.75% Service Fee with $100 Minimum (XLM / XRP / USDC → Coinbase on Stellar)
+// Validates on-chain payment and auto-captures payer wallet address.
+
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { auth, db } from './firebase.js';
 import {
@@ -9,165 +11,401 @@ import {
   query,
   where,
   collection,
-  addDoc
+  addDoc,
 } from 'firebase/firestore';
 import { onAuthStateChanged } from 'firebase/auth';
 import { QRCodeCanvas } from 'qrcode.react';
 
+// Optional (recommended): enforce USDC issuer on Stellar
+// Put in .env and rebuild: REACT_APP_STELLAR_USDC_ISSUER=<USDC issuer G... key>
+const USDC_STELLAR_ISSUER = process.env.REACT_APP_STELLAR_USDC_ISSUER || '';
+
+const FEE_RATE = 0.0075;       // 0.75%
+const MIN_FEE_USD = 100.0;     // $100 minimum
+
 const PaymentPage = () => {
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+
   const [currency, setCurrency] = useState('XLM');
   const [txHash, setTxHash] = useState('');
   const [confirmationMessage, setConfirmationMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [coupon, setCoupon] = useState('');
-  const [discount, setDiscount] = useState(0);
-  const [reseller, setReseller] = useState(null);
 
-  const navigate = useNavigate();
+  const [amountUSD, setAmountUSD] = useState('');         // underlying trade amount (USD)
+  const [feeUSD, setFeeUSD] = useState(0);                // service fee USD
+  const [requiredAmount, setRequiredAmount] = useState('0'); // crypto to send for the fee
+  const [prices, setPrices] = useState(null);
 
+  // === DESTINATIONS (your receiving wallets) ===
   const walletDetails = {
     XLM: {
+      network: 'Stellar',
       address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
-      tag: '1095582935'
+      tag: '1095582935', // Coinbase memo for XLM
     },
     XRP: {
+      network: 'XRP Ledger',
       address: 'rwnYLUsoBQX3ECa1A5bSKLdbPoHKnqf63J',
-      tag: '1952896539'
+      tag: '1952896539', // Coinbase destination tag for XRP
     },
     USDC: {
-      address: 'GCF74576I7AQ56SLMKBQAP255EGUOWCRVII3S44KEXVNJEOIFVBDMXVL',
-      tag: '1095582935'
-    }
+      network: 'Stellar (Coinbase)',
+      address:
+        'GDZHDOITT5W2S35LVJZRLUAUXLU7UEDEAN4R7O4VA5FFGKG7RHC4NPSC', // Coinbase USDC (Stellar) address
+      tag: '350349871', // Coinbase USDC memo (required)
+    },
   };
 
-  const baseFeeRate = 0.0075; // 0.75%
-  const minimumFee = 100.0;   // $100 minimum fee
-
+  // Auth gate
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-      } else {
-        navigate('/login');
-      }
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) setUser(currentUser);
+      else navigate('/login');
     });
-    return () => unsubscribe();
+    return () => unsub();
   }, [navigate]);
 
-  const validateCoupon = async () => {
-    if (!coupon) return;
+  // Fetch prices on load & when currency changes
+  useEffect(() => {
+    fetchPrices();
+  }, [currency]);
 
-    const couponCode = coupon.trim().toLowerCase(); // normalize input
-    const q = query(
-      collection(db, 'resellerCodes'),
-      where('code', '==', couponCode)
-    );
-
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
-      const doc = querySnapshot.docs[0].data();
-      if (doc.active) {
-        setDiscount(doc.discountRate);
-        setReseller({
-          id: querySnapshot.docs[0].id,
-          ...doc
-        });
-        setConfirmationMessage(`Coupon applied! ${doc.discountRate * 100}% discount from ${doc.resellerName}`);
-      } else {
-        setConfirmationMessage('Coupon is not active.');
-      }
-    } else {
-      setConfirmationMessage('Invalid coupon code.');
+  const fetchPrices = async () => {
+    // ✅ Use correct CoinGecko IDs
+    const idMap = { XLM: 'stellar', XRP: 'ripple', USDC: 'usd-coin' };
+    try {
+      const res = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${idMap.XLM},${idMap.XRP},${idMap.USDC}&vs_currencies=usd`
+      );
+      const data = await res.json();
+      setPrices({
+        xlmUsd: data[idMap.XLM]?.usd ?? null,
+        xrpUsd: data[idMap.XRP]?.usd ?? null,
+        usdcUsd: data[idMap.USDC]?.usd ?? 1.0,
+      });
+    } catch {
+      setPrices({ xlmUsd: null, xrpUsd: null, usdcUsd: 1.0 });
     }
   };
 
-  const handlePayment = async () => {
-    if (!user) return;
+  // Parse amount
+  const parsedAmount = useMemo(() => {
+    const n = parseFloat(String(amountUSD).replace(/[^0-9.]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  }, [amountUSD]);
 
-    setLoading(true);
+  // Compute feeUSD (0.75% with $100 minimum)
+  useEffect(() => {
+    const pct = parsedAmount * FEE_RATE;
+    const fee = Math.max(pct, MIN_FEE_USD);
+    setFeeUSD(Number.isFinite(fee) ? fee : 0);
+  }, [parsedAmount]);
 
-    const transactionAmount = 50000; // Example transaction amount
-    let fee = transactionAmount * baseFeeRate;
-    if (fee < minimumFee) fee = minimumFee;
+  // Convert feeUSD to selected asset amount
+  useEffect(() => {
+    if (!prices) return;
+    const { xlmUsd, xrpUsd, usdcUsd } = prices;
+    let amt = 0;
+    if (currency === 'XLM' && xlmUsd) amt = feeUSD / xlmUsd;
+    if (currency === 'XRP' && xrpUsd) amt = feeUSD / xrpUsd;
+    if (currency === 'USDC' && usdcUsd) amt = feeUSD / usdcUsd; // ~1:1
+    const decimals = currency === 'USDC' ? 2 : 4;
+    setRequiredAmount(
+      amt > 0 ? amt.toFixed(decimals) : currency === 'USDC' ? '0.00' : '0.0000'
+    );
+  }, [feeUSD, prices, currency]);
 
-    // Apply discount if coupon is valid
-    const discountedFee = fee - (fee * discount);
-
+  // —— Validators ————————————————————————————————
+  // Stellar validator for native XLM and assets (USDC on Stellar).
+  // Returns { success, payer? } where payer is the sender address (G...)
+  const validateStellarTx = async ({
+    txid,
+    expectedMemo,
+    minAmount,
+    destination,
+    assetCode = null,
+    assetIssuer = null,
+  }) => {
     try {
-      const txRef = await addDoc(collection(db, 'transactions'), {
-        userId: user.uid,
-        currency,
-        transactionAmount,
-        fee: discountedFee,
-        reseller: reseller ? reseller.resellerName : null,
-        resellerCode: reseller ? reseller.code : null,
-        createdAt: new Date(),
-        status: 'pending'
+      const txRes = await fetch(`https://horizon.stellar.org/transactions/${txid}`);
+      if (!txRes.ok) return { success: false, message: 'Transaction not found on Stellar.' };
+      const tx = await txRes.json();
+
+      if ((tx.memo || '') !== (expectedMemo || '')) {
+        return { success: false, message: 'Memo does not match.' };
+      }
+
+      const opsRes = await fetch(tx._links.operations.href);
+      const opsJson = await opsRes.json();
+      const recs = opsJson?._embedded?.records || [];
+
+      const match = recs.find((op) => {
+        const typeOk = ['payment', 'path_payment_strict_send', 'path_payment_strict_receive'].includes(op.type);
+        if (!typeOk) return false;
+        const toOk = op.to === destination;
+        const amtOk = parseFloat(op.amount) >= parseFloat(minAmount);
+
+        if (assetCode) {
+          const codeOk = op.asset_code === assetCode;
+          const issuerOk = assetIssuer ? op.asset_issuer === assetIssuer : true;
+          return toOk && amtOk && codeOk && issuerOk;
+        } else {
+          return toOk && amtOk && op.asset_type === 'native'; // XLM
+        }
       });
 
-      setConfirmationMessage(
-        `Transaction submitted! Pay ${discountedFee.toFixed(2)} USD equivalent in ${currency}.`
-      );
-
-      // update reseller stats
-      if (reseller) {
-        await updateDoc(doc(db, 'resellerCodes', reseller.id), {
-          lastUsed: new Date(),
-          status: 'assigned'
-        });
+      if (!match) {
+        return { success: false, message: 'Payment not found or asset/address/amount mismatch.' };
       }
-
-      setTxHash(txRef.id);
-    } catch (error) {
-      console.error('Error processing transaction:', error);
-      setConfirmationMessage('Payment failed, please try again.');
-    } finally {
-      setLoading(false);
+      const payer = match.from || tx.source_account || null; // sender on Stellar
+      return { success: true, payer };
+    } catch {
+      return { success: false, message: 'Error validating Stellar transaction.' };
     }
   };
 
-  return (
-    <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-      <h2>Payment Page</h2>
+  // XRP validator. Returns { success, payer? } where payer is the sender r-address.
+  const validateXRPTransaction = async (
+    txid,
+    expectedTag,
+    expectedAmount,
+    destinationAddress
+  ) => {
+    try {
+      const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
+      if (!response.ok) return { success: false, message: 'Transaction not found on XRP ledger.' };
+      const data = await response.json();
 
-      <label>Choose Currency:</label>
-      <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
-        <option value="XLM">XLM</option>
-        <option value="XRP">XRP</option>
-        <option value="USDC">USDC</option>
-      </select>
+      const toOk = data.Destination === destinationAddress;
+      const tagOk = (data.DestinationTag?.toString() || '') === expectedTag.toString();
+      const amtOk = parseFloat(data.Amount) / 1_000_000 >= parseFloat(expectedAmount);
+
+      if (!toOk || !tagOk || !amtOk) {
+        return { success: false, message: 'Destination, tag, or amount mismatch.' };
+      }
+      return { success: true, payer: data.Account };
+    } catch {
+      return { success: false, message: 'Error validating XRP transaction.' };
+    }
+  };
+
+  // —— Helpers ——————————————————————————————————————
+  const isDuplicateTransaction = async (hash) => {
+    const qy = query(collection(db, 'users'), where('paymentHash', '==', hash));
+    const snapshot = await getDocs(qy);
+    return !snapshot.empty;
+  };
+
+  const logFailedAttempt = async (reason) => {
+    await addDoc(collection(db, 'failedPayments'), {
+      uid: user?.uid || 'unknown',
+      txid: txHash.trim(),
+      currency,
+      reason,
+      timestamp: new Date(),
+    });
+  };
+
+  // —— Confirm ———————————————————————————————————————
+  const handleConfirmPayment = async () => {
+    const trimmedTx = txHash.trim();
+    if (!user || !trimmedTx) return;
+
+    // basic guard
+    if (!(parsedAmount > 0) || !(feeUSD > 0)) {
+      setConfirmationMessage('❌ Enter a valid USD transaction amount first.');
+      return;
+    }
+
+    setLoading(true);
+    setConfirmationMessage('');
+
+    const duplicate = await isDuplicateTransaction(trimmedTx);
+    if (duplicate) {
+      const msg = 'This transaction has already been used.';
+      setConfirmationMessage(`❌ ${msg}`);
+      await logFailedAttempt(msg);
+      setLoading(false);
+      return;
+    }
+
+    let result = { success: false, message: 'Unsupported currency.' };
+    let payerAddress = null;
+
+    if (currency === 'XLM') {
+      result = await validateStellarTx({
+        txid: trimmedTx,
+        expectedMemo: walletDetails.XLM.tag,
+        minAmount: requiredAmount,
+        destination: walletDetails.XLM.address,
+      });
+    } else if (currency === 'USDC') {
+      result = await validateStellarTx({
+        txid: trimmedTx,
+        expectedMemo: walletDetails.USDC.tag,
+        minAmount: requiredAmount,
+        destination: walletDetails.USDC.address,
+        assetCode: 'USDC',
+        assetIssuer: USDC_STELLAR_ISSUER || undefined,
+      });
+    } else if (currency === 'XRP') {
+      result = await validateXRPTransaction(
+        trimmedTx,
+        walletDetails.XRP.tag,
+        requiredAmount,
+        walletDetails.XRP.address
+      );
+    }
+
+    if (!result.success) {
+      setConfirmationMessage(`❌ ${result.message}`);
+      await logFailedAttempt(result.message);
+      setLoading(false);
+      return;
+    }
+    payerAddress = result.payer || null;
+
+    // Save fee payment status onto the user
+    const userRef = doc(db, 'users', user.uid);
+    await updateDoc(userRef, {
+      hasPaid: true,
+      currency,
+      paymentHash: trimmedTx,
+      paidAt: new Date(),
+      walletAddress: walletDetails[currency].address, // your receiving address
+      walletMemo: walletDetails[currency].tag || null, // your memo/tag
+      buyerWalletAddress: payerAddress,                // auto-captured payer
+      buyerWalletCurrency: currency,
+      usdValue: round2(feeUSD),                        // actual USD fee paid
+      cryptoAmount: requiredAmount,                    // amount of crypto they sent for the fee
+    });
+
+    setConfirmationMessage(
+      `✅ Payment confirmed! Fee: $${round2(feeUSD)}${
+        payerAddress ? ' • Payer: ' + payerAddress : ''
+      } Redirecting...`
+    );
+    setTimeout(() => navigate('/submit'), 1500);
+    setLoading(false);
+  };
+
+  const { address, tag, network } = walletDetails[currency];
+  const currencyLabel = currency === 'USDC' ? 'USDC (Stellar → Coinbase)' : currency;
+
+  const qrValue =
+    currency === 'XRP'
+      ? `ripple:${address}?amount=${requiredAmount}&dt=${tag}`
+      : currency === 'USDC'
+      ? `web+stellar:pay?destination=${address}&amount=${requiredAmount}&memo=${encodeURIComponent(
+          tag
+        )}&asset_code=USDC${
+          USDC_STELLAR_ISSUER ? `&asset_issuer=${USDC_STELLAR_ISSUER}` : ''
+        }`
+      : // XLM native
+        `web+stellar:pay?destination=${address}&amount=${requiredAmount}&memo=${encodeURIComponent(
+          tag
+        )}`;
+
+  const fmt = (n, d = 2) => (Number.isFinite(n) ? n.toFixed(d) : '—');
+  const round2 = (n) => Math.round(n * 100) / 100;
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h2>Make a Payment</h2>
+      <p>
+        XLMGuard service fee is <strong>{(FEE_RATE * 100).toFixed(2)}%</strong> of your
+        transaction amount, with a <strong>${MIN_FEE_USD.toFixed(2)}</strong> minimum.
+      </p>
+
+      <div style={{ marginTop: 10, padding: 12, border: '1px solid #e5e7eb', borderRadius: 8 }}>
+        <label style={{ fontWeight: 600 }}>Transaction Amount (USD)</label>
+        <br />
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={amountUSD}
+          onChange={(e) => setAmountUSD(e.target.value)}
+          placeholder="e.g., 2000.00"
+          style={{ width: 240, padding: 8, marginTop: 6 }}
+        />
+        <div style={{ marginTop: 8 }}>
+          <div>
+            <strong>Calculated Service Fee (USD):</strong> ${fmt(feeUSD, 2)}{' '}
+            <span style={{ color: '#6b7280' }}>(greater of 0.75% or $100)</span>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ marginTop: 12 }}>
+        <label>Pay Fee With:&nbsp;</label>
+        <select value={currency} onChange={(e) => setCurrency(e.target.value)}>
+          <option value="XLM">XLM</option>
+          <option value="XRP">XRP</option>
+          <option value="USDC">USDC</option>
+        </select>
+      </div>
+
+      <div style={{ marginTop: 10 }}>
+        <div>
+          <strong>Network:</strong> {network}
+        </div>
+        <div>
+          <strong>Wallet Address:</strong> <code>{address}</code>
+        </div>
+        <div>
+          <strong>Memo/Tag:</strong> <code>{tag || 'None'}</code>
+        </div>
+        <div style={{ marginTop: 8 }}>
+          <strong>Send:</strong> {requiredAmount} {currencyLabel}{' '}
+          <span style={{ color: '#6b7280' }}>(≈ ${fmt(feeUSD, 2)} at current rates)</span>
+        </div>
+      </div>
 
       <div style={{ marginTop: '20px' }}>
-        <label>Coupon Code:</label>
+        <h4>Scan QR Code to Pay:</h4>
+        <QRCodeCanvas value={qrValue} size={200} level="H" includeMargin />
+      </div>
+
+      <div style={{ marginTop: '20px' }}>
+        <label>Transaction Hash:</label>
+        <br />
         <input
           type="text"
-          value={coupon}
-          onChange={(e) => setCoupon(e.target.value)}
-          placeholder="Enter coupon code"
+          value={txHash}
+          onChange={(e) => setTxHash(e.target.value)}
+          placeholder="Enter your transaction hash here"
+          style={{ width: '320px', padding: '8px' }}
         />
-        <button onClick={validateCoupon}>Apply Coupon</button>
       </div>
 
-      <div style={{ marginTop: '20px' }}>
-        <button onClick={handlePayment} disabled={loading}>
-          {loading ? 'Processing...' : 'Pay Now'}
-        </button>
-      </div>
+      <button
+        onClick={handleConfirmPayment}
+        style={{ marginTop: '20px', padding: '10px 20px' }}
+        disabled={loading || !(parsedAmount > 0) || !(feeUSD > 0)}
+      >
+        {loading ? 'Validating...' : 'Confirm Payment'}
+      </button>
 
       {confirmationMessage && (
-        <p style={{ marginTop: '20px', color: 'green' }}>{confirmationMessage}</p>
-      )}
-
-      {txHash && (
-        <div style={{ marginTop: '20px' }}>
-          <p>Transaction ID: {txHash}</p>
-          <QRCodeCanvas value={txHash} />
+        <div
+          style={{
+            marginTop: '20px',
+            color: confirmationMessage.startsWith('✅') ? 'green' : 'red',
+          }}
+        >
+          {confirmationMessage}
         </div>
       )}
+
+      <div style={{ marginTop: '30px' }}>
+        <button onClick={() => navigate('/')}>Return to Home Page</button>
+      </div>
     </div>
   );
 };
 
 export default PaymentPage;
+
+
