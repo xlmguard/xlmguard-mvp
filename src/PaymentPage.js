@@ -1,18 +1,8 @@
-// PaymentPage.js – 0.75% fee (min $100) + coupons + reseller commission accumulation
+// PaymentPage.js – 0.75% fee (min $100) + coupons + reseller commission -> also stored on transactions/<txHash>
 // - Validates XLM/USDC (Stellar) and XRP (XRPL) on-chain payments
 // - Applies coupon (reads from Firestore collection `resellerCodes`)
-// - Writes commission ledger to `resellerEarnings`
-// - Attempts to increment totals in `resellerCodes/<doc>` (optional; guarded by try/catch)
-//
-// Coupon document fields expected in `resellerCodes`:
-//   { active: true, status: "assigned", code: "XLM-001", discountRate: 0.05, payoutRate: 0.10,
-//     resellerId: "xlm-2562", resellerName: "Paul Pazzaglini" }
-//
-// Notes:
-// - This component tries coupon lookup by docId (UPPERCASE code) and by `code` field (UPPER/lower).
-// - For best DX, set docId == code (e.g., "XLM-001").
-// - Update Firestore Rules to allow writes to `resellerEarnings`; keep `resellerCodes` write-locked if you prefer,
-//   the totals update is optional and wrapped in try/catch.
+// - Writes commission snapshot onto transactions/<txHash> as `commission` (USD) + supporting fields
+// - Still writes reseller ledger to `resellerEarnings` (optional)
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -27,6 +17,7 @@ import {
   increment,
   query,
   serverTimestamp,
+  setDoc,              // ⬅️ added
   updateDoc,
   where,
 } from 'firebase/firestore';
@@ -110,7 +101,7 @@ export default function PaymentPage() {
     return Number.isFinite(n) ? n : 0;
   }, [amountUSD]);
 
-  // coupon lookup (resilient)
+  // coupon lookup
   useEffect(() => {
     (async () => {
       setCouponMeta(null);
@@ -123,13 +114,13 @@ export default function PaymentPage() {
       const CODE_LO = raw.toLowerCase();
 
       try {
-        // Try by docId first (preferred if you set docId == code)
+        // try docId first
         let ref = doc(db, 'resellerCodes', CODE_UP);
         let snap = await getDoc(ref);
         let data = snap.exists() ? snap.data() : null;
         let foundRef = snap.exists() ? ref : null;
 
-        // Fallback by 'code' field (UPPER then lower)
+        // fallback by field
         if (!data) {
           const q1 = query(collection(db, 'resellerCodes'), where('code', '==', CODE_UP));
           const s1 = await getDocs(q1);
@@ -165,7 +156,7 @@ export default function PaymentPage() {
             payoutRate,
             code: data.code || CODE_UP,
           });
-          setCouponDocRef(foundRef); // may be null if we couldn't resolve; totals update is optional
+          setCouponDocRef(foundRef);
           setCouponStatus('✓ Coupon applied');
         } else {
           setCouponStatus('Inactive or unassigned — no discount applied');
@@ -265,7 +256,7 @@ export default function PaymentPage() {
   const validateXRPTransaction = async (txid, expectedTag, expectedAmount, destinationAddress) => {
     try {
       const response = await fetch(`https://api.xrpscan.com/api/v1/tx/${txid}`);
-      if (!response.ok) return { success: false, message: 'Transaction not found on XRP ledger.' };
+    if (!response.ok) return { success: false, message: 'Transaction not found on XRP ledger.' };
       const data = await response.json();
 
       const toOk = data.Destination === destinationAddress;
@@ -391,7 +382,53 @@ export default function PaymentPage() {
       },
     });
 
-    // 2) write a reseller earnings ledger entry
+    // 2) ⬅️ Save commission directly to the transaction doc (transactions/<txHash>)
+    try {
+      const txRef = doc(db, 'transactions', trimmedTx); // stable id = on-chain hash
+      await setDoc(
+        txRef,
+        {
+          txid: trimmedTx,
+          status: 'paid',
+          buyerUid: user.uid,
+
+          // payer + payment method
+          payerWalletAddress: payerAddress,
+          payWith: currency,
+          payToAddress: walletDetails[currency].address,
+          payToMemoOrTag: walletDetails[currency].tag || null,
+          amountCrypto: requiredAmount,
+
+          // business fee + commission snapshot (USD)
+          transactionAmountUSD: round2(parsedAmount),
+          feeGrossUSD: round2(feeGrossUSD),
+          feeDiscountUSD: round2(feeDiscountUSD),
+          feeNetUSD: round2(feeNetUSD),
+
+          commission: round2(commissionUSD),          // <— simple name you asked for
+          commissionUSD: round2(commissionUSD),       // also keep explicit key
+          commissionCurrency: 'USD',
+          payoutRate,                                  // e.g., 0.10
+          discountRate: discountRateUsed,              // e.g., 0.05
+
+          // coupon/reseller context
+          couponCode: (couponMeta?.code || couponCode || '').toUpperCase() || null,
+          resellerId: couponMeta?.resellerId || null,
+          resellerName: couponMeta?.resellerName || null,
+
+          // bookkeeping
+          createdAt: serverTimestamp(),
+          lastUpdated: serverTimestamp(),
+          source: 'PaymentPage',
+        },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn('transactions/<txHash> write failed:', e);
+      // continue; payment still succeeds even if this snapshot fails
+    }
+
+    // 3) optional: reseller earnings ledger entry
     try {
       await addDoc(collection(db, 'resellerEarnings'), {
         resellerId: couponMeta?.resellerId || null,
@@ -411,11 +448,10 @@ export default function PaymentPage() {
         status: 'accrued',
       });
     } catch (e) {
-      // If rules disallow, skip silently — payment still succeeds
       console.warn('resellerEarnings write failed:', e);
     }
 
-    // 3) optionally: increment totals on resellerCodes/<doc>
+    // 4) optionally: increment totals on resellerCodes/<doc>
     if (couponDocRef) {
       try {
         await updateDoc(couponDocRef, {
@@ -425,7 +461,6 @@ export default function PaymentPage() {
           lastUpdated: serverTimestamp(),
         });
       } catch (e) {
-        // If resellerCodes is read-only by design, ignore
         console.warn('resellerCodes totals update skipped:', e);
       }
     }
@@ -578,6 +613,7 @@ export default function PaymentPage() {
 function round2(n) {
   return Math.round((Number(n) || 0) * 100) / 100;
 }
+
 
 
 
