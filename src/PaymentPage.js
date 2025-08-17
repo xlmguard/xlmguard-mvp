@@ -1,64 +1,78 @@
-// PaymentPage.js – 0.75% fee (min $100) + resilient coupon lookup + reseller basis
-// - Normalizes coupon to UPPERCASE for display
-// - Looks up coupon by documentId *or* code field (upper & lower)
-// - Valid coupon: { active: true, status: 'assigned' }
+// PaymentPage.js – 0.75% fee (min $100) + coupons + reseller commission accumulation
+// - Validates XLM/USDC (Stellar) and XRP (XRPL) on-chain payments
+// - Applies coupon (reads from Firestore collection `resellerCodes`)
+// - Writes commission ledger to `resellerEarnings`
+// - Attempts to increment totals in `resellerCodes/<doc>` (optional; guarded by try/catch)
+//
+// Coupon document fields expected in `resellerCodes`:
+//   { active: true, status: "assigned", code: "XLM-001", discountRate: 0.05, payoutRate: 0.10,
+//     resellerId: "xlm-2562", resellerName: "Paul Pazzaglini" }
+//
+// Notes:
+// - This component tries coupon lookup by docId (UPPERCASE code) and by `code` field (UPPER/lower).
+// - For best DX, set docId == code (e.g., "XLM-001").
+// - Update Firestore Rules to allow writes to `resellerEarnings`; keep `resellerCodes` write-locked if you prefer,
+//   the totals update is optional and wrapped in try/catch.
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { onAuthStateChanged } from 'firebase/auth';
 import { auth, db } from './firebase.js';
 import {
+  addDoc,
+  collection,
   doc,
   getDoc,
-  updateDoc,
   getDocs,
+  increment,
   query,
+  serverTimestamp,
+  updateDoc,
   where,
-  collection,
-  addDoc,
 } from 'firebase/firestore';
-import { onAuthStateChanged } from 'firebase/auth';
 import { QRCodeCanvas } from 'qrcode.react';
 
 const USDC_STELLAR_ISSUER = process.env.REACT_APP_STELLAR_USDC_ISSUER || '';
 
-const FEE_RATE = 0.0075;       // 0.75%
-const MIN_FEE_USD = 100.0;     // $100 minimum
-const DEFAULT_DISCOUNT = 0.05; // 5% if coupon valid
-const DEFAULT_PAYOUT = 0.10;   // default 10% reseller basis (stored)
+const FEE_RATE = 0.0075;        // 0.75%
+const MIN_FEE_USD = 100.0;      // $100 minimum
+const DEFAULT_DISCOUNT = 0.05;  // default 5% off when coupon is valid
+const DEFAULT_PAYOUT = 0.10;    // default 10% reseller commission basis (of NET fee)
 
 export default function PaymentPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Auth
+  // auth
   const [user, setUser] = useState(null);
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => (u ? setUser(u) : navigate('/login')));
     return () => unsub();
   }, [navigate]);
 
-  // Pricing
+  // amount / fees
   const [amountUSD, setAmountUSD] = useState('');
   const [feeGrossUSD, setFeeGrossUSD] = useState(0);
-  const [feeNetUSD, setFeeNetUSD] = useState(0);
   const [feeDiscountUSD, setFeeDiscountUSD] = useState(0);
+  const [feeNetUSD, setFeeNetUSD] = useState(0);
 
-  // FX
+  // FX + payment asset
   const [currency, setCurrency] = useState('XLM');
   const [prices, setPrices] = useState(null);
   const [requiredAmount, setRequiredAmount] = useState('0');
 
-  // TX hash / status
+  // chain
   const [txHash, setTxHash] = useState('');
   const [loading, setLoading] = useState(false);
   const [confirmationMessage, setConfirmationMessage] = useState('');
 
-  // Coupon
+  // coupon
   const [couponCode, setCouponCode] = useState('');
-  const [couponMeta, setCouponMeta] = useState(null); // {resellerId, resellerName, discountRate, payoutRate}
+  const [couponMeta, setCouponMeta] = useState(null); // { resellerId, resellerName, discountRate, payoutRate }
+  const [couponDocRef, setCouponDocRef] = useState(null); // Firestore doc ref (if found)
   const [couponStatus, setCouponStatus] = useState('');
 
-  // Prefill coupon from ?ref= and localStorage
+  // prefill coupon from ?ref= and localStorage
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const ref = (params.get('ref') || '').trim().toUpperCase();
@@ -70,10 +84,37 @@ export default function PaymentPage() {
     }
   }, [location.search]);
 
-  // Resilient coupon lookup
+  // fetch prices (all 3)
   useEffect(() => {
-    const run = async () => {
+    (async () => {
+      const idMap = { XLM: 'stellar', XRP: 'ripple', USDC: 'usd-coin' };
+      try {
+        const res = await fetch(
+          `https://api.coingecko.com/api/v3/simple/price?ids=${idMap.XLM},${idMap.XRP},${idMap.USDC}&vs_currencies=usd`
+        );
+        const data = await res.json();
+        setPrices({
+          xlmUsd: data[idMap.XLM]?.usd ?? null,
+          xrpUsd: data[idMap.XRP]?.usd ?? null,
+          usdcUsd: data[idMap.USDC]?.usd ?? 1.0,
+        });
+      } catch {
+        setPrices({ xlmUsd: null, xrpUsd: null, usdcUsd: 1.0 });
+      }
+    })();
+  }, []);
+
+  // parse amount
+  const parsedAmount = useMemo(() => {
+    const n = parseFloat(String(amountUSD).replace(/[^0-9.]/g, ''));
+    return Number.isFinite(n) ? n : 0;
+  }, [amountUSD]);
+
+  // coupon lookup (resilient)
+  useEffect(() => {
+    (async () => {
       setCouponMeta(null);
+      setCouponDocRef(null);
       setCouponStatus('');
       const raw = (couponCode || '').trim();
       if (!raw) return;
@@ -82,28 +123,35 @@ export default function PaymentPage() {
       const CODE_LO = raw.toLowerCase();
 
       try {
-        // 1) Try by document ID (preferred if you later rename docs to code)
-        let snap = await getDoc(doc(db, 'resellerCodes', CODE_UP));
+        // Try by docId first (preferred if you set docId == code)
+        let ref = doc(db, 'resellerCodes', CODE_UP);
+        let snap = await getDoc(ref);
         let data = snap.exists() ? snap.data() : null;
+        let foundRef = snap.exists() ? ref : null;
 
-        // 2) Fallback by 'code' field (UPPER then lower)
+        // Fallback by 'code' field (UPPER then lower)
         if (!data) {
-          let q1 = query(collection(db, 'resellerCodes'), where('code', '==', CODE_UP));
-          let s1 = await getDocs(q1);
-          if (!s1.empty) data = s1.docs[0].data();
+          const q1 = query(collection(db, 'resellerCodes'), where('code', '==', CODE_UP));
+          const s1 = await getDocs(q1);
+          if (!s1.empty) {
+            data = s1.docs[0].data();
+            foundRef = s1.docs[0].ref;
+          }
         }
         if (!data) {
-          let q2 = query(collection(db, 'resellerCodes'), where('code', '==', CODE_LO));
-          let s2 = await getDocs(q2);
-          if (!s2.empty) data = s2.docs[0].data();
+          const q2 = query(collection(db, 'resellerCodes'), where('code', '==', CODE_LO));
+          const s2 = await getDocs(q2);
+          if (!s2.empty) {
+            data = s2.docs[0].data();
+            foundRef = s2.docs[0].ref;
+          }
         }
 
         if (!data) {
-          setCouponStatus('Lookup error — no discount applied');
+          setCouponStatus('Code not found — no discount applied');
           return;
         }
 
-        // Valid when active + assigned
         if (data.active === true && data.status === 'assigned') {
           const discountRate =
             typeof data.discountRate === 'number' ? data.discountRate : DEFAULT_DISCOUNT;
@@ -115,50 +163,23 @@ export default function PaymentPage() {
             resellerName: data.resellerName || null,
             discountRate,
             payoutRate,
+            code: data.code || CODE_UP,
           });
+          setCouponDocRef(foundRef); // may be null if we couldn't resolve; totals update is optional
           setCouponStatus('✓ Coupon applied');
         } else {
           setCouponStatus('Inactive or unassigned — no discount applied');
         }
-      } catch (e) {
-        setCouponStatus('Lookup error — no discount applied');
+      } catch {
+        setCouponStatus('Permission error — check Firestore rules for resellerCodes read');
       }
-    };
-    run();
+    })();
   }, [couponCode]);
 
-  // Fetch FX
-  useEffect(() => {
-    const fetchPrices = async () => {
-      // 'stellar' works; 'stellar-lumens' also fine for CoinGecko. Keeping 'stellar'.
-      const idMap = { XLM: 'stellar', XRP: 'ripple', USDC: 'usd-coin' };
-      try {
-        const res = await fetch(
-          `https://api.coingecko.com/api/v3/simple/price?ids=${idMap.XLM},${idMap.XRP},${idMap.USDC}&vs_currencies=usd`
-        );
-        const data = await res.json();
-        setPrices({
-          xlmUsd: data[idMap.XLM]?.usd ?? null,
-          xrpUsd: data[idMap.XRP]?.usd ?? null,
-          usdcUsd: data[idMap.USDC]?.usd ?? 1,
-        });
-      } catch {
-        setPrices({ xlmUsd: null, xrpUsd: null, usdcUsd: 1 });
-      }
-    };
-    fetchPrices();
-  }, [currency]);
-
-  // Parse USD amount
-  const parsedAmount = useMemo(() => {
-    const n = parseFloat(String(amountUSD).replace(/[^0-9.]/g, ''));
-    return Number.isFinite(n) ? n : 0;
-  }, [amountUSD]);
-
-  // Fee math (gross → discount → net; min after discount)
+  // fee math (gross → discount → net; min after discount)
   useEffect(() => {
     const gross = parsedAmount * FEE_RATE;
-    const rate = couponMeta ? couponMeta.discountRate : 0;
+    const rate = couponMeta ? (couponMeta.discountRate ?? DEFAULT_DISCOUNT) : 0;
     const discounted = gross * (1 - rate);
     const net = Math.max(discounted, MIN_FEE_USD);
 
@@ -167,7 +188,7 @@ export default function PaymentPage() {
     setFeeDiscountUSD(round2(Math.max(0, gross - net)));
   }, [parsedAmount, couponMeta]);
 
-  // Convert net fee to selected asset
+  // convert to selected asset
   useEffect(() => {
     if (!prices) return;
     const { xlmUsd, xrpUsd, usdcUsd } = prices;
@@ -179,7 +200,7 @@ export default function PaymentPage() {
     setRequiredAmount(amt > 0 ? amt.toFixed(decimals) : decimals === 2 ? '0.00' : '0.0000');
   }, [feeNetUSD, prices, currency]);
 
-  // Wallets
+  // wallets (Coinbase)
   const walletDetails = {
     XLM: {
       network: 'Stellar',
@@ -198,7 +219,7 @@ export default function PaymentPage() {
     },
   };
 
-  // Validators
+  // validators
   const validateStellarTx = async ({
     txid,
     expectedMemo,
@@ -216,9 +237,10 @@ export default function PaymentPage() {
         return { success: false, message: 'Memo does not match.' };
       }
       const opsRes = await fetch(tx._links.operations.href);
-      const ops = (await opsRes.json())._embedded?.records || [];
+      const opsJson = await opsRes.json();
+      const recs = opsJson?._embedded?.records || [];
 
-      const match = ops.find((op) => {
+      const match = recs.find((op) => {
         const typeOk = ['payment', 'path_payment_strict_send', 'path_payment_strict_receive'].includes(op.type);
         if (!typeOk) return false;
         const toOk = op.to === destination;
@@ -228,13 +250,13 @@ export default function PaymentPage() {
           const codeOk = op.asset_code === assetCode;
           const issuerOk = assetIssuer ? op.asset_issuer === assetIssuer : true;
           return toOk && amtOk && codeOk && issuerOk;
-        } else {
-          return toOk && amtOk && op.asset_type === 'native';
         }
+        return toOk && amtOk && op.asset_type === 'native';
       });
 
-      if (!match) return { success: false, message: 'Payment not found or mismatch.' };
-      return { success: true, payer: match.from || tx.source_account || null };
+      if (!match) return { success: false, message: 'Payment not found or amount/address mismatch.' };
+      const payer = match.from || tx.source_account || null;
+      return { success: true, payer };
     } catch {
       return { success: false, message: 'Error validating Stellar transaction.' };
     }
@@ -249,7 +271,6 @@ export default function PaymentPage() {
       const toOk = data.Destination === destinationAddress;
       const tagOk = (data.DestinationTag?.toString() || '') === expectedTag.toString();
       const amtOk = parseFloat(data.Amount) / 1_000_000 >= parseFloat(expectedAmount);
-
       if (!toOk || !tagOk || !amtOk) return { success: false, message: 'Destination/tag/amount mismatch.' };
       return { success: true, payer: data.Account };
     } catch {
@@ -257,11 +278,11 @@ export default function PaymentPage() {
     }
   };
 
-  // Helpers
+  // duplicate guard
   const isDuplicateTransaction = async (hash) => {
     const qy = query(collection(db, 'users'), where('paymentHash', '==', hash));
-    const s = await getDocs(qy);
-    return !s.empty;
+    const snapshot = await getDocs(qy);
+    return !snapshot.empty;
   };
 
   const logFailedAttempt = async (reason) => {
@@ -274,10 +295,11 @@ export default function PaymentPage() {
     });
   };
 
-  // Confirm
+  // confirm payment
   const handleConfirmPayment = async () => {
     const trimmedTx = txHash.trim();
     if (!user || !trimmedTx) return;
+
     if (!(parsedAmount > 0) || !(feeNetUSD > 0)) {
       setConfirmationMessage('❌ Enter a valid USD transaction amount first.');
       return;
@@ -294,6 +316,7 @@ export default function PaymentPage() {
       return;
     }
 
+    // on-chain validation
     let result = { success: false, message: 'Unsupported currency.' };
     if (currency === 'XLM') {
       result = await validateStellarTx({
@@ -328,9 +351,13 @@ export default function PaymentPage() {
     }
 
     const payerAddress = result.payer || null;
+
+    // compute commission
     const payoutRate = couponMeta?.payoutRate ?? DEFAULT_PAYOUT;
+    const discountRateUsed = couponMeta?.discountRate ?? 0;
     const commissionUSD = round2(feeNetUSD * payoutRate);
 
+    // 1) write payment snapshot on user
     const userRef = doc(db, 'users', user.uid);
     await updateDoc(userRef, {
       hasPaid: true,
@@ -343,24 +370,65 @@ export default function PaymentPage() {
       buyerWalletAddress: payerAddress,
       buyerWalletCurrency: currency,
 
+      // fee snapshot
       feeGrossUSD: round2(feeGrossUSD),
       feeDiscountUSD: round2(feeDiscountUSD),
       feeNetUSD: round2(feeNetUSD),
-      usdValue: round2(feeNetUSD),
+      usdValue: round2(feeNetUSD),  // back-compat
       cryptoAmount: requiredAmount,
 
+      // coupon
       coupon: {
-        code: (couponCode || '').trim().toUpperCase() || null,
+        code: (couponMeta?.code || couponCode || '').toUpperCase() || null,
         valid: !!couponMeta,
         resellerId: couponMeta?.resellerId || null,
         resellerName: couponMeta?.resellerName || null,
         payoutRate,
-        discountRate: couponMeta?.discountRate ?? 0,
+        discountRate: discountRateUsed,
         commissionUSD,
         statusText: couponStatus || null,
         trackedAt: new Date(),
       },
     });
+
+    // 2) write a reseller earnings ledger entry
+    try {
+      await addDoc(collection(db, 'resellerEarnings'), {
+        resellerId: couponMeta?.resellerId || null,
+        resellerName: couponMeta?.resellerName || null,
+        code: (couponMeta?.code || couponCode || '').toUpperCase() || null,
+        commissionUSD: round2(commissionUSD),
+        feeNetUSD: round2(feeNetUSD),
+        feeGrossUSD: round2(feeGrossUSD),
+        discountRate: discountRateUsed,
+        payoutRate,
+        buyerUid: user.uid,
+        paymentHash: trimmedTx,
+        currency,
+        amountCrypto: requiredAmount,
+        transactionAmountUSD: round2(parsedAmount),
+        createdAt: serverTimestamp(),
+        status: 'accrued',
+      });
+    } catch (e) {
+      // If rules disallow, skip silently — payment still succeeds
+      console.warn('resellerEarnings write failed:', e);
+    }
+
+    // 3) optionally: increment totals on resellerCodes/<doc>
+    if (couponDocRef) {
+      try {
+        await updateDoc(couponDocRef, {
+          totalEarned: increment(commissionUSD),
+          totalNetFees: increment(round2(feeNetUSD)),
+          totalTxCount: increment(1),
+          lastUpdated: serverTimestamp(),
+        });
+      } catch (e) {
+        // If resellerCodes is read-only by design, ignore
+        console.warn('resellerCodes totals update skipped:', e);
+      }
+    }
 
     setConfirmationMessage(
       `✅ Payment confirmed! Fee: $${feeNetUSD.toFixed(2)}${
@@ -389,15 +457,15 @@ export default function PaymentPage() {
         )}`;
 
   return (
-    <div style={{ padding: 20 }}>
+    <div style={{ padding: 20, maxWidth: 720, margin: '0 auto' }}>
       <h2>Make a Payment</h2>
       <p>
         XLMGuard service fee is <strong>{(FEE_RATE * 100).toFixed(2)}%</strong> of your
         transaction amount, with a <strong>${MIN_FEE_USD.toFixed(2)}</strong> minimum.
       </p>
 
-      {/* USD amount */}
-      <div style={{ marginTop: 10, padding: 12, border: '1px solid #e5e7eb', borderRadius: 8 }}>
+      {/* Amount & fee breakdown */}
+      <div style={{ marginTop: 12, padding: 12, border: '1px solid #e5e7eb', borderRadius: 8 }}>
         <label style={{ fontWeight: 600 }}>Transaction Amount (USD)</label>
         <br />
         <input
@@ -409,21 +477,21 @@ export default function PaymentPage() {
           placeholder="e.g., 200000.00"
           style={{ width: 260, padding: 8, marginTop: 6 }}
         />
-        <div style={{ marginTop: 8, lineHeight: 1.6 }}>
+        <div style={{ marginTop: 10, lineHeight: 1.6 }}>
           <div><strong>Gross Fee (0.75%):</strong> ${feeGrossUSD.toFixed(2)}</div>
           <div><strong>Discount:</strong> ${feeDiscountUSD.toFixed(2)}</div>
-          <div><strong>Net Fee (min $100):</strong> ${feeNetUSD.toFixed(2)}</div>
+          <div><strong>Net Fee (min $100):</strong> <span style={{ fontSize: 18 }}>${feeNetUSD.toFixed(2)}</span></div>
           {couponCode ? (
             <div style={{ fontSize: 13, color: couponMeta ? 'green' : '#6b7280' }}>
               {couponMeta
-                ? `✓ ${couponStatus}${couponMeta.resellerName ? ` (${couponMeta.resellerName})` : ''} — discount ${(couponMeta.discountRate * 100).toFixed(0)}%`
+                ? `✓ ${couponStatus}${couponMeta.resellerName ? ` (${couponMeta.resellerName})` : ''} — discount ${(couponMeta.discountRate * 100).toFixed(0)}% • reseller basis ${(couponMeta.payoutRate * 100).toFixed(0)}%`
                 : couponStatus || 'No discount applied'}
             </div>
           ) : null}
         </div>
       </div>
 
-      {/* Coupon */}
+      {/* Coupon input */}
       <div style={{ marginTop: 12, padding: 12, border: '1px solid #e5e7eb', borderRadius: 8 }}>
         <label style={{ fontWeight: 600 }}>Coupon Code (optional)</label>
         <br />
@@ -432,9 +500,9 @@ export default function PaymentPage() {
           value={couponCode}
           onChange={(e) => {
             const raw = (e.target.value || '').trim();
-            const upper = raw.toUpperCase();
-            setCouponCode(upper);
-            localStorage.setItem('xlmguard_ref', upper);
+            const up = raw.toUpperCase();   // display uppercase
+            setCouponCode(up);
+            localStorage.setItem('xlmguard_ref', up);
           }}
           placeholder="Enter coupon code or use ?ref=CODE"
           style={{ width: 260, padding: 8, marginTop: 6, textTransform: 'uppercase' }}
@@ -480,7 +548,7 @@ export default function PaymentPage() {
           value={txHash}
           onChange={(e) => setTxHash(e.target.value)}
           placeholder="Enter your transaction hash here"
-          style={{ width: 320, padding: 8 }}
+          style={{ width: 340, padding: 8 }}
         />
       </div>
 
@@ -494,12 +562,12 @@ export default function PaymentPage() {
       </button>
 
       {confirmationMessage && (
-        <div style={{ marginTop: 20, color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
+        <div style={{ marginTop: 16, color: confirmationMessage.startsWith('✅') ? 'green' : 'red' }}>
           {confirmationMessage}
         </div>
       )}
 
-      <div style={{ marginTop: 30 }}>
+      <div style={{ marginTop: 28 }}>
         <button onClick={() => navigate('/')}>Return to Home Page</button>
       </div>
     </div>
@@ -510,5 +578,6 @@ export default function PaymentPage() {
 function round2(n) {
   return Math.round((Number(n) || 0) * 100) / 100;
 }
+
 
 
