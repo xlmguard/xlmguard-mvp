@@ -21,7 +21,8 @@ const styles = {
   badgeOk: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#ecfdf5', color:'#047857', border:'1px solid #34d399', fontSize:12 },
   badgeWait: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#fff7ed', color:'#9a3412', border:'1px solid #fbbf24', fontSize:12 },
   pilot: { margin:'8px 0 12px', padding:10, border:'1px solid #fde68a', background:'#fffbeb', borderRadius:10, color:'#92400e' },
-  center: { textAlign: 'center', marginTop: 80 }
+  center: { textAlign: 'center', marginTop: 80 },
+  error: { margin:'12px 0', padding:10, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', borderRadius:10, whiteSpace:'pre-wrap' },
 };
 
 export default function TransactionLookup() {
@@ -30,6 +31,7 @@ export default function TransactionLookup() {
   const [hasPaid, setHasPaid] = useState(false);
   const [trialCredits, setTrialCredits] = useState(0);
   const [rows, setRows] = useState([]);
+  const [errText, setErrText] = useState('');
 
   const navigate = useNavigate();
 
@@ -41,27 +43,63 @@ export default function TransactionLookup() {
       }
       setUser(u);
 
-      // read user doc
-      const ref = doc(db, 'users', u.uid);
-      const snap = await getDoc(ref);
-      if (snap.exists()) {
-        const d = snap.data();
-        setHasPaid(!!d.hasPaid);
-        setTrialCredits(d.trialCredits ?? 0);
+      try {
+        // 1) Load user flags
+        const ref = doc(db, 'users', u.uid);
+        const snap = await getDoc(ref);
+        if (snap.exists()) {
+          const d = snap.data();
+          setHasPaid(!!d.hasPaid);
+          setTrialCredits(d.trialCredits ?? 0);
+        }
+
+        // 2) Load this user's transactions
+        let list = [];
+        try {
+          // Preferred: filter + orderBy (needs index)
+          const q1 = query(
+            collection(db, 'transactions'),
+            where('uid', '==', u.uid),
+            orderBy('createdAt', 'desc')
+          );
+          const qs1 = await getDocs(q1);
+          list = qs1.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+        } catch (e) {
+          // Fallback if index missing or permission issue: filter only, then sort client-side
+          const q2 = query(
+            collection(db, 'transactions'),
+            where('uid', '==', u.uid)
+          );
+          const qs2 = await getDocs(q2);
+          list = qs2.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+          list.sort((a, b) => {
+            const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+            const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+            return tb - ta;
+          });
+
+          // Surface Firestore's "create index" link if present
+          const msg = String(e?.message || '');
+          const idxLink = msg.match(/https?:\/\/[^\s)]+/g)?.[0];
+          if (idxLink) {
+            setErrText(
+              `Firestore index missing for ordered query.\nYou can create it here:\n${idxLink}`
+            );
+          } else {
+            setErrText('Loaded without server-side ordering (no index). Consider adding an index on { uid ASC, createdAt DESC }.');
+          }
+          console.warn('OrderBy fallback used for transactions:', e);
+        }
+
+        setRows(list);
+      } catch (e) {
+        console.error('Lookup failed:', e);
+        setErrText(e?.message || 'Failed to load transactions.');
+      } finally {
+        setLoading(false);
       }
-
-      // load this user's transactions
-      const q = query(
-        collection(db, 'transactions'),
-        where('uid', '==', u.uid),
-        orderBy('createdAt', 'desc')
-      );
-      const qs = await getDocs(q);
-      const list = qs.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
-      setRows(list);
-
-      setLoading(false);
     });
+
     return () => unsub();
   }, [navigate]);
 
@@ -72,9 +110,7 @@ export default function TransactionLookup() {
 
   const allowAccess = hasPaid || trialCredits > 0;
 
-  if (loading) {
-    return <div style={styles.center}>Loading…</div>;
-  }
+  if (loading) return <div style={styles.center}>Loading…</div>;
 
   if (!allowAccess) {
     return (
@@ -102,7 +138,9 @@ export default function TransactionLookup() {
         </div>
       )}
 
-      <div className="card" style={styles.card}>
+      {errText && <div style={styles.error}>{errText}</div>}
+
+      <div style={styles.card}>
         {rows.length === 0 ? (
           <div>No transactions found yet.</div>
         ) : (
@@ -122,9 +160,7 @@ export default function TransactionLookup() {
                 {rows.map((r) => (
                   <tr key={r.id}>
                     <td style={styles.td}>
-                      {r.createdAt?.toDate
-                        ? r.createdAt.toDate().toLocaleString()
-                        : ''}
+                      {r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : ''}
                     </td>
                     <td style={styles.td}>{r.currency || '-'}</td>
                     <td style={styles.td}>{r.amount || '-'}</td>
@@ -138,7 +174,7 @@ export default function TransactionLookup() {
                         ? <span style={styles.badgeOk}>Verified</span>
                         : <span style={styles.badgeWait}>Pending</span>}
                     </td>
-                    <td style={styles.td} style={{...styles.td, maxWidth:240, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+                    <td style={{...styles.td, maxWidth:240, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
                       {r.transactionId || '—'}
                     </td>
                   </tr>
@@ -151,3 +187,4 @@ export default function TransactionLookup() {
     </div>
   );
 }
+
