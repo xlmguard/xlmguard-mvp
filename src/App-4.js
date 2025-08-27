@@ -20,9 +20,6 @@ import FAQPage from './FAQPage.js';
 import ContactPage from './ContactPage.js';
 import InstructionsPage from './InstructionsPage.js';
 
-// 👇 NEW: Freight Forwarders landing page
-import FreightForwardersPage from './FreightForwardersPage.jsx';
-
 function App() {
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
@@ -116,13 +113,7 @@ function App() {
         />
         <Route
           path="/payment"
-          element={
-            user && role === 'buyer' && !hasPaid
-              ? <PaymentPage />
-              : user
-                ? <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />
-                : <Navigate to="/login" />
-          }
+          element={user && role === 'buyer' && !hasPaid ? <PaymentPage /> : user ? <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} /> : <Navigate to="/login" />}
         />
         <Route
           path="/submit"
@@ -136,12 +127,12 @@ function App() {
         <Route path="/faq" element={<FAQPage />} />
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/instructions" element={<InstructionsPage />} />
-
-        {/* 👇 NEW: public landing route */}
-        <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
       </Routes>
     </Router>
   );
 }
 
 export default App;
+
+
+
