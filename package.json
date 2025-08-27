@@ -11,6 +11,8 @@
     "emailjs-com": "^3.2.0",
     "firebase": "^9.22.0",
     "firebase-admin": "^11.11.1",
+    "framer-motion": "^12.23.12",
+    "lucide-react": "^0.542.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
