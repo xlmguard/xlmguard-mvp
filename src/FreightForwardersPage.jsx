@@ -1,41 +1,43 @@
+// src/FreightForwardersPage.jsx
 import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
-import {
-  Truck,
-  ShieldCheck,
-  FileText,
-  Zap,
-  DollarSign,
-  Timer,
-  CheckCircle2,
-  Globe,
-} from "lucide-react";
+import { Link } from "react-router-dom";
 
-/**
- * FreightForwardersPage
- * ------------------------------------------------------------
- * A single-file, production-ready landing page tailored to freight forwarders.
- * - TailwindCSS for styling
- * - Lucide icons, Framer Motion for subtle animations
- * - Built-in fee savings calculator
- * - Clear CTAs for pilot/demo
- *
- * Usage:
- *   1) Add a route: <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
- *   2) Ensure Tailwind is configured in your app (or swap classes for your system)
- *   3) Point the CTA hrefs to your actual routes (/register, /contact, /demo, etc.)
- */
 export default function FreightForwardersPage() {
   return (
-    <main className="min-h-screen bg-slate-50 text-slate-900">
+    <main style={sx.page}>
       <Header />
       <Hero />
-      <ProblemSolution />
+      <Section>
+        <div style={sx.grid(2, 24)}>
+          <Card>
+            <h2 style={sx.h2}>The Payment Problem in Freight</h2>
+            <ul style={sx.list}>
+              <li>Letters of Credit & bank wires cause <b>7–14 day delays</b>.</li>
+              <li>Banks take <b>2–5%</b> in combined fees and FX spreads.</li>
+              <li>Funds can be released <b>before proof of shipment</b>.</li>
+              <li>Paper-heavy workflows drain operations.</li>
+            </ul>
+          </Card>
+          <Card dark>
+            <h3 style={{...sx.h2, color:"#fff"}}>XLMGuard Escrow — The Fix</h3>
+            <ul style={sx.listDark}>
+              <li>⚡ Instant, on-chain settlement when docs are uploaded</li>
+              <li>💰 ~0.75% platform fee — keep more margin</li>
+              <li>🛡️ Document-linked release prevents fraud</li>
+              <li>🚚 Built for forwarders: BL, CI, PL, Insurance</li>
+            </ul>
+            <div style={{marginTop:16}}>
+              <Link to="/register?pilot=freight" style={sx.btnLight}>Start Free Pilot</Link>
+            </div>
+          </Card>
+        </div>
+      </Section>
+
       <HowItWorks />
       <Benefits />
       <Calculator />
       <CaseStudy />
-      <TrustSignals />
+      <Trust />
       <FAQ />
       <FinalCTA />
       <SiteFooter />
@@ -43,34 +45,23 @@ export default function FreightForwardersPage() {
   );
 }
 
+/* -------------------------- small comps -------------------------- */
+
 function Header() {
   return (
-    <header className="sticky top-0 z-40 backdrop-blur bg-white/70 border-b border-slate-200">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        <a href="/" className="flex items-center gap-2 font-semibold">
-          <div className="h-8 w-8 rounded-xl bg-slate-900" />
+    <header style={sx.header}>
+      <div style={sx.headerInner}>
+        <Link to="/" style={sx.brand}>
+          <div style={sx.brandDot} />
           <span>XLMGuard</span>
-        </a>
-        <nav className="hidden md:flex items-center gap-6 text-sm">
-          <a href="#how" className="hover:text-slate-600">How it works</a>
-          <a href="#benefits" className="hover:text-slate-600">Benefits</a>
-          <a href="#calculator" className="hover:text-slate-600">Calculator</a>
-          <a href="#faq" className="hover:text-slate-600">FAQ</a>
+        </Link>
+        <nav style={{display:"flex", gap:18, alignItems:'center'}}>
+          <a href="https://escrow.xlmguard.com" style={sx.navLink}>Escrow</a>
+          <Link to="/freight-forwarders" style={{...sx.navLink, fontWeight:700}}>Freight</Link>
+          <Link to="/faq" style={sx.navLink}>FAQ</Link>
+          <Link to="/contact" style={sx.navLink}>Contact</Link>
         </nav>
-        <div className="flex items-center gap-3">
-          <a
-            href="/contact?subject=Demo%20XLMGuard%20for%20Freight"
-            className="hidden sm:inline-flex px-4 py-2 rounded-xl border border-slate-300 hover:bg-white"
-          >
-            Request Demo
-          </a>
-          <a
-            href="/register?pilot=freight"
-            className="inline-flex px-4 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800"
-          >
-            Start Free Pilot
-          </a>
-        </div>
+        <Link to="/" style={sx.btnGhost}>← Return Home</Link>
       </div>
     </header>
   );
@@ -78,104 +69,37 @@ function Header() {
 
 function Hero() {
   return (
-    <section className="relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-b from-white to-slate-100" />
-      <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-20 lg:py-28">
-        <div className="grid lg:grid-cols-2 gap-10 items-center">
+    <section style={{position:'relative', overflow:'hidden', padding:'56px 0'}}>
+      <div style={sx.container}>
+        <div style={sx.grid(2, 28, 'center')}>
           <div>
-            <motion.h1
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="text-4xl sm:text-5xl font-extrabold tracking-tight"
-            >
-              Secure Freight Payments in Minutes — Not Weeks
-            </motion.h1>
-            <p className="mt-4 text-lg text-slate-600">
+            <h1 style={sx.h1}>Secure Freight Payments in Minutes — Not Weeks</h1>
+            <p style={sx.lead}>
               Blockchain escrow designed for freight forwarders. Cut costs, reduce risk, and
               release funds instantly once shipment documents are uploaded.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <a
-                href="/register?pilot=freight"
-                className="px-5 py-3 rounded-2xl bg-slate-900 text-white hover:bg-slate-800"
-              >
-                Start Free Pilot
-              </a>
-              <a
-                href="/contact?subject=Demo%20XLMGuard%20for%20Freight"
-                className="px-5 py-3 rounded-2xl border border-slate-300 hover:bg-white"
-              >
-                Request a Demo
-              </a>
+            <div style={{display:'flex', gap:12, flexWrap:'wrap', marginTop:16}}>
+              <Link to="/register?pilot=freight" style={sx.btnPrimary}>Start Free Pilot</Link>
+              <Link to="/contact?subject=Demo%20XLMGuard%20for%20Freight" style={sx.btnOutline}>Request a Demo</Link>
             </div>
-            <div className="mt-6 flex items-center gap-6 text-sm text-slate-500">
-              <div className="flex items-center gap-2"><Timer className="h-4 w-4"/> Instant settlement</div>
-              <div className="flex items-center gap-2"><DollarSign className="h-4 w-4"/> Fees from 0.75%</div>
-              <div className="flex items-center gap-2"><ShieldCheck className="h-4 w-4"/> Escrow secured</div>
+            <div style={sx.heroBadges}>
+              <Badge>⏱ Instant settlement</Badge>
+              <Badge>💵 Fees from 0.75%</Badge>
+              <Badge>🛡 Escrow secured</Badge>
             </div>
           </div>
-          <motion.div
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.1 }}
-            className="relative"
-          >
-            <div className="rounded-3xl shadow-xl bg-white ring-1 ring-slate-200 p-6">
-              <div className="grid grid-cols-2 gap-4">
-                <MiniStat icon={Timer} label="Avg Settlement Time" value="~10 min" />
-                <MiniStat icon={DollarSign} label="Typical Savings" value="60–80%" />
-                <MiniStat icon={ShieldCheck} label="Chargebacks" value="Near-zero" />
-                <MiniStat icon={Globe} label="Assets" value="XLM • XRP • USDC" />
-              </div>
-              <div className="mt-6 rounded-2xl border border-dashed border-slate-300 p-4 text-sm text-slate-600">
-                Payment releases when your <strong>Bill of Lading</strong>, <strong>Invoice</strong>, and
-                <strong> Insurance</strong> are uploaded. No bank paperwork.
-              </div>
+          <Card>
+            <div style={sx.statsGrid}>
+              <MiniStat label="Avg Settlement Time" value="~10 min" />
+              <MiniStat label="Typical Savings" value="60–80%" />
+              <MiniStat label="Chargebacks" value="Near-zero" />
+              <MiniStat label="Assets" value="XLM • XRP • USDC" />
             </div>
-          </motion.div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function MiniStat({ icon: Icon, label, value }) {
-  return (
-    <div className="rounded-2xl border border-slate-200 p-4">
-      <div className="flex items-center gap-2 text-slate-500 text-sm">
-        <Icon className="h-4 w-4" />
-        <span>{label}</span>
-      </div>
-      <div className="mt-2 text-2xl font-semibold">{value}</div>
-    </div>
-  );
-}
-
-function ProblemSolution() {
-  return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div className="grid lg:grid-cols-2 gap-10 items-start">
-        <div className="bg-white rounded-3xl p-8 ring-1 ring-slate-200 shadow-sm">
-          <h2 className="text-2xl font-bold">The Payment Problem in Freight</h2>
-          <ul className="mt-4 space-y-3 text-slate-600">
-            <li className="flex gap-3"><span className="mt-1">•</span> Letters of Credit & bank wires cause <strong>7–14 day delays</strong>.</li>
-            <li className="flex gap-3"><span className="mt-1">•</span> Banks take <strong>2–5%</strong> in combined fees & FX spreads.</li>
-            <li className="flex gap-3"><span className="mt-1">•</span> Funds can be released <strong>before proof of shipment</strong>.</li>
-            <li className="flex gap-3"><span className="mt-1">•</span> Paper-heavy workflows drain operations.</li>
-          </ul>
-        </div>
-        <div className="bg-slate-900 text-white rounded-3xl p-8 shadow-sm">
-          <h3 className="text-2xl font-bold">XLMGuard Escrow — The Fix</h3>
-          <ul className="mt-4 space-y-3 text-slate-200">
-            <li className="flex gap-3"><Zap className="h-5 w-5 mt-0.5"/> Instant, on-chain settlement when docs are uploaded</li>
-            <li className="flex gap-3"><DollarSign className="h-5 w-5 mt-0.5"/> ~0.75% platform fee — keep more margin</li>
-            <li className="flex gap-3"><ShieldCheck className="h-5 w-5 mt-0.5"/> Document-linked release prevents fraud</li>
-            <li className="flex gap-3"><Truck className="h-5 w-5 mt-0.5"/> Built for forwarders: BL, CI, PL, Insurance</li>
-          </ul>
-          <div className="mt-6">
-            <a href="#pilot" className="inline-flex px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100">Start Free Pilot</a>
-          </div>
+            <div style={sx.noteBox}>
+              Payment releases when your <b>Bill of Lading</b>, <b>Invoice</b>, and <b>Insurance</b> are uploaded.
+              No bank paperwork.
+            </div>
+          </Card>
         </div>
       </div>
     </section>
@@ -184,69 +108,43 @@ function ProblemSolution() {
 
 function HowItWorks() {
   const steps = [
-    {
-      icon: ShieldCheck,
-      title: "Buyer Deposits Funds",
-      desc: "Escrow wallet holds funds securely on-chain.",
-    },
-    {
-      icon: FileText,
-      title: "Forwarder Uploads Shipping Docs",
-      desc: "Bill of Lading, Invoice, Packing List, Insurance Certificate.",
-    },
-    {
-      icon: CheckCircle2,
-      title: "Seller Gets Paid Instantly",
-      desc: "Automatic release once documents are verified.",
-    },
+    { t: "Buyer Deposits Funds", d: "Escrow wallet holds funds securely on-chain." },
+    { t: "Forwarder Uploads Shipping Docs", d: "Bill of Lading, Invoice, Packing List, Insurance Certificate." },
+    { t: "Seller Gets Paid Instantly", d: "Automatic release once documents are verified." },
   ];
-
   return (
-    <section id="how" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <h2 className="text-3xl font-bold tracking-tight">How it works</h2>
-      <div className="mt-8 grid md:grid-cols-3 gap-6">
-        {steps.map(({ icon: Icon, title, desc }, i) => (
-          <motion.div
-            key={title}
-            initial={{ opacity: 0, y: 8 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.4, delay: i * 0.05 }}
-            className="bg-white rounded-3xl p-6 ring-1 ring-slate-200"
-          >
-            <div className="h-12 w-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
-              <Icon className="h-6 w-6" />
-            </div>
-            <h3 className="mt-4 text-xl font-semibold">{title}</h3>
-            <p className="mt-2 text-slate-600">{desc}</p>
-          </motion.div>
+    <Section id="how" title="How it works">
+      <div style={sx.grid(3, 16)}>
+        {steps.map((s) => (
+          <Card key={s.t}>
+            <div style={sx.stepIcon}>✔</div>
+            <h3 style={sx.h3}>{s.t}</h3>
+            <p style={sx.p}>{s.d}</p>
+          </Card>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
 function Benefits() {
   const items = [
-    { icon: Timer, title: "Instant Settlement", desc: "Minutes instead of days or weeks." },
-    { icon: DollarSign, title: "Lower Costs", desc: "Fees from ~0.75% vs. 3–5% with banks." },
-    { icon: Globe, title: "Global Ready", desc: "Supports XLM, XRP, and USDC stablecoin." },
-    { icon: ShieldCheck, title: "Document-Linked Security", desc: "Funds release only after docs are confirmed." },
+    { t: "Instant Settlement", d: "Minutes instead of days or weeks." },
+    { t: "Lower Costs", d: "Fees from ~0.75% vs. 3–5% with banks." },
+    { t: "Global Ready", d: "Supports XLM, XRP, and USDC stablecoin." },
+    { t: "Document-Linked Security", d: "Funds release only after docs are confirmed." },
   ];
-
   return (
-    <section id="benefits" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <h2 className="text-3xl font-bold tracking-tight">Key benefits for freight forwarders</h2>
-      <div className="mt-8 grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {items.map(({ icon: Icon, title, desc }) => (
-          <div key={title} className="bg-white rounded-3xl p-6 ring-1 ring-slate-200">
-            <Icon className="h-6 w-6 text-slate-900" />
-            <h3 className="mt-3 font-semibold">{title}</h3>
-            <p className="mt-1 text-slate-600 text-sm">{desc}</p>
-          </div>
+    <Section id="benefits" title="Key benefits for freight forwarders">
+      <div style={sx.grid(4, 16)}>
+        {items.map((b) => (
+          <Card key={b.t}>
+            <h4 style={sx.h4}>{b.t}</h4>
+            <p style={sx.p}>{b.d}</p>
+          </Card>
         ))}
       </div>
-    </section>
+    </Section>
   );
 }
 
@@ -267,51 +165,173 @@ function Calculator() {
   const currency = (n) => n.toLocaleString(undefined, { style: 'currency', currency: 'USD' });
 
   return (
-    <section id="calculator" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div className="bg-white rounded-3xl p-8 ring-1 ring-slate-200">
-        <div className="grid lg:grid-cols-2 gap-10">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Compare fees — bank vs. XLMGuard</h2>
-            <p className="mt-2 text-slate-600">Estimate your annual savings by switching settlement of freight payments to blockchain escrow.</p>
-
-            <div className="mt-6 grid sm:grid-cols-3 gap-4">
-              <NumberField label="Avg shipment value ($)" value={avgValue} setValue={setAvgValue} step={500} min={0} />
-              <NumberField label="Shipments / year" value={shipments} setValue={setShipments} step={5} min={0} />
-              <NumberField label="Bank fee %" value={bankFeePct} setValue={setBankFeePct} step={0.25} min={0} max={10} />
-            </div>
-
-            <div className="mt-6 grid sm:grid-cols-3 gap-4 text-sm">
-              <MetricCard title="Bank annual fees" value={currency(bankAnnual)} />
-              <MetricCard title="XLMGuard annual fees" value={`${currency(xlmAnnual)} (0.75%)`} />
-              <MetricCard title="Your savings" value={`${currency(savings)} (${savingsPct.toFixed(0)}%)`} highlight />
-            </div>
-
-            <div className="mt-6 text-slate-500 text-sm">* Estimates only; excludes FX spread and bank paperwork costs (usually increases bank total).</div>
+    <Section id="calculator" title="Compare fees — bank vs. XLMGuard">
+      <div style={sx.grid(2, 24)}>
+        <Card>
+          <p style={sx.p}>Estimate your annual savings by switching settlement of freight payments to blockchain escrow.</p>
+          <div style={sx.grid(3, 12)}>
+            <NumberField label="Avg shipment value ($)" value={avgValue} setValue={setAvgValue} step={500} min={0} />
+            <NumberField label="Shipments / year" value={shipments} setValue={setShipments} step={5} min={0} />
+            <NumberField label="Bank fee %" value={bankFeePct} setValue={setBankFeePct} step={0.25} min={0} max={10} />
           </div>
-
-          <div className="rounded-2xl bg-slate-900 text-white p-6 flex flex-col justify-between">
-            <div>
-              <h3 className="text-2xl font-semibold">Ready to keep more margin?</h3>
-              <p className="mt-2 text-slate-200">Join forwarders running pilot shipments and settling in minutes after BL upload.</p>
-            </div>
-            <div className="mt-6 flex gap-3">
-              <a href="/register?pilot=freight" className="px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100">Start Free Pilot</a>
-              <a href="/contact?subject=Demo%20XLMGuard%20for%20Freight" className="px-4 py-2 rounded-xl border border-white/30 hover:bg-white/10">Request Demo</a>
-            </div>
+          <div style={sx.grid(3, 12, 'stretch', 'start', 12)}>
+            <Metric title="Bank annual fees" value={currency(bankAnnual)} />
+            <Metric title="XLMGuard annual fees" value={`${currency(xlmAnnual)} (0.75%)`} />
+            <Metric title="Your savings" value={`${currency(savings)} (${savingsPct.toFixed(0)}%)`} highlight />
           </div>
+          <div style={{marginTop:8, color:'#64748b', fontSize:13}}>
+            * Estimates only; excludes FX spread and bank paperwork costs (usually increases bank total).
+          </div>
+        </Card>
+        <Card dark>
+          <h3 style={{...sx.h2, color:'#fff'}}>Ready to keep more margin?</h3>
+          <p style={{...sx.p, color:'#cbd5e1'}}>Join forwarders running pilot shipments and settling in minutes after BL upload.</p>
+          <div style={{display:'flex', gap:10, marginTop:14}}>
+            <Link to="/register?pilot=freight" style={sx.btnLight}>Start Free Pilot</Link>
+            <Link to="/contact?subject=Demo%20XLMGuard%20for%20Freight" style={sx.btnDarkOutline}>Request Demo</Link>
+          </div>
+        </Card>
+      </div>
+    </Section>
+  );
+}
+
+function CaseStudy() {
+  return (
+    <Section>
+      <div style={sx.grid(3, 16)}>
+        <Card styleOverride={{gridColumn:'span 2'}}>
+          <h2 style={sx.h2}>From 10 days to 10 minutes</h2>
+          <p style={sx.p}>
+            A mid-sized freight forwarder replaced bank LCs with XLMGuard escrow. Settlement now
+            occurs within minutes after document upload, eliminating lengthy bank processes and
+            reducing total payment costs by over 70%.
+          </p>
+          <div style={sx.grid(3, 12)}>
+            <Metric title="Settlement time" value="10 days → 10 min" />
+            <Metric title="Cost reduction" value="~70% lower" />
+            <Metric title="Disputes" value="Near-zero" />
+          </div>
+        </Card>
+        <Card dark>
+          <h3 style={{...sx.h2, color:'#fff'}}>Try a free pilot</h3>
+          <p style={{...sx.p, color:'#cbd5e1'}}>Run a live shipment with zero platform fees and see the difference.</p>
+          <div style={{display:'flex', gap:10, marginTop:14}}>
+            <Link to="/register?pilot=freight" style={sx.btnLight}>Start Free Pilot</Link>
+            <Link to="/contact?subject=Demo%20XLMGuard%20for%20Freight" style={sx.btnDarkOutline}>Request Demo</Link>
+          </div>
+        </Card>
+      </div>
+    </Section>
+  );
+}
+
+function Trust() {
+  return (
+    <div style={{padding:'8px 0 0'}}>
+      <div style={{...sx.container, display:'flex', justifyContent:'center', gap:8, flexWrap:'wrap', color:'#64748b'}}>
+        <Token>XLM</Token><Token>XRP</Token><Token>USDC</Token>
+        <span style={{opacity:.5}}>•</span>
+        <span style={{fontSize:14}}>Backed by blockchain escrow</span>
+      </div>
+    </div>
+  );
+}
+
+function FAQ() {
+  const faqs = [
+    { q: "What currencies are supported?", a: "Stellar (XLM), XRP, and USDC stablecoin." },
+    { q: "Do we need special software?", a: "No. XLMGuard runs in the browser; you can integrate via API later if desired." },
+    { q: "How does document-linked release work?", a: "Funds are released from escrow only after required shipment docs are uploaded and verified." },
+    { q: "Can we trial it first?", a: "Yes. Start a free pilot shipment to validate speed, cost, and workflow for your team." },
+  ];
+  return (
+    <Section id="faq" title="Frequently asked questions">
+      <div style={sx.grid(2, 16)}>
+        {faqs.map((f) => (
+          <details key={f.q} style={sx.faq}>
+            <summary style={sx.faqSummary}>{f.q}</summary>
+            <p style={{marginTop:8, color:'#475569'}}>{f.a}</p>
+          </details>
+        ))}
+      </div>
+    </Section>
+  );
+}
+
+function FinalCTA() {
+  return (
+    <Section>
+      <Card dark styleOverride={{display:'flex', flexWrap:'wrap', alignItems:'center', justifyContent:'space-between'}}>
+        <div>
+          <h2 style={{...sx.h2, color:'#fff'}}>Move freight. Get paid. Faster.</h2>
+          <p style={{...sx.p, color:'#cbd5e1'}}>Launch a pilot shipment and see how instant escrow changes your cash flow.</p>
         </div>
+        <div style={{display:'flex', gap:10}}>
+          <Link to="/register?pilot=freight" style={sx.btnLight}>Start Free Pilot</Link>
+          <Link to="/contact?subject=Demo%20XLMGuard%20for%20Freight" style={sx.btnDarkOutline}>Request Demo</Link>
+          <Link to="/" style={sx.btnGhost}>← Return Home</Link>
+        </div>
+      </Card>
+    </Section>
+  );
+}
+
+function SiteFooter() {
+  return (
+    <footer style={{padding:'24px 0 40px'}}>
+      <div style={{...sx.container, textAlign:'center', color:'#64748b', fontSize:14}}>
+        © {new Date().getFullYear()} XLMGuard — Secure blockchain escrow for global trade.
+      </div>
+    </footer>
+  );
+}
+
+/* --------------------------- tiny primitives --------------------------- */
+
+function Section({ id, title, children }) {
+  return (
+    <section id={id} style={{padding:'28px 0'}}>
+      <div style={sx.container}>
+        {title && <h2 style={sx.h2}>{title}</h2>}
+        {children}
       </div>
     </section>
   );
 }
 
+function Card({ children, dark, styleOverride }) {
+  return (
+    <div
+      style={{
+        borderRadius: 20,
+        boxShadow: '0 8px 24px rgba(0,0,0,.08)',
+        border: `1px solid ${dark ? '#0f172a' : '#e2e8f0'}`,
+        background: dark ? '#0f172a' : '#fff',
+        padding: 20,
+        ...styleOverride
+      }}
+    >
+      {children}
+    </div>
+  );
+}
+
+function MiniStat({ label, value }) {
+  return (
+    <div style={{border:'1px solid #e2e8f0', borderRadius:16, padding:12}}>
+      <div style={{color:'#64748b', fontSize:13}}>{label}</div>
+      <div style={{fontSize:22, fontWeight:700, marginTop:4}}>{value}</div>
+    </div>
+  );
+}
+
 function NumberField({ label, value, setValue, step = 1, min, max }) {
   return (
-    <label className="block">
-      <span className="text-sm text-slate-600">{label}</span>
+    <label>
+      <div style={{fontSize:13, color:'#475569', marginBottom:6}}>{label}</div>
       <input
         type="number"
-        className="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2"
         value={value}
         onChange={(e) => {
           const v = parseFloat(e.target.value || 0);
@@ -320,135 +340,96 @@ function NumberField({ label, value, setValue, step = 1, min, max }) {
           if (typeof max === "number" && v > max) return;
           setValue(Math.round(v / step) * step);
         }}
+        style={sx.input}
       />
     </label>
   );
 }
 
-function MetricCard({ title, value, highlight }) {
+function Metric({ title, value, highlight }) {
   return (
-    <div className={`rounded-2xl border p-4 ${highlight ? "border-emerald-400 bg-emerald-50" : "border-slate-200 bg-slate-50"}`}>
-      <div className="text-slate-500">{title}</div>
-      <div className="mt-1 text-xl font-semibold">{value}</div>
+    <div style={{
+      border:'1px solid',
+      borderColor: highlight ? '#34d399' : '#e2e8f0',
+      background: highlight ? '#ecfdf5' : '#f8fafc',
+      borderRadius:16,
+      padding:12
+    }}>
+      <div style={{color:'#64748b', fontSize:13}}>{title}</div>
+      <div style={{fontSize:18, fontWeight:700, marginTop:4}}>{value}</div>
     </div>
   );
 }
 
-function CaseStudy() {
+function Badge({ children }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div className="rounded-3xl bg-white ring-1 ring-slate-200 p-8 grid md:grid-cols-3 gap-6">
-        <div className="md:col-span-2">
-          <h2 className="text-3xl font-bold tracking-tight">From 10 days to 10 minutes</h2>
-          <p className="mt-2 text-slate-600">
-            A mid-sized freight forwarder replaced bank LCs with XLMGuard escrow. Settlement now
-            occurs within minutes after document upload, eliminating lengthy bank processes and
-            reducing total payment costs by over 70%.
-          </p>
-          <ul className="mt-4 grid sm:grid-cols-3 gap-4 text-sm">
-            <li className="rounded-2xl bg-slate-50 p-4 border border-slate-200"><div className="text-slate-500">Settlement time</div><div className="text-xl font-semibold">10 days → 10 min</div></li>
-            <li className="rounded-2xl bg-slate-50 p-4 border border-slate-200"><div className="text-slate-500">Cost reduction</div><div className="text-xl font-semibold">~70% lower</div></li>
-            <li className="rounded-2xl bg-slate-50 p-4 border border-slate-200"><div className="text-slate-500">Disputes</div><div className="text-xl font-semibold">Near-zero</div></li>
-          </ul>
-        </div>
-        <div className="rounded-2xl bg-slate-900 text-white p-6 flex flex-col justify-between">
-          <div>
-            <h3 className="text-2xl font-semibold">Try a free pilot</h3>
-            <p className="mt-2 text-slate-200">Run a live shipment with zero platform fees and see the difference.</p>
-          </div>
-          <div className="mt-6 flex gap-3">
-            <a href="/register?pilot=freight" className="px-4 py-2 rounded-xl bg-white text-slate-900 font-semibold hover:bg-slate-100">Start Free Pilot</a>
-            <a href="/contact?subject=Demo%20XLMGuard%20for%20Freight" className="px-4 py-2 rounded-xl border border-white/30 hover:bg-white/10">Request Demo</a>
-          </div>
-        </div>
-      </div>
-    </section>
+    <span style={{
+      border:'1px solid #e2e8f0',
+      background:'#fff',
+      borderRadius:999,
+      padding:'6px 10px',
+      fontSize:13
+    }}>{children}</span>
   );
 }
 
-function TrustSignals() {
+function Token({ children }) {
   return (
-    <section className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 pb-6">
-      <div className="flex flex-wrap items-center justify-center gap-3">
-        <TokenBadge label="XLM" />
-        <TokenBadge label="XRP" />
-        <TokenBadge label="USDC" />
-        <span className="text-slate-400">•</span>
-        <span className="text-slate-500 text-sm">Backed by blockchain escrow</span>
-      </div>
-    </section>
+    <span style={{
+      border:'1px solid #e2e8f0',
+      background:'#fff',
+      color:'#334155',
+      borderRadius:999,
+      padding:'6px 10px',
+      fontSize:13,
+      fontWeight:600
+    }}>{children}</span>
   );
 }
 
-function TokenBadge({ label }) {
-  return (
-    <span className="px-3 py-1 rounded-full border border-slate-200 bg-white text-slate-700 text-sm font-medium">
-      {label}
-    </span>
-  );
-}
+/* ------------------------------ styles ------------------------------ */
 
-function FAQ() {
-  const faqs = [
-    {
-      q: "What currencies are supported?",
-      a: "Stellar (XLM), XRP, and USDC stablecoin."
-    },
-    {
-      q: "Do we need special software?",
-      a: "No. XLMGuard runs in the browser; you can integrate via API later if desired."
-    },
-    {
-      q: "How does document-linked release work?",
-      a: "Funds are released from escrow only after required shipment docs are uploaded and verified."
-    },
-    {
-      q: "Can we trial it first?",
-      a: "Yes. Start a free pilot shipment to validate speed, cost, and workflow for your team."
-    }
-  ];
+const sx = {
+  page: { background:'#f1f5f9', color:'#0f172a', minHeight:'100vh' },
+  container: { maxWidth: 1100, margin:'0 auto', padding:'0 16px' },
+  header: {
+    position:'sticky', top:0, zIndex:50,
+    backdropFilter:'saturate(180%) blur(6px)',
+    background:'rgba(255,255,255,.8)', borderBottom:'1px solid #e2e8f0'
+  },
+  headerInner: {
+    ...this?.container, // harmless no-op; we’ll just inline:
+    maxWidth:1100, margin:'0 auto', padding:'10px 16px',
+    display:'flex', alignItems:'center', justifyContent:'space-between', gap:12
+  },
+  brand: { display:'flex', alignItems:'center', gap:10, fontWeight:700, color:'#0f172a', textDecoration:'none' },
+  brandDot: { width:28, height:28, borderRadius:10, background:'#0f172a' },
+  navLink: { color:'#334155', textDecoration:'none', fontSize:14 },
+  btnPrimary: { background:'#0f172a', color:'#fff', padding:'10px 14px', borderRadius:12, textDecoration:'none', fontWeight:700 },
+  btnOutline: { border:'1px solid #cbd5e1', padding:'10px 14px', borderRadius:12, textDecoration:'none', color:'#0f172a' },
+  btnLight: { background:'#fff', color:'#0f172a', padding:'10px 14px', borderRadius:12, textDecoration:'none', fontWeight:700 },
+  btnDarkOutline: { border:'1px solid rgba(255,255,255,.3)', color:'#fff', padding:'10px 14px', borderRadius:12, textDecoration:'none' },
+  btnGhost: { border:'1px solid #e2e8f0', padding:'10px 14px', borderRadius:12, textDecoration:'none', color:'#0f172a' },
+  h1: { fontSize:36, lineHeight:1.15, fontWeight:800, margin:'0 0 8px' },
+  h2: { fontSize:24, fontWeight:800, margin:'0 0 12px' },
+  h3: { fontSize:18, fontWeight:700, margin:'8px 0' },
+  h4: { fontSize:16, fontWeight:700, margin:'0 0 4px' },
+  lead: { color:'#475569', fontSize:18, maxWidth:640 },
+  p: { color:'#475569', lineHeight:1.6, margin:0 },
+  list: { margin:0, paddingLeft:18, color:'#475569', lineHeight:1.6 },
+  listDark: { margin:0, paddingLeft:0, color:'#cbd5e1', lineHeight:1.6, listStyle:'none' },
+  heroBadges: { display:'flex', gap:8, flexWrap:'wrap', marginTop:12 },
+  grid: (cols, gap=16, align='start', vAlign='start', mt=0) => ({
+    display:'grid',
+    gridTemplateColumns: `repeat(${cols}, minmax(0,1fr))`,
+    gap, alignItems:vAlign, justifyItems:align, marginTop:mt
+  }),
+  statsGrid: { display:'grid', gridTemplateColumns:'repeat(2,minmax(0,1fr))', gap:12 },
+  stepIcon: { width:40, height:40, borderRadius:12, background:'#0f172a', color:'#fff',
+              display:'flex', alignItems:'center', justifyContent:'center', fontWeight:700 },
+  input: { width:'100%', padding:'10px 12px', border:'1px solid #cbd5e1', borderRadius:10, fontSize:14 },
+  noteBox: { marginTop:14, padding:12, border:'1px dashed #cbd5e1', borderRadius:12, color:'#475569', background:'#f8fafc' },
+  faq: { border:'1px solid #e2e8f0', borderRadius:16, padding:16, background:'#fff' },
+  faqSummary: { cursor:'pointer', listStyle:'none', fontWeight:700 },
+};
 
-  return (
-    <section id="faq" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <h2 className="text-3xl font-bold tracking-tight">Frequently asked questions</h2>
-      <div className="mt-8 grid md:grid-cols-2 gap-6">
-        {faqs.map((f) => (
-          <details key={f.q} className="group rounded-2xl bg-white p-6 ring-1 ring-slate-200">
-            <summary className="cursor-pointer list-none flex items-center justify-between">
-              <span className="font-semibold">{f.q}</span>
-              <span className="ml-4 text-slate-400 group-open:rotate-45 transition">+</span>
-            </summary>
-            <p className="mt-3 text-slate-600">{f.a}</p>
-          </details>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-function FinalCTA() {
-  return (
-    <section id="pilot" className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div className="rounded-3xl bg-slate-900 text-white p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight">Move freight. Get paid. Faster.</h2>
-          <p className="mt-2 text-slate-200">Launch a pilot shipment and see how instant escrow changes your cash flow.</p>
-        </div>
-        <div className="flex gap-3">
-          <a href="/register?pilot=freight" className="px-5 py-3 rounded-2xl bg-white text-slate-900 font-semibold hover:bg-slate-100">Start Free Pilot</a>
-          <a href="/contact?subject=Demo%20XLMGuard%20for%20Freight" className="px-5 py-3 rounded-2xl border border-white/30 hover:bg-white/10">Request Demo</a>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function SiteFooter() {
-  return (
-    <footer className="pb-16">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center text-sm text-slate-500">
-        © {new Date().getFullYear()} XLMGuard — Secure blockchain escrow for global trade.
-      </div>
-    </footer>
-  );
-}
