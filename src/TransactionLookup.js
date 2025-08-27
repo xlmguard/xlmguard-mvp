@@ -1,518 +1,356 @@
-// TransactionLookup.js
-import React, { useEffect, useState, useMemo } from 'react';
+// src/TransactionLookup.js
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getAuth, onAuthStateChanged } from 'firebase/auth';
-import { db } from './firebase.js';
-import {
-  doc,
-  getDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-} from 'firebase/firestore';
+import { auth, db } from './firebase.js';
+import { doc, getDoc, collection, query, where, getDocs } from 'firebase/firestore';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 
-const HORIZON = 'https://horizon.stellar.org';
+const styles = {
+  page: { padding: 20, fontFamily: 'Arial, sans-serif', maxWidth: 1100, margin: '0 auto' },
+  top: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  h1: { margin: 0, fontSize: 28, fontWeight: 800 },
+  actions: { display: 'flex', gap: 8 },
+  btn: { padding: '8px 12px', borderRadius: 8, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' },
+  primary: { padding: '8px 12px', borderRadius: 8, border: '1px solid #0b74ff', background: '#0b74ff', color: '#fff', cursor: 'pointer' },
+  danger: { padding: '8px 12px', borderRadius: 8, border: '1px solid #c00', background: '#f33', color: '#fff', cursor: 'pointer' },
+  pilot: { margin:'8px 0 12px', padding:10, border:'1px solid #fde68a', background:'#fffbeb', borderRadius:10, color:'#92400e' },
+  error: { margin:'12px 0', padding:10, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', borderRadius:10, whiteSpace:'pre-wrap' },
+  card: { border: '1px solid #e5e7eb', borderRadius: 12, background:'#fff' },
+  tableWrap: { overflowX:'auto' },
+  table: { width: '100%', borderCollapse: 'collapse', fontSize: 14 },
+  th: { textAlign: 'left', padding: '10px 12px', borderBottom: '1px solid #e5e7eb', color: '#475569', whiteSpace:'nowrap' },
+  td: { padding: '10px 12px', borderBottom: '1px solid #f1f5f9', verticalAlign:'top' },
+  badgeOk: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#ecfdf5', color:'#047857', border:'1px solid #34d399', fontSize:12 },
+  badgeWait: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#fff7ed', color:'#9a3412', border:'1px solid #fbbf24', fontSize:12 },
+  link: { color:'#6d28d9', textDecoration:'underline', cursor:'pointer' },
+  // details panel
+  detailsCell: { background:'#f8fafc', borderTop:'1px dashed #e5e7eb' },
+  block: { border:'1px solid #e5e7eb', background:'#fff', borderRadius:8, padding:12, marginBottom:10 },
+  subtitle: { margin:'0 0 8px', fontWeight:800, fontSize:13, color:'#334155' },
+  line: { margin:'4px 0' },
+  k: { color:'#64748b' },
+  mono: { fontFamily:'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' },
+  docList: { margin:0, paddingLeft:18 },
+  imgGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px,1fr))', gap:10 },
+  img: { width:'100%', height:140, objectFit:'cover', border:'1px solid #e5e7eb', borderRadius:6, background:'#fff' },
+};
 
-function TransactionLookup() {
-  const [txid, setTxid] = useState('');
-  const [transaction, setTransaction] = useState(null);
-  const [error, setError] = useState(null);
-  const [loading, setLoading] = useState(false);
+function shorten(s, head=10, tail=8) {
+  if (!s) return '—';
+  const str = String(s);
+  if (str.length <= head + tail + 3) return str;
+  return `${str.slice(0, head)}…${str.slice(-tail)}`;
+}
 
-  const [approvalStatus, setApprovalStatus] = useState('Pending');
-  const [updateMessage, setUpdateMessage] = useState('');
-  const [fetchMsg, setFetchMsg] = useState('');
+export default function TransactionLookup() {
+  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+  const [hasPaid, setHasPaid] = useState(false);
+  const [trialCredits, setTrialCredits] = useState(0);
+  const [plan, setPlan] = useState('');
+  const [rows, setRows] = useState([]);
+  const [errText, setErrText] = useState('');
+  const [polling, setPolling] = useState(true);
+  const polls = useRef(0);
 
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [accessDenied, setAccessDenied] = useState(false);
   const navigate = useNavigate();
 
-  // ---------- auth gate ----------
-  useEffect(() => {
-    const auth = getAuth();
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (snap.exists()) {
-          const data = snap.data();
-          if (data.role === 'buyer' && data.hasPaid === false) {
-            setAccessDenied(true);
-            return;
-          }
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } else {
-        setIsAuthenticated(false);
-      }
-    });
-  }, []);
-
-  // ---------- helpers: seller payout ----------
-  const getSellerPayoutInfo = (tx) => {
-    if (!tx) return { address: null, memo: null };
-    const addrCandidates = [
-      tx.walletAddress, // your current schema
-      tx.sellerWalletAddress,
-      tx.sellerWallet,
-      tx.payoutAddress,
-      tx.destinationAddress,
-      tx.coinbaseAddress,
-      tx.seller?.walletAddress,
-      tx.seller?.payoutAddress,
-    ];
-    const memoCandidates = [
-      tx.walletMemo, // your current schema
-      tx.sellerWalletMemo,
-      tx.sellerMemo,
-      tx.payoutMemo,
-      tx.destinationMemo,
-      tx.destinationTag,
-      tx.coinbaseMemo,
-      tx.seller?.walletMemo,
-      tx.seller?.payoutMemo,
-    ];
-    const address =
-      addrCandidates.find((v) => typeof v === 'string' && v.trim()) || null;
-    const memoVal =
-      memoCandidates.find(
-        (v) =>
-          (typeof v === 'string' || typeof v === 'number') &&
-          String(v).trim().length > 0
-      ) ?? null;
-
-    return { address, memo: memoVal === null ? null : String(memoVal) };
-  };
-
-  const { address: sellerAddress, memo: sellerMemo } = useMemo(
-    () => getSellerPayoutInfo(transaction),
-    [transaction]
-  );
-
-  // ---------- lookup by transactionId ----------
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setTransaction(null);
-    setError(null);
-    setUpdateMessage('');
-    setFetchMsg('');
-
+  const loadData = async (u) => {
     try {
-      const q = query(
-        collection(db, 'transactions'),
-        where('transactionId', '==', txid)
-      );
-      const querySnapshot = await getDocs(q);
-      if (!querySnapshot.empty) {
-        const docSnap = querySnapshot.docs[0];
-        setTransaction({ ...docSnap.data(), docRef: docSnap.ref });
-        setApprovalStatus(docSnap.data().documentApprovalStatus || 'Pending');
-      } else {
-        setError('Transaction not found.');
+      const userRef = doc(db, 'users', u.uid);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const d = userSnap.data();
+        setHasPaid(!!d.hasPaid);
+        setTrialCredits(d.trialCredits ?? 0);
+        setPlan(d.plan || '');
       }
-    } catch (err) {
-      console.error(err);
-      setError('Error retrieving transaction.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ---------- update approval ----------
-  const handleApprovalUpdate = async () => {
-    try {
-      if (!txid) {
-        setUpdateMessage('Transaction ID missing.');
-        return;
-      }
-      setUpdateMessage('Updating...');
-
-      const q = query(
-        collection(db, 'transactions'),
-        where('transactionId', '==', txid)
-      );
-      const querySnapshot = await getDocs(q);
-
-      if (querySnapshot.empty) {
-        setUpdateMessage('Transaction not found.');
-        return;
-      }
-
-      const docRef = querySnapshot.docs[0].ref;
-      await updateDoc(docRef, { documentApprovalStatus: approvalStatus });
-      setUpdateMessage('Approval status updated successfully.');
-    } catch (err) {
-      console.error(err);
-      setUpdateMessage('Error updating approval status.');
-    }
-  };
-
-  // ---------- copy helper ----------
-  const copyToClipboard = async (text) => {
-    try {
-      await navigator.clipboard.writeText(text);
-      alert('Copied to clipboard');
-    } catch {
-      const ta = document.createElement('textarea');
-      ta.value = text;
-      document.body.appendChild(ta);
-      ta.select();
-      document.execCommand('copy');
-      document.body.removeChild(ta);
-      alert('Copied to clipboard');
-    }
-  };
-
-  // ---------- UI atoms ----------
-  const Field = ({ label, children }) => (
-    <p style={{ margin: '6px 0' }}>
-      <strong>{label}:</strong> {children}
-    </p>
-  );
-
-  const Monospace = ({ text }) => (
-    <span
-      style={{
-        fontFamily:
-          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace',
-        wordBreak: 'break-all',
-      }}
-    >
-      {text}
-    </span>
-  );
-
-  const Box = ({ title, children }) => (
-    <div
-      style={{
-        border: '1px solid #e5e7eb',
-        borderRadius: 10,
-        padding: 14,
-        marginTop: 14,
-        background: '#fafafa',
-      }}
-    >
-      <div style={{ fontWeight: 700, marginBottom: 8 }}>{title}</div>
-      {children}
-    </div>
-  );
-
-  const documentLabels = {
-    CommercialInvoice: 'Commercial Invoice',
-    PackingList: 'Packing List',
-    BillOfLading: 'Bill of Lading',
-    InsuranceCertificate: 'Insurance Certificate',
-    CertificateOfOrigin: 'Certificate of Origin',
-    InspectionCertificate: 'Inspection Certificate',
-  };
-
-  // ---------- fetch & save real TXID from Horizon ----------
-  const amountsEqual = (a, b) =>
-    Math.abs(parseFloat(a) - parseFloat(b)) < 1e-7;
-
-  const fetchAndSaveRealTxid = async () => {
-    try {
-      if (!transaction) {
-        setFetchMsg('Load a transaction first.');
-        return;
-      }
-      if (!sellerAddress || !sellerMemo) {
-        setFetchMsg('Missing seller wallet or memo on this record.');
-        return;
-      }
-      if (!transaction.amount || !transaction.currency) {
-        setFetchMsg('Missing amount/currency on this record.');
-        return;
-      }
-      if (transaction.currency !== 'XLM') {
-        setFetchMsg('Auto-fetch is implemented for XLM only.');
-        return;
-      }
-
-      setFetchMsg('Searching Horizon for matching payment...');
-
-      // 1) List most recent payments to the seller's address
-      const url = `${HORIZON}/accounts/${sellerAddress}/payments?limit=200&order=desc`;
-      const resp = await fetch(url);
-      if (!resp.ok) throw new Error('Horizon query failed');
-      const data = await resp.json();
-      const records = data?._embedded?.records || [];
-
-      // 2) Find candidates that match the destination + amount (memo is on the transaction)
-      const candidates = records.filter(
-        (r) =>
-          r.type === 'payment' &&
-          r.to === sellerAddress &&
-          r.asset_type === 'native' && // XLM
-          amountsEqual(r.amount, transaction.amount)
-      );
-
-      // 3) Check each candidate's transaction for memo match
-      let found = null;
-      for (const r of candidates) {
-        const txHash = r.transaction_hash;
-        if (!txHash) continue;
-
-        const txResp = await fetch(`${HORIZON}/transactions/${txHash}`);
-        if (!txResp.ok) continue;
-        const tx = await txResp.json();
-
-        // Horizon returns 'memo' string (or null)
-        if (String(tx.memo || '').trim() === String(sellerMemo).trim()) {
-          found = {
-            realTxId: tx.hash, // the transaction hash
-            created_at: tx.created_at,
-          };
-          break;
-        }
-      }
-
-      if (!found) {
-        setFetchMsg(
-          'No matching on-chain payment found yet. Try again later after the buyer sends funds.'
-        );
-        return;
-      }
-
-      // 4) Save to Firestore
-      await updateDoc(transaction.docRef, {
-        realTxId: found.realTxId,
-        paidAt: found.created_at,
-        txValidated: true,
+      const q = query(collection(db, 'transactions'), where('uid', '==', u.uid));
+      const qs = await getDocs(q);
+      const list = qs.docs.map((s) => ({ id: s.id, ...s.data() }));
+      list.sort((a, b) => {
+        const ta = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+        const tb = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+        return tb - ta;
       });
-
-      // 5) Reflect in UI
-      setTransaction((prev) =>
-        prev
-          ? {
-              ...prev,
-              realTxId: found.realTxId,
-              paidAt: found.created_at,
-              txValidated: true,
-            }
-          : prev
-      );
-      setFetchMsg('TXID saved to Firestore successfully.');
-    } catch (err) {
-      console.error(err);
-      setFetchMsg('Error fetching/saving TXID.');
+      setRows(list);
+      setErrText('');
+    } catch (e) {
+      console.error('Lookup load failed:', e);
+      setErrText(e?.message || 'Failed to load transactions.');
     }
   };
 
-  // ---------- guards ----------
-  if (accessDenied) {
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      if (!u) { navigate('/login'); return; }
+      setUser(u);
+      await loadData(u);
+      setLoading(false);
+    });
+    return () => unsub();
+  }, [navigate]);
+
+  // light auto-refresh (15s x 8 ≈ 2 min)
+  useEffect(() => {
+    if (!user || !polling) return;
+    const t = setInterval(async () => {
+      polls.current += 1;
+      await loadData(user);
+      if (polls.current >= 8) setPolling(false);
+    }, 15000);
+    return () => clearInterval(t);
+  }, [user, polling]);
+
+  const logout = async () => {
+    await signOut(auth);
+    navigate('/login');
+  };
+
+  const allowAccess = hasPaid || trialCredits > 0 || plan === 'pilot';
+
+  if (loading) return <div style={{ textAlign:'center', marginTop:80 }}>Loading…</div>;
+
+  if (!allowAccess) {
     return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
+      <div style={{ textAlign:'center', marginTop:80 }}>
         <h2>Access Restricted</h2>
         <p>You must complete payment to access this feature.</p>
-        <button onClick={() => navigate('/payment')}>Go to Payment</button>
+        <button style={styles.btn} onClick={() => navigate('/payment')}>Go to Payment</button>
       </div>
     );
   }
 
-  if (!isAuthenticated) {
-    return (
-      <div style={{ padding: '40px', textAlign: 'center' }}>
-        <h2>Access Denied</h2>
-        <p>You must be logged in to view this page.</p>
-        <button onClick={() => navigate('/')}>Return to Home</button>
-      </div>
-    );
-  }
-
-  // ---------- render ----------
   return (
-    <div style={{ padding: '40px', textAlign: 'center' }}>
-      <h2>Transaction Lookup</h2>
+    <div style={styles.page}>
+      <div style={styles.top}>
+        <h1 style={styles.h1}>Buyer Transaction Lookup</h1>
+        <div style={styles.actions}>
+          <button style={styles.btn} onClick={() => navigate('/')}>Return Home</button>
+          <button style={styles.btn} onClick={() => loadData(user)}>Refresh</button>
+          <button style={styles.danger} onClick={logout}>Logout</button>
+        </div>
+      </div>
 
-      <form onSubmit={handleSubmit} style={{ marginBottom: '20px' }}>
-        <input
-          type="text"
-          placeholder="Enter Transaction ID"
-          value={txid}
-          onChange={(e) => setTxid(e.target.value)}
-          style={{ padding: '10px', width: '300px' }}
-          required
-        />
-        <button type="submit" style={{ padding: '10px 20px', marginLeft: '10px' }}>
-          Lookup
-        </button>
-      </form>
-
-      {loading && <p>Loading...</p>}
-      {error && <p style={{ color: 'red' }}>{error}</p>}
-
-      {transaction && (
-        <div style={{ textAlign: 'left', maxWidth: '720px', margin: '0 auto' }}>
-          <h3>Transaction Details</h3>
-
-          <Field label="Amount">{transaction.amount}</Field>
-          <Field label="Currency">{transaction.currency}</Field>
-          {transaction.notes && <Field label="Notes">{transaction.notes}</Field>}
-
-          {/* Seller payout info */}
-          <Box title="Seller Payout (for Buyer to Pay)">
-            <Field label="Wallet Address">
-              {sellerAddress ? (
-                <>
-                  <Monospace text={sellerAddress} />{' '}
-                  <button onClick={() => copyToClipboard(sellerAddress)} style={{ marginLeft: 8 }}>
-                    Copy
-                  </button>
-                </>
-              ) : (
-                <span style={{ color: '#b00020' }}>Missing</span>
-              )}
-            </Field>
-
-            <Field label="Memo / Destination Tag">
-              {sellerMemo ? (
-                <>
-                  <Monospace text={sellerMemo} />{' '}
-                  <button onClick={() => copyToClipboard(sellerMemo)} style={{ marginLeft: 8 }}>
-                    Copy
-                  </button>
-                </>
-              ) : (
-                <span style={{ color: '#b00020' }}>Missing</span>
-              )}
-            </Field>
-
-            <div style={{ fontSize: 12, color: '#6b7280', marginTop: 6 }}>
-              Tip: For Coinbase/XLM and many custodial wallets, the <em>Memo/Tag</em> is required.
-            </div>
-          </Box>
-
-          {/* NEW: Real TXID section */}
-          <Box title="Payment Verification">
-            <Field label="Real TXID (on-chain)">
-              {transaction.realTxId ? (
-                <Monospace text={transaction.realTxId} />
-              ) : (
-                <span style={{ color: '#b00020' }}>Not captured yet</span>
-              )}
-            </Field>
-            {transaction.paidAt && (
-              <Field label="Paid At">
-                <Monospace text={transaction.paidAt} />
-              </Field>
-            )}
-            <div style={{ marginTop: 8 }}>
-              <button onClick={fetchAndSaveRealTxid}>Fetch &amp; Save Real TXID</button>
-              {fetchMsg && <p style={{ marginTop: 8 }}>{fetchMsg}</p>}
-            </div>
-          </Box>
-
-          {/* Documents */}
-          {transaction.documentURLs && (
-            <Box title="Uploaded Documents">
-              <ul style={{ paddingLeft: 18, margin: 0 }}>
-                {Object.entries({
-                  CommercialInvoice: 'Commercial Invoice',
-                  PackingList: 'Packing List',
-                  BillOfLading: 'Bill of Lading',
-                  InsuranceCertificate: 'Insurance Certificate',
-                  CertificateOfOrigin: 'Certificate of Origin',
-                  InspectionCertificate: 'Inspection Certificate',
-                }).map(([key, label]) => (
-                  <li key={key} style={{ marginBottom: 6 }}>
-                    <strong>{label}:</strong>{' '}
-                    {transaction.documentURLs[key] ? (
-                      <>
-                        <a
-                          href={transaction.documentURLs[key]}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View
-                        </a>
-                        {' | '}
-                        <a href={transaction.documentURLs[key]} download>
-                          Download
-                        </a>
-                      </>
-                    ) : (
-                      <span style={{ color: 'red' }}> Missing</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </Box>
-          )}
-
-          {/* Contract */}
-          {transaction.contractURL && (
-            <Box title="Uploaded Contract">
-              <a href={transaction.contractURL} target="_blank" rel="noopener noreferrer">
-                View Contract
-              </a>
-              {' | '}
-              <a href={transaction.contractURL} download>
-                Download Contract
-              </a>
-            </Box>
-          )}
-
-          {/* Shipment images */}
-          <Box title="Shipment Images">
-            {transaction.shipmentImages && transaction.shipmentImages.length > 0 ? (
-              transaction.shipmentImages.map((url, index) => (
-                <div key={index} style={{ marginBottom: '10px' }}>
-                  <img
-                    src={url}
-                    alt={`Shipment ${index + 1}`}
-                    style={{ maxWidth: '100%', borderRadius: 8 }}
-                  />
-                </div>
-              ))
-            ) : (
-              <p>No shipment images available.</p>
-            )}
-          </Box>
-
-          {/* Status + Approval */}
-          <Box title="Status & Approvals">
-            <Field label="Document Approval Status">
-              {transaction.documentApprovalStatus || 'Pending'}
-            </Field>
-
-            <div style={{ marginTop: 6 }}>
-              <label htmlFor="approvalStatus">Update Approval Status: </label>
-              <select
-                id="approvalStatus"
-                value={approvalStatus}
-                onChange={(e) => setApprovalStatus(e.target.value)}
-                style={{ marginLeft: 8 }}
-              >
-                <option value="Pending">Pending</option>
-                <option value="Approved">Approved</option>
-                <option value="Rejected">Rejected</option>
-              </select>
-              <button onClick={handleApprovalUpdate} style={{ marginLeft: 10 }}>
-                Update
-              </button>
-              {updateMessage && <p style={{ marginTop: 6 }}>{updateMessage}</p>}
-            </div>
-
-            <Field label="Seller Confirmation">
-              {transaction.sellerConfirmed ? 'Confirmed by seller' : 'Pending'}
-            </Field>
-            <Field label="Confirmed / Updated At">
-              {transaction.confirmedAt || transaction.updatedAt || 'Not available'}
-            </Field>
-          </Box>
+      {!hasPaid && (trialCredits > 0 || plan === 'pilot') && (
+        <div style={styles.pilot}>
+          You’re on a <b>Free Pilot</b>. Lookup is enabled so you can validate documents for your shipment.
         </div>
       )}
 
-      <button onClick={() => navigate('/')} style={{ marginTop: '30px' }}>
-        Return to Home
-      </button>
+      {errText && <div style={styles.error}>{errText}</div>}
+
+      <div style={styles.card}>
+        <div style={styles.tableWrap}>
+          <table style={styles.table}>
+            <thead>
+              <tr>
+                <th style={styles.th}>Date</th>
+                <th style={styles.th}>Currency</th>
+                <th style={styles.th}>Amount</th>
+                <th style={styles.th}>Docs</th>
+                <th style={styles.th}>Verified</th>
+                <th style={styles.th}>TXID</th>
+                <th style={styles.th}>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.length === 0 ? (
+                <tr><td style={styles.td} colSpan={7}>No transactions found yet.</td></tr>
+              ) : rows.map((r) => <TxRow key={r.id} r={r} />)}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }
 
-export default TransactionLookup;
+function TxRow({ r }) {
+  const [open, setOpen] = useState(false);
+  const dateStr = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : '';
+  const docCount = countKnownDocs(r);
+
+  return (
+    <>
+      <tr>
+        <td style={styles.td}>{dateStr}</td>
+        <td style={styles.td}>{r.currency || '—'}</td>
+        <td style={styles.td}>{r.amount || '—'}</td>
+        <td style={styles.td}>
+          {docCount > 0 ? `${docCount} file${docCount>1?'s':''}` : (r.contractURL ? '1 file' : '—')}
+        </td>
+        <td style={styles.td}>
+          {r.txValidated ? <span style={styles.badgeOk}>Verified</span> : <span style={styles.badgeWait}>Pending</span>}
+        </td>
+        <td style={{...styles.td, maxWidth:300, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}}>
+          <span title={r.transactionId || ''} style={styles.mono}>{r.transactionId || '—'}</span>
+        </td>
+        <td style={styles.td}>
+          <button style={styles.btn} onClick={() => setOpen(v => !v)}>{open ? 'Hide' : 'Show'}</button>
+        </td>
+      </tr>
+
+      {open && (
+        <tr>
+          <td colSpan={7} style={styles.detailsCell}>
+            {/* Transaction Details */}
+            <div style={styles.block}>
+              <h4 style={styles.subtitle}>Transaction Details</h4>
+              <div style={styles.line}><span style={styles.k}>Amount:</span> {r.amount || '—'}</div>
+              <div style={styles.line}><span style={styles.k}>Currency:</span> {r.currency || '—'}</div>
+              <div style={styles.line}><span style={styles.k}>Notes:</span> {r.notes || '—'}</div>
+            </div>
+
+            {/* Wallets */}
+            <div style={styles.block}>
+              <h4 style={styles.subtitle}>Safe Payment (Seller/Your Receiving)</h4>
+              <div style={styles.line}><span style={styles.k}>Wallet Address:</span> <span className="mono" style={styles.mono} title={r.walletAddress}>{shorten(r.walletAddress)}</span></div>
+              <div style={styles.line}><span style={styles.k}>Memo / Destination Tag:</span> <span className="mono" style={styles.mono}>{r.walletMemo || '—'}</span></div>
+            </div>
+
+            <div style={styles.block}>
+              <h4 style={styles.subtitle}>Buyer Payment (Customer Pays)</h4>
+              <div style={styles.line}><span style={styles.k}>Buyer Wallet:</span> <span className="mono" style={styles.mono} title={r.buyerWalletAddress}>{shorten(r.buyerWalletAddress)}</span></div>
+              <div style={styles.line}><span style={styles.k}>Buyer Memo / Tag:</span> <span className="mono" style={styles.mono}>{r.buyerMemoTag || '—'}</span></div>
+            </div>
+
+            {/* Payment Verification */}
+            <div style={styles.block}>
+              <h4 style={styles.subtitle}>Payment Verification</h4>
+              <div style={styles.line}><span style={styles.k}>Status:</span> {r.txValidated ? 'On-chain match (verified)' : 'Pending (awaiting on-chain match)'}</div>
+              <div style={styles.line}><span style={styles.k}>TXID:</span> <span className="mono" style={styles.mono}>{r.transactionId || '—'}</span></div>
+              <div style={styles.line}><span style={styles.k}>Verified At:</span> {r.verifiedAt?.toDate ? r.verifiedAt.toDate().toLocaleString() : '—'}</div>
+            </div>
+
+            {/* Uploaded Documents (auto-detect URL fields) */}
+            {renderUploadedDocuments(r)}
+
+            {/* Uploaded Contract */}
+            {r.contractURL && (
+              <div style={styles.block}>
+                <h4 style={styles.subtitle}>Uploaded Contract</h4>
+                <div><a href={r.contractURL} target="_blank" rel="noreferrer" style={styles.link}>View Contract / Download</a></div>
+              </div>
+            )}
+
+            {/* Shipment Image(s) */}
+            {renderShipmentImages(r)}
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+/** Try to mimic your old "Uploaded Documents" list:
+ * We scan the transaction doc for any keys that look like URLs and match common freight-doc names.
+ */
+function renderUploadedDocuments(r) {
+  const candid = Object.entries(r || {})
+    .filter(([k,v]) => typeof v === 'string' && isUrl(v))
+    .filter(([k]) => {
+      const lk = k.toLowerCase();
+      return (
+        lk.includes('commercialinvoice') || lk.includes('invoice') ||
+        lk.includes('packing') ||
+        lk.includes('billoflading') || lk.includes('bol') ||
+        lk.includes('insurance') ||
+        lk.includes('certificateoforigin') || lk.includes('coo') ||
+        lk.includes('inspection')
+      );
+    });
+
+  if (candid.length === 0) return null;
+
+  const nice = (k) => {
+    const map = [
+      ['commercialinvoice','Commercial Invoice'],
+      ['invoice','Commercial Invoice'],
+      ['packing','Packing List'],
+      ['billoflading','Bill of Lading'],
+      ['bol','Bill of Lading'],
+      ['insurance','Insurance Certificate'],
+      ['certificateoforigin','Certificate of Origin'],
+      ['coo','Certificate of Origin'],
+      ['inspection','Inspection Certificate'],
+    ];
+    const lk = k.toLowerCase();
+    for (const [needle, label] of map) if (lk.includes(needle)) return label;
+    return k;
+  };
+
+  return (
+    <div style={styles.block}>
+      <h4 style={styles.subtitle}>Uploaded Documents</h4>
+      <ul style={styles.docList}>
+        {candid.map(([k, url]) => (
+          <li key={k}>
+            {nice(k)}:&nbsp;
+            <a href={url} target="_blank" rel="noreferrer" style={styles.link}>View / Download</a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function renderShipmentImages(r) {
+  const urls = [];
+  // single fields
+  ['shipmentImageUrl','shipmentPhotoUrl','imageUrl','photoUrl'].forEach(key => {
+    if (typeof r[key] === 'string' && isUrl(r[key])) urls.push(r[key]);
+  });
+  // arrays
+  if (Array.isArray(r.shipmentImages)) {
+    r.shipmentImages.forEach(u => { if (typeof u === 'string' && isUrl(u)) urls.push(u); });
+  }
+  if (urls.length === 0) return null;
+
+  return (
+    <div style={styles.block}>
+      <h4 style={styles.subtitle}>Shipment Image{urls.length>1?'s':''}</h4>
+      <div style={styles.imgGrid}>
+        {urls.map((u, i) => (
+          <a key={i} href={u} target="_blank" rel="noreferrer" title={u}>
+            <img src={u} alt={`Shipment ${i+1}`} style={styles.img} />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function isUrl(s) {
+  try {
+    const u = new URL(s);
+    return u.protocol === 'http:' || u.protocol === 'https:';
+  } catch { return false; }
+}
+
+function countKnownDocs(r) {
+  let n = 0;
+  const keys = Object.keys(r || {});
+  for (const k of keys) {
+    const v = r[k];
+    if (typeof v !== 'string') continue;
+    if (!isUrl(v)) continue;
+    const lk = k.toLowerCase();
+    if (
+      lk.includes('commercialinvoice') || lk.includes('invoice') ||
+      lk.includes('packing') ||
+      lk.includes('billoflading') || lk.includes('bol') ||
+      lk.includes('insurance') ||
+      lk.includes('certificateoforigin') || lk.includes('coo') ||
+      lk.includes('inspection') ||
+      lk.includes('contracturl') // count contract as a doc
+    ) n++;
+  }
+  // array images don’t count toward “Docs” cell
+  return n;
+}
+
+
+
+
+
