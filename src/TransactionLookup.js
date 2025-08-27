@@ -13,7 +13,6 @@ const S = {
   h1: { margin: 0, fontSize: 24, fontWeight: 800 },
   row: { display: 'flex', gap: 8 },
   btn: { padding: '8px 12px', borderRadius: 8, border: '1px solid #ddd', background: '#fff', cursor: 'pointer' },
-  primary: { padding: '8px 12px', borderRadius: 8, border: '1px solid #0b74ff', background: '#0b74ff', color: '#fff', cursor: 'pointer' },
   danger: { padding: '8px 12px', borderRadius: 8, border: '1px solid #c00', background: '#f33', color: '#fff', cursor: 'pointer' },
   pilot: { margin:'8px 0 12px', padding:10, border:'1px solid #fde68a', background:'#fffbeb', borderRadius:10, color:'#92400e' },
   error: { margin:'12px 0', padding:10, border:'1px solid #fecaca', background:'#fef2f2', color:'#991b1b', borderRadius:10, whiteSpace:'pre-wrap' },
@@ -26,17 +25,17 @@ const S = {
   mono: { fontFamily:'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace' },
   badgeOk: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#ecfdf5', color:'#047857', border:'1px solid #34d399', fontSize:12 },
   badgeWait: { display:'inline-block', padding:'4px 8px', borderRadius:999, background:'#fff7ed', color:'#9a3412', border:'1px solid #fbbf24', fontSize:12 },
-  link: { color:'#6d28d9', textDecoration:'underline', cursor:'pointer' },
 
-  // detail pane
   section: { border:'1px solid #e5e7eb', borderRadius:6, padding:10, marginTop:10, background:'#fff' },
   secTitle: { margin:'0 0 8px 0', fontWeight:800, fontSize:13, color:'#334155' },
   line: { margin:'4px 0' },
   k: { color:'#64748b' },
+  link: { color:'#6d28d9', textDecoration:'underline', cursor:'pointer' },
 
   docList: { margin:0, paddingLeft:18 },
   imgGrid: { display:'grid', gridTemplateColumns:'repeat(auto-fill, minmax(160px,1fr))', gap:10, marginTop:8 },
   img: { width:'100%', height:140, objectFit:'cover', border:'1px solid #e5e7eb', borderRadius:6, background:'#fff' },
+
   ctlRow: { display:'flex', gap:10, flexWrap:'wrap', alignItems:'center' },
   select: { padding:'6px 10px', border:'1px solid #ddd', borderRadius:6, background:'#fff' },
   small: { fontSize:12, opacity:.75 },
@@ -48,17 +47,28 @@ function shorten(s, head=10, tail=8) {
   if (str.length <= head + tail + 3) return str;
   return `${str.slice(0, head)}…${str.slice(-tail)}`;
 }
-
+function isUrl(s) {
+  try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; }
+  catch { return false; }
+}
 function explorerUrl(currency, txid) {
   if (!txid) return null;
-  if (currency === 'XLM' || currency === 'USDC') {
-    return `https://stellar.expert/explorer/public/tx/${txid}`;
-  }
-  if (currency === 'XRP') {
-    return `https://xrpscan.com/tx/${txid}`;
-  }
+  if (currency === 'XLM' || currency === 'USDC') return `https://stellar.expert/explorer/public/tx/${txid}`;
+  if (currency === 'XRP') return `https://xrpscan.com/tx/${txid}`;
   return null;
 }
+const LABEL_MAP = {
+  commercialinvoice: 'Commercial Invoice',
+  invoice: 'Commercial Invoice',
+  packing: 'Packing List',
+  billoflading: 'Bill of Lading',
+  bol: 'Bill of Lading',
+  insurance: 'Insurance Certificate',
+  certificateoforigin: 'Certificate of Origin',
+  coo: 'Certificate of Origin',
+  inspection: 'Inspection Certificate',
+};
+const IMG_KEYS_SINGLE = ['shipmentImageUrl','shipmentPhotoUrl','imageUrl','photoUrl'];
 
 export default function TransactionLookup() {
   const [loading, setLoading] = useState(true);
@@ -74,22 +84,17 @@ export default function TransactionLookup() {
   const navigate = useNavigate();
   const polls = useRef(0);
 
-  const allowAccess = (flags) => flags.hasPaid || (flags.trialCredits ?? 0) > 0 || flags.plan === 'pilot';
-
   const load = async (u) => {
     try {
-      // user flags
       const uref = doc(db, 'users', u.uid);
       const usnap = await getDoc(uref);
-      let flags = { hasPaid:false, trialCredits:0, plan:'' };
       if (usnap.exists()) {
         const d = usnap.data();
-        flags = { hasPaid: !!d.hasPaid, trialCredits: d.trialCredits ?? 0, plan: d.plan || '' };
-        setHasPaid(flags.hasPaid); setTrialCredits(flags.trialCredits); setPlan(flags.plan);
+        setHasPaid(!!d.hasPaid);
+        setTrialCredits(d.trialCredits ?? 0);
+        setPlan(d.plan || '');
       }
-
-      // transactions for this user
-      const q = query(collection(db, 'transactions'), where('uid', '==', u.uid));
+      const q = query(collection(db, 'transactions'), where('uid','==', u.uid));
       const qs = await getDocs(q);
       const list = qs.docs.map(s => ({ id: s.id, ...s.data() }));
       list.sort((a,b) => {
@@ -98,16 +103,8 @@ export default function TransactionLookup() {
         return tb - ta;
       });
       setRows(list);
-
-      // default selection: newest
       if (!activeId && list.length) setActiveId(list[0].id);
-
-      // gate
-      if (!allowAccess(flags)) {
-        setErrText('restricted');
-      } else {
-        setErrText('');
-      }
+      setErrText('');
     } catch (e) {
       console.error(e);
       setErrText(e?.message || 'Failed to load.');
@@ -124,7 +121,6 @@ export default function TransactionLookup() {
     return () => unsub();
   }, [navigate]);
 
-  // light auto-refresh (every 15s for ~2m)
   useEffect(() => {
     if (!user) return;
     const t = setInterval(async () => {
@@ -135,14 +131,10 @@ export default function TransactionLookup() {
     return () => clearInterval(t);
   }, [user]);
 
-  const logout = async () => {
-    await signOut(auth);
-    navigate('/login');
-  };
-
+  const logout = async () => { await signOut(auth); navigate('/login'); };
+  const allowAccess = hasPaid || trialCredits > 0 || plan === 'pilot';
   if (loading) return <div style={{textAlign:'center', marginTop:80}}>Loading…</div>;
-
-  if (errText === 'restricted') {
+  if (!allowAccess) {
     return (
       <div style={{ textAlign:'center', marginTop:80 }}>
         <h2>Access Restricted</h2>
@@ -153,6 +145,23 @@ export default function TransactionLookup() {
   }
 
   const active = rows.find(r => r.id === activeId) || null;
+  const setFieldOptimistic = async (txId, field, value) => {
+    try {
+      setSaving(true);
+      // optimistic UI
+      setRows(prev => prev.map(it => it.id === txId ? ({ ...it, [field]: value, updatedAt: Timestamp.now() }) : it));
+      await updateDoc(doc(db,'transactions',txId), {
+        [field]: value,
+        updatedAt: Timestamp.now(),
+        ...(field === 'buyerApprovalStatus' && value === 'Approved' ? { buyerApprovedAt: Timestamp.now() } : {})
+      });
+    } catch (e) {
+      console.error('Update failed:', e);
+      alert('Failed to save. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div style={S.page}>
@@ -166,14 +175,11 @@ export default function TransactionLookup() {
       </div>
 
       {!hasPaid && (trialCredits > 0 || plan === 'pilot') && (
-        <div style={S.pilot}>
-          You’re on a <b>Free Pilot</b>. Lookup is enabled so you can validate documents for your shipment.
-        </div>
+        <div style={S.pilot}>You’re on a <b>Free Pilot</b>. Lookup is enabled so you can validate documents for your shipment.</div>
       )}
+      {errText && <div style={S.error}>{errText}</div>}
 
-      {errText && errText !== 'restricted' && <div style={S.error}>{errText}</div>}
-
-      {/* Transactions list */}
+      {/* List */}
       <div style={S.card}>
         <div style={S.tableWrap}>
           <table style={S.table}>
@@ -192,9 +198,7 @@ export default function TransactionLookup() {
                 <tr><td style={S.td} colSpan={6}>No transactions found yet.</td></tr>
               ) : rows.map(r => (
                 <tr key={r.id} style={{ background: r.id === activeId ? '#f8fafc' : undefined }}>
-                  <td style={S.td}>
-                    <button style={S.btn} onClick={() => setActiveId(r.id)}>{r.id === activeId ? 'Viewing' : 'View'}</button>
-                  </td>
+                  <td style={S.td}><button style={S.btn} onClick={() => setActiveId(r.id)}>{r.id === activeId ? 'Viewing' : 'View'}</button></td>
                   <td style={S.td}>{r.createdAt?.toDate ? r.createdAt.toDate().toLocaleString() : ''}</td>
                   <td style={S.td}>{r.currency || '—'}</td>
                   <td style={S.td}>{r.amount || '—'}</td>
@@ -209,10 +213,9 @@ export default function TransactionLookup() {
         </div>
       </div>
 
-      {/* Details pane (original-style sections) */}
+      {/* Details */}
       {active && (
         <>
-          {/* Transaction Details */}
           <div style={S.section}>
             <h4 style={S.secTitle}>Transaction Details</h4>
             <div style={S.line}><span style={S.k}>Amount:</span> {active.amount || '—'}</div>
@@ -220,7 +223,6 @@ export default function TransactionLookup() {
             <div style={S.line}><span style={S.k}>Notes:</span> {active.notes || '—'}</div>
           </div>
 
-          {/* Safe Payment (Receiver) */}
           <div style={S.section}>
             <h4 style={S.secTitle}>Safe Payment (Seller/Your Receiving)</h4>
             <div style={S.ctlRow}>
@@ -231,14 +233,12 @@ export default function TransactionLookup() {
             <div style={S.small}>This is the monitored destination for matching your customer’s payment.</div>
           </div>
 
-          {/* Buyer Payment */}
           <div style={S.section}>
             <h4 style={S.secTitle}>Buyer Payment (Customer Pays)</h4>
             <div style={S.line}><span style={S.k}>Buyer Wallet:</span> <span style={S.mono} title={active.buyerWalletAddress}>{shorten(active.buyerWalletAddress)}</span></div>
             <div style={S.line}><span style={S.k}>Buyer Memo / Tag:</span> <span style={S.mono}>{active.buyerMemoTag || '—'}</span></div>
           </div>
 
-          {/* Payment Verification */}
           <div style={S.section}>
             <h4 style={S.secTitle}>Payment Verification</h4>
             <div style={S.line}><span style={S.k}>Status:</span> {active.txValidated ? 'On-chain match (verified)' : 'Pending (awaiting on-chain match)'}</div>
@@ -252,10 +252,8 @@ export default function TransactionLookup() {
             <div style={S.line}><span style={S.k}>Verified At:</span> {active.verifiedAt?.toDate ? active.verifiedAt.toDate().toLocaleString() : '—'}</div>
           </div>
 
-          {/* Uploaded Documents (explicit common fields + auto-detect) */}
           {renderUploadedDocuments(active)}
 
-          {/* Uploaded Contract */}
           {active.contractURL && (
             <div style={S.section}>
               <h4 style={S.secTitle}>Uploaded Contract</h4>
@@ -263,20 +261,17 @@ export default function TransactionLookup() {
             </div>
           )}
 
-          {/* Shipment Images */}
           {renderShipmentImages(active)}
 
-          {/* Status & Approvals */}
           <div style={S.section}>
             <h4 style={S.secTitle}>Status & Approvals</h4>
-
             <div style={S.ctlRow}>
               <label htmlFor="docsApproval"><b>Documents Approval/Status:</b></label>
               <select
                 id="docsApproval"
                 style={S.select}
                 value={active.docsApprovalStatus || 'Pending'}
-                onChange={async (e) => await updateField(active.id, 'docsApprovalStatus', e.target.value, setSaving)}
+                onChange={(e) => setFieldOptimistic(active.id, 'docsApprovalStatus', e.target.value)}
               >
                 <option>Pending</option>
                 <option>Approved</option>
@@ -288,7 +283,7 @@ export default function TransactionLookup() {
                 id="buyerApproval"
                 style={S.select}
                 value={active.buyerApprovalStatus || 'Pending'}
-                onChange={async (e) => await updateField(active.id, 'buyerApprovalStatus', e.target.value, setSaving)}
+                onChange={(e) => setFieldOptimistic(active.id, 'buyerApprovalStatus', e.target.value)}
               >
                 <option>Pending</option>
                 <option>Approved</option>
@@ -320,79 +315,81 @@ function copyToClipboard(text) {
   try { navigator.clipboard.writeText(text); } catch {}
 }
 
-async function updateField(txId, field, value, setSaving) {
-  try {
-    setSaving(true);
-    const ref = doc(db, 'transactions', txId);
-    const patch = { [field]: value, updatedAt: Timestamp.now() };
-    // If buyer approves, we can stamp a convenience field too
-    if (field === 'buyerApprovalStatus' && value === 'Approved') {
-      patch.buyerApprovedAt = Timestamp.now();
-    }
-    await updateDoc(ref, patch);
-  } catch (e) {
-    console.error('Update failed:', e);
-    alert('Failed to save. Please try again.');
-  } finally {
-    setSaving(false);
-  }
-}
-
+/** Render freight docs from many possible shapes:
+ * - top-level string fields ending with Url (and matching freighty names)
+ * - nested objects: documents/docs/files/attachments
+ * - arrays: documentUrls/docsList/filesList/attachments
+ * - array items can be strings or objects with {url, name|label|type}
+ */
 function renderUploadedDocuments(r) {
-  // explicit common freight fields
-  const explicit = [
-    ['commercialInvoiceUrl','Commercial Invoice'],
-    ['packingListUrl','Packing List'],
-    ['billOfLadingUrl','Bill of Lading'],
-    ['insuranceUrl','Insurance Certificate'],
-    ['certificateOfOriginUrl','Certificate of Origin'],
-    ['inspectionCertUrl','Inspection Certificate'],
-  ].filter(([k]) => typeof r[k] === 'string' && isUrl(r[k]));
+  const items = [];
 
-  // auto-detect additional URL fields by name
-  const auto = Object.entries(r)
-    .filter(([k,v]) => typeof v === 'string' && isUrl(v))
-    .filter(([k]) => {
-      const lk = k.toLowerCase();
-      return (
-        lk.includes('commercialinvoice') || lk.includes('invoice') ||
-        lk.includes('packing') ||
-        lk.includes('billoflading') || lk.includes('bol') ||
-        lk.includes('insurance') ||
-        lk.includes('certificateoforigin') || lk.includes('coo') ||
-        lk.includes('inspection')
-      );
-    })
-    // avoid duplicating explicit
-    .filter(([k]) => !explicit.find(([ek]) => ek === k));
-
-  const items = [...explicit, ...auto];
-  if (items.length === 0) return null;
-
-  const labelize = (k, fallback='Document') => {
-    const map = {
-      commercialinvoice: 'Commercial Invoice',
-      invoice: 'Commercial Invoice',
-      packing: 'Packing List',
-      billoflading: 'Bill of Lading',
-      bol: 'Bill of Lading',
-      insurance: 'Insurance Certificate',
-      certificateoforigin: 'Certificate of Origin',
-      coo: 'Certificate of Origin',
-      inspection: 'Inspection Certificate',
-    };
-    const hit = Object.entries(map).find(([needle]) => k.toLowerCase().includes(needle));
-    return hit ? hit[1] : fallback;
+  const pushItem = (key, url, labelHint) => {
+    if (!isUrl(url)) return;
+    const lk = (key || '').toLowerCase();
+    const mapped =
+      LABEL_MAP[Object.keys(LABEL_MAP).find(k => lk.includes(k)) || ''] ||
+      labelHint ||
+      key ||
+      'Document';
+    items.push([mapped, url]);
   };
+
+  // 1) Top-level *_Url fields (and other url-like keys)
+  Object.entries(r || {}).forEach(([k, v]) => {
+    if (typeof v === 'string' && isUrl(v)) {
+      const lk = k.toLowerCase();
+      const looksDoc =
+        lk.endsWith('url') ||
+        lk.includes('invoice') || lk.includes('packing') ||
+        lk.includes('billoflading') || lk.includes('bol') ||
+        lk.includes('insurance') || lk.includes('certificateoforigin') ||
+        lk.includes('coo') || lk.includes('inspection');
+      if (looksDoc && k !== 'contractURL' && !IMG_KEYS_SINGLE.includes(k)) {
+        pushItem(k, v);
+      }
+    }
+  });
+
+  // 2) Common nested objects
+  ['documents','docs','files','attachments'].forEach(bucket => {
+    const obj = r?.[bucket];
+    if (obj && typeof obj === 'object' && !Array.isArray(obj)) {
+      Object.entries(obj).forEach(([k,v]) => {
+        if (typeof v === 'string' && isUrl(v)) pushItem(k, v);
+        if (v && typeof v === 'object') {
+          const url = v.url || v.href;
+          const name = v.name || v.label || v.type || k;
+          if (url && isUrl(url)) pushItem(k, url, name);
+        }
+      });
+    }
+  });
+
+  // 3) Common arrays
+  ['documentUrls','docsList','filesList','attachments'].forEach(arrKey => {
+    const arr = r?.[arrKey];
+    if (Array.isArray(arr)) {
+      arr.forEach((entry, idx) => {
+        if (typeof entry === 'string' && isUrl(entry)) pushItem(`${arrKey}[${idx}]`, entry);
+        if (entry && typeof entry === 'object') {
+          const url = entry.url || entry.href;
+          const name = entry.name || entry.label || entry.type || `${arrKey}[${idx}]`;
+          if (url && isUrl(url)) pushItem(name, url, name);
+        }
+      });
+    }
+  });
+
+  if (items.length === 0) return null;
 
   return (
     <div style={S.section}>
       <h4 style={S.secTitle}>Uploaded Documents</h4>
       <ul style={S.docList}>
-        {items.map(([k, url]) => (
-          <li key={k}>
-            {labelize(k, k)}:&nbsp;
-            <a href={url} target="_blank" rel="noreferrer" style={S.link}>View / Download</a>
+        {items.map(([label, url], i) => (
+          <li key={`${label}-${i}`}>
+            {label}: <a href={url} target="_blank" rel="noreferrer" style={S.link}>View / Download</a>
           </li>
         ))}
       </ul>
@@ -402,9 +399,7 @@ function renderUploadedDocuments(r) {
 
 function renderShipmentImages(r) {
   const urls = [];
-  ['shipmentImageUrl','shipmentPhotoUrl','imageUrl','photoUrl'].forEach(k => {
-    if (typeof r[k] === 'string' && isUrl(r[k])) urls.push(r[k]);
-  });
+  IMG_KEYS_SINGLE.forEach(k => { if (typeof r[k] === 'string' && isUrl(r[k])) urls.push(r[k]); });
   if (Array.isArray(r.shipmentImages)) {
     r.shipmentImages.forEach(u => { if (typeof u === 'string' && isUrl(u)) urls.push(u); });
   }
@@ -415,19 +410,13 @@ function renderShipmentImages(r) {
       <h4 style={S.secTitle}>Shipment Image{urls.length>1?'s':''}</h4>
       <div style={S.imgGrid}>
         {urls.map((u,i) => (
-          <a key={i} href={u} target="_blank" rel="noreferrer">
-            <img src={u} alt={`Shipment ${i+1}`} style={S.img} />
-          </a>
+          <a key={i} href={u} target="_blank" rel="noreferrer"><img src={u} alt={`Shipment ${i+1}`} style={S.img} /></a>
         ))}
       </div>
     </div>
   );
 }
 
-function isUrl(s) {
-  try { const u = new URL(s); return u.protocol === 'http:' || u.protocol === 'https:'; }
-  catch { return false; }
-}
 
 
 
