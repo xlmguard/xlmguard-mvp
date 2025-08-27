@@ -20,12 +20,13 @@ import FAQPage from './FAQPage.js';
 import ContactPage from './ContactPage.js';
 import InstructionsPage from './InstructionsPage.js';
 
-// 👇 NEW: Freight Forwarders landing page
+// Freight page
 import FreightForwardersPage from './FreightForwardersPage.jsx';
 
 function App() {
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
+  const [trialCredits, setTrialCredits] = useState(0);   // 👈 NEW
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -38,10 +39,12 @@ function App() {
         if (snap.exists()) {
           const data = snap.data();
           setHasPaid(data.hasPaid || false);
+          setTrialCredits(data.trialCredits ?? 0);       // 👈 NEW
           setRole(data.role || null);
         } else {
-          await setDoc(userRef, { hasPaid: false });
+          await setDoc(userRef, { hasPaid: false, trialCredits: 0 }, { merge: true }); // 👈 init credit field
           setHasPaid(false);
+          setTrialCredits(0);
           setRole(null);
         }
 
@@ -49,6 +52,7 @@ function App() {
       } else {
         setUser(null);
         setHasPaid(false);
+        setTrialCredits(0);                              // 👈 reset
         setRole(null);
       }
 
@@ -74,31 +78,16 @@ function App() {
               "description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
               "areaServed": {
                 "@type": "GeoCircle",
-                "geoMidpoint": {
-                  "@type": "GeoCoordinates",
-                  "latitude": 0,
-                  "longitude": 0
-                },
+                "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 0, "longitude": 0 },
                 "geoRadius": 20040000
               },
               "serviceType": "Blockchain escrow and crypto transaction verification",
               "location": {
                 "@type": "Place",
-                "address": {
-                  "@type": "PostalAddress",
-                  "addressLocality": "Charlotte",
-                  "addressRegion": "NC",
-                  "addressCountry": "US"
-                }
+                "address": { "@type": "PostalAddress", "addressLocality": "Charlotte", "addressRegion": "NC", "addressCountry": "US" }
               },
-              "sameAs": [
-                "https://twitter.com/xlmguard",
-                "https://linkedin.com/company/xlmguard"
-              ],
-              "founder": {
-                "@type": "Person",
-                "name": "Paul Pazzaglini"
-              }
+              "sameAs": ["https://twitter.com/xlmguard", "https://linkedin.com/company/xlmguard"],
+              "founder": { "@type": "Person", "name": "Paul Pazzaglini" }
             }
           `}
         </script>
@@ -106,6 +95,7 @@ function App() {
 
       <Routes>
         <Route path="/" element={<HomePage />} />
+
         <Route
           path="/register"
           element={!user ? <RegisterPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
@@ -114,6 +104,7 @@ function App() {
           path="/login"
           element={!user ? <LoginPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
         />
+
         <Route
           path="/payment"
           element={
@@ -124,10 +115,19 @@ function App() {
                 : <Navigate to="/login" />
           }
         />
+
+        {/* 👇 Allow Submit if hasPaid OR has trialCredits > 0 */}
         <Route
           path="/submit"
-          element={user && hasPaid ? <SubmissionForm /> : <Navigate to="/login" />}
+          element={
+            user
+              ? (hasPaid || trialCredits > 0)
+                ? <SubmissionForm />
+                : <Navigate to="/payment" />
+              : <Navigate to="/login" />
+          }
         />
+
         <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
         <Route path="/admin" element={<AdminLogin />} />
         <Route path="/admin-panel" element={<AdminPanel />} />
@@ -137,7 +137,7 @@ function App() {
         <Route path="/contact" element={<ContactPage />} />
         <Route path="/instructions" element={<InstructionsPage />} />
 
-        {/* 👇 NEW: public landing route */}
+        {/* Public landing */}
         <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
       </Routes>
     </Router>
@@ -145,3 +145,6 @@ function App() {
 }
 
 export default App;
+
+
+

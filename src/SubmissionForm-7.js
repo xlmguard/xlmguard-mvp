@@ -1,4 +1,4 @@
-// SubmissionForm.js  (adds buyer wallet capture + save + consume trial credit)
+// SubmissionForm.js  (adds buyer wallet capture + save)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
@@ -8,8 +8,7 @@ import {
   Timestamp,
   doc,
   getDoc,
-  updateDoc,
-  increment,              // 👈 NEW: for decrementing trialCredits
+  updateDoc
 } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
@@ -241,21 +240,6 @@ const SubmissionForm = () => {
       if (buyerTag && buyerTag !== userData.buyerMemoTag) updates.buyerMemoTag = buyerTag;
       if (Object.keys(updates).length) {
         await updateDoc(doc(db, 'users', user.uid), updates);
-      }
-
-      // 👇 NEW: consume one trial credit if available
-      try {
-        const userRef = doc(db, 'users', user.uid);
-        const snap = await getDoc(userRef);
-        if (snap.exists()) {
-          const data = snap.data();
-          const credits = data.trialCredits ?? 0;
-          if (credits > 0) {
-            await updateDoc(userRef, { trialCredits: increment(-1) });
-          }
-        }
-      } catch (creditErr) {
-        console.warn('Failed to decrement trialCredits (non-fatal):', creditErr);
       }
 
       setMessage(`Transaction submitted ${validated ? 'and verified' : '(awaiting chain match)'}.`);
