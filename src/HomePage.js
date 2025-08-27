@@ -118,7 +118,7 @@ function HomePage() {
           flexDirection: 'column',
           alignItems: 'center',
           position: 'relative',
-        }}
+         }}
       >
         <img
           src="/logo.png"
