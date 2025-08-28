@@ -8,13 +8,16 @@ import { doc, getDoc } from 'firebase/firestore';
 
 /* -----------------------------------------------------------
    CryptoTickerBar – CNBC/Bloomberg-style scrolling ticker
+   - Shows XLM, XRP, USDC with live USD price + 24h change
+   - Updates every 60s (CoinGecko)
+   - Full-width marquee; CTA on the right
 ----------------------------------------------------------- */
 function CryptoTickerBar({
   height = 38,
   bg = '#0d1b45',
   textColor = '#ffffff',
   accent = '#2d3e86',
-  speedSec = 24,
+  speedSec = 24,        // lower = faster
   ctaHref = '/instructions',
   showCTA = true,
 }) {
@@ -36,7 +39,7 @@ function CryptoTickerBar({
         USDC: { usd: j['usd-coin']?.usd, chg: j['usd-coin']?.usd_24h_change },
         fetchedAt: Date.now(),
       });
-    } catch {
+    } catch (e) {
       setErr('Live prices temporarily unavailable');
     }
   };
@@ -142,7 +145,7 @@ function CryptoTickerBar({
           height,
           padding: '0 14px',
           animation: `xt-marquee ${speedSec}s linear infinite`,
-          paddingRight: 160,
+          paddingRight: 160, // leave space for CTA
         }}
       >
         {track.length
@@ -178,68 +181,6 @@ function CryptoTickerBar({
   );
 }
 /* ----------------------- end CryptoTickerBar ----------------------- */
-
-/* NEW: Big highlighted CTA for the free freight transaction */
-function FreightPilotCTA() {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', background: 'transparent' }}>
-      <Link
-        to="/freight-forwarders"
-        aria-label="Try the Freight Forwarders free pilot – one free transaction"
-        style={{
-          margin: '12px 14px',
-          padding: '12px 18px',
-          borderRadius: 999,
-          textDecoration: 'none',
-          color: '#0b1220',
-          fontWeight: 800,
-          letterSpacing: .2,
-          background:
-            'linear-gradient(90deg, #ffe98a, #ffd24d, #ffc107, #ffd24d, #ffe98a)',
-          boxShadow:
-            '0 8px 18px rgba(255,193,7,.35), 0 2px 6px rgba(0,0,0,.12) inset',
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 10,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <span
-          role="img"
-          aria-hidden="true"
-          style={{ filter: 'drop-shadow(0 0 6px rgba(255,255,255,.8))', fontSize: 18 }}
-        >
-          ⭐
-        </span>
-        <span style={{ whiteSpace: 'nowrap' }}>
-          <u>One FREE freight transaction</u> — Try the Pilot →
-        </span>
-
-        {/* subtle shimmer */}
-        <span
-          aria-hidden="true"
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background:
-              'linear-gradient(120deg, transparent 0%, rgba(255,255,255,.35) 20%, transparent 40%)',
-            transform: 'translateX(-120%)',
-            animation: 'shine 2.6s ease-in-out infinite',
-          }}
-        />
-      </Link>
-
-      <style>{`
-        @keyframes shine {
-          0% { transform: translateX(-120%); }
-          60% { transform: translateX(140%); }
-          100% { transform: translateX(140%); }
-        }
-      `}</style>
-    </div>
-  );
-}
 
 function HomePage() {
   const [language, setLanguage] = useState('English');
@@ -296,6 +237,7 @@ function HomePage() {
   useEffect(() => {
     const fetchTrades = async () => {
       try {
+        // -------- XLM/USD --------
         const resXLM = await fetch('https://api.kraken.com/0/public/Trades?pair=XXLMZUSD', { cache: 'no-store' });
         const dataXLM = await resXLM.json();
         if (dataXLM.result) {
@@ -306,6 +248,8 @@ function HomePage() {
             );
           }
         }
+
+        // -------- XRP/USD --------
         const resXRP = await fetch('https://api.kraken.com/0/public/Trades?pair=XXRPZUSD', { cache: 'no-store' });
         const dataXRP = await resXRP.json();
         if (dataXRP.result) {
@@ -316,6 +260,8 @@ function HomePage() {
             );
           }
         }
+
+        // -------- USDC/USD --------
         const resUSDC = await fetch('https://api.kraken.com/0/public/Trades?pair=USDCUSD', { cache: 'no-store' });
         const dataUSDC = await resUSDC.json();
         if (dataUSDC.result) {
@@ -332,7 +278,7 @@ function HomePage() {
     };
 
     fetchTrades();
-    const interval = setInterval(fetchTrades, 120000);
+    const interval = setInterval(fetchTrades, 120000); // refresh every 2 minutes
     return () => clearInterval(interval);
   }, []);
 
@@ -373,6 +319,7 @@ function HomePage() {
       'XLMGuard protects your XLM, XRP, and Stablecoin transactions with timestamped transaction verification and secure seller confirmations.',
   };
 
+  // Build the composite ticker, now including USDC trades
   const [tickerReady, setTickerReady] = useState(false);
   useEffect(() => { setTickerReady(true); }, []);
   const allTrades = [...xlmTrades, ...xrpTrades, ...usdcTrades];
@@ -449,7 +396,7 @@ function HomePage() {
           <a href="https://escrow.xlmguard.com" style={{ margin: '0.25rem 0', color: '#fff' }}>
             Escrow
           </a>
-          {/* Keep menu item for Freight Forwarders */}
+          {/* NEW: Freight Forwarders menu item */}
           <Link to="/freight-forwarders" style={{ margin: '0.25rem 0', color: '#fff' }}>
             Freight Forwarders
           </Link>
@@ -491,11 +438,8 @@ function HomePage() {
         )}
       </nav>
 
-      {/* Ticker bar */}
+      {/* NEW: Rolling, stock-market-style ticker bar */}
       <CryptoTickerBar ctaHref="/instructions" speedSec={24} />
-
-      {/* NEW: Glowing CTA for the free freight transaction */}
-      <FreightPilotCTA />
 
       <main style={{ paddingTop: '10px' }}>
         <h1 style={{ marginTop: '0', marginBottom: '10px' }}>
@@ -506,7 +450,7 @@ function HomePage() {
           <strong>XLM:</strong> {xlmPrice} | <strong>XRP:</strong> {xrpPrice} | <strong>USDC:</strong> {usdcPrice}
         </p>
 
-        {/* Existing trades marquee */}
+        {/* Existing trades marquee (kept as-is) */}
         <div style={{ overflow: 'hidden', whiteSpace: 'nowrap', backgroundColor: '#000', padding: '10px 0', color: '#0f0' }}>
           <div style={{ display: 'inline-block', animation: 'scroll-left 360s linear infinite' }}>
             {tickerContent}
@@ -563,3 +507,4 @@ function HomePage() {
 }
 
 export default HomePage;
+
