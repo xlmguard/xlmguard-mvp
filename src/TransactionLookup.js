@@ -12,7 +12,7 @@ import {
   getDocs,
   updateDoc,
 } from 'firebase/firestore';
-import { QRCodeCanvas } from 'qrcode.react'; // <-- QR import
+import { QRCodeCanvas } from 'qrcode.react';
 
 const HORIZON = 'https://horizon.stellar.org';
 
@@ -29,11 +29,10 @@ const buildPaymentQRValue = (tx, address, memo) => {
       p.set('memo', String(memo));
       p.set('memo_type', 'MEMO_TEXT');
     }
-    // We omit asset_code/issuer here; most wallets will prompt/select asset if needed.
     return `web+stellar:pay?${p.toString()}`;
   }
 
-  // XRP -> rAddress?dt=xxxx (many XRPL wallets support this)
+  // XRP -> rAddress?dt=xxxx
   if (tx.currency === 'XRP') {
     const p = new URLSearchParams();
     if (memo) p.set('dt', String(memo));
@@ -108,7 +107,7 @@ function TransactionLookup() {
           setIsOnTrial(false);
         }
       } else {
-        // non-buyer roles: let through (unchanged behavior)
+        // non-buyer roles: let through
         setIsAuthenticated(true);
         setAccessDenied(false);
         setIsOnTrial(false);
@@ -326,7 +325,6 @@ function TransactionLookup() {
         if (!txResp.ok) continue;
         const tx = await txResp.json();
 
-        // Horizon returns 'memo' string (or null)
         if (String(tx.memo || '').trim() === String(sellerMemo).trim()) {
           found = {
             realTxId: tx.hash, // the transaction hash
@@ -343,14 +341,12 @@ function TransactionLookup() {
         return;
       }
 
-      // 4) Save to Firestore
       await updateDoc(transaction.docRef, {
         realTxId: found.realTxId,
         paidAt: found.created_at,
         txValidated: true,
       });
 
-      // 5) Reflect in UI
       setTransaction((prev) =>
         prev
           ? {
@@ -469,7 +465,7 @@ function TransactionLookup() {
             </div>
           </Box>
 
-          {/* NEW: Pay with QR */}
+          {/* Pay with QR */}
           {sellerAddress && (
             <Box title="Pay with QR (fastest)">
               <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -544,11 +540,28 @@ function TransactionLookup() {
           <Box title="Payment Verification">
             <Field label="Real TXID (on-chain)">
               {transaction.realTxId ? (
-                <Monospace text={transaction.realTxId} />
+                <>
+                  <Monospace text={transaction.realTxId} />{' '}
+                  <button
+                    onClick={() => copyToClipboard(transaction.realTxId)}
+                    style={{
+                      marginLeft: 8,
+                      padding: '4px 8px',
+                      border: '1px solid #ddd',
+                      borderRadius: 6,
+                      background: '#fff',
+                      cursor: 'pointer',
+                      fontSize: 12,
+                    }}
+                  >
+                    Copy
+                  </button>
+                </>
               ) : (
                 <span style={{ color: '#b00020' }}>Not captured yet</span>
               )}
             </Field>
+
             {transaction.paidAt && (
               <Field label="Paid At">
                 <Monospace text={transaction.paidAt} />
@@ -564,14 +577,7 @@ function TransactionLookup() {
           {transaction.documentURLs && (
             <Box title="Uploaded Documents">
               <ul style={{ paddingLeft: 18, margin: 0 }}>
-                {Object.entries({
-                  CommercialInvoice: 'Commercial Invoice',
-                  PackingList: 'Packing List',
-                  BillOfLading: 'Bill of Lading',
-                  InsuranceCertificate: 'Insurance Certificate',
-                  CertificateOfOrigin: 'Certificate of Origin',
-                  InspectionCertificate: 'Inspection Certificate',
-                }).map(([key, label]) => (
+                {Object.entries(documentLabels).map(([key, label]) => (
                   <li key={key} style={{ marginBottom: 6 }}>
                     <strong>{label}:</strong>{' '}
                     {transaction.documentURLs[key] ? (
@@ -669,3 +675,4 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
