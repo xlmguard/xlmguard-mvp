@@ -12,47 +12,8 @@ import {
   getDocs,
   updateDoc,
 } from 'firebase/firestore';
-import { QRCodeCanvas } from 'qrcode.react'; // <-- QR import
 
 const HORIZON = 'https://horizon.stellar.org';
-
-// Build a wallet-compatible QR payload for quick pay
-const buildPaymentQRValue = (tx, address, memo) => {
-  if (!tx || !address) return '';
-  const amt = tx.amount ? String(tx.amount) : undefined;
-
-  // Stellar (XLM / USDC) -> SEP-007 URI
-  if (tx.currency === 'XLM' || tx.currency === 'USDC') {
-    const p = new URLSearchParams({ destination: address });
-    if (amt) p.set('amount', amt);
-    if (memo) {
-      p.set('memo', String(memo));
-      p.set('memo_type', 'MEMO_TEXT');
-    }
-    // We omit asset_code/issuer here; most wallets will prompt/select asset if needed.
-    return `web+stellar:pay?${p.toString()}`;
-  }
-
-  // XRP -> rAddress?dt=xxxx (many XRPL wallets support this)
-  if (tx.currency === 'XRP') {
-    const p = new URLSearchParams();
-    if (memo) p.set('dt', String(memo));
-    return memo ? `${address}?${p.toString()}` : address;
-  }
-
-  // Fallback: raw address
-  return address;
-};
-
-// Convenience deep-link for Lobstr (XLM/USDC)
-const lobstrDeepLink = (tx, address, memo) => {
-  if (!tx || !address) return '';
-  if (!(tx.currency === 'XLM' || tx.currency === 'USDC')) return '';
-  const p = new URLSearchParams({ recipient: address });
-  if (tx.amount) p.set('amount', String(tx.amount));
-  if (memo) p.set('memo', String(memo));
-  return `https://lobstr.co/lobstr-pays?${p.toString()}`;
-};
 
 function TransactionLookup() {
   const [txid, setTxid] = useState('');
@@ -469,77 +430,6 @@ function TransactionLookup() {
             </div>
           </Box>
 
-          {/* NEW: Pay with QR */}
-          {sellerAddress && (
-            <Box title="Pay with QR (fastest)">
-              <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-                <QRCodeCanvas
-                  value={buildPaymentQRValue(transaction, sellerAddress, sellerMemo)}
-                  size={160}
-                  includeMargin
-                />
-                <div style={{ fontSize: 13, lineHeight: 1.5 }}>
-                  <div>
-                    <strong>Currency:</strong> {transaction.currency} &nbsp;
-                    <strong>Amount:</strong> {transaction.amount || '—'}
-                  </div>
-                  <div>
-                    <strong>Destination:</strong>{' '}
-                    <span style={{fontFamily:'ui-monospace,Menlo,Consolas,monospace'}}>
-                      {sellerAddress}
-                    </span>
-                  </div>
-                  {sellerMemo ? (
-                    <div>
-                      <strong>Memo/Tag:</strong>{' '}
-                      <span style={{fontFamily:'ui-monospace,Menlo,Consolas,monospace'}}>
-                        {sellerMemo}
-                      </span>
-                    </div>
-                  ) : (
-                    <div style={{color:'#b45309'}}><em>No memo/tag on file.</em></div>
-                  )}
-
-                  <div style={{ marginTop: 8, display:'flex', gap:8, flexWrap:'wrap' }}>
-                    <button
-                      type="button"
-                      onClick={() => navigator.clipboard.writeText(sellerAddress)}
-                      style={{ padding:'6px 10px', border:'1px solid #ddd', borderRadius:8, background:'#fff', cursor:'pointer' }}
-                    >
-                      Copy Address
-                    </button>
-
-                    {sellerMemo && (
-                      <button
-                        type="button"
-                        onClick={() => navigator.clipboard.writeText(String(sellerMemo))}
-                        style={{ padding:'6px 10px', border:'1px solid #ddd', borderRadius:8, background:'#fff', cursor:'pointer' }}
-                      >
-                        Copy Memo/Tag
-                      </button>
-                    )}
-
-                    {(transaction.currency === 'XLM' || transaction.currency === 'USDC') && (
-                      <a
-                        href={lobstrDeepLink(transaction, sellerAddress, sellerMemo) || '#'}
-                        target="_blank" rel="noreferrer"
-                        style={{ padding:'6px 10px', border:'1px solid #ddd', borderRadius:8, background:'#fff', textDecoration:'none' }}
-                      >
-                        Open in Lobstr
-                      </a>
-                    )}
-                  </div>
-
-                  <div style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>
-                    Scan this QR with your wallet. If your wallet doesn’t recognize the QR,
-                    use the buttons to copy the destination and memo/tag (memo/tag is required
-                    for most custodial wallets).
-                  </div>
-                </div>
-              </div>
-            </Box>
-          )}
-
           {/* Payment Verification */}
           <Box title="Payment Verification">
             <Field label="Real TXID (on-chain)">
@@ -669,3 +559,11 @@ function TransactionLookup() {
 }
 
 export default TransactionLookup;
+
+
+
+
+
+
+
+
