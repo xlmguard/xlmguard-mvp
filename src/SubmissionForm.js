@@ -1,4 +1,7 @@
-// SubmissionForm.js  (adds buyer wallet capture + save + post-submit TXID panel + inline copy hint)
+// src/SubmissionForm.js
+// (Free pilot: collect & save receiving wallet/memo inline if missing)
+// Includes: buyer wallet capture, success TXID panel, inline copy hint
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { db, auth, storage } from './firebase.js';
@@ -49,7 +52,6 @@ const styles = {
     padding: '12px 16px', border: 'none', borderRadius: 10,
     cursor: 'pointer', background: '#0b74ff', color: '#fff', fontWeight: 700
   },
-  // Inline copy hint (new)
   inlineCopyHint: {
     display:'inline-flex', alignItems:'center', gap:8,
     background:'#f8fafc', border:'1px solid #e2e8f0', borderRadius:8,
@@ -71,13 +73,19 @@ const styles = {
   txidRow: { display:'flex', gap:10, alignItems:'center', flexWrap:'wrap', marginTop:6 },
   code: { fontFamily:'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Courier New", monospace',
     background:'#fff', border:'1px solid #d1fae5', borderRadius:6, padding:'6px 8px' },
-  warn: { fontSize:12, color:'#065f46', marginTop:6 }
+  warn: { fontSize:12, color:'#065f46', marginTop:6 },
+
+  // Pilot banner
+  pilot: {
+    maxWidth:700, margin:'0 auto 12px', padding:'10px 12px',
+    border:'1px solid #fde68a', background:'#fffbeb', color:'#92400e', borderRadius:8
+  }
 };
 
 // ----- Helpers -----
 const XLM_BUFFER = 1.0;
 
-const isValidWallet = (addr, cur) => {
+const isValidWalletAddress = (addr, cur) => {
   if (!addr) return false;
   if (cur === 'XLM' || cur === 'USDC') return /^G[A-Z2-7]{55}$/.test(addr.trim()); // Stellar pubkey
   if (cur === 'XRP') return /^r[1-9A-HJ-NP-Za-km-z]{25,35}$/.test(addr.trim());   // XRP classic address
@@ -93,6 +101,7 @@ async function fetchXlmNativeBalance(accountId) {
 }
 
 async function hasSufficientBalance({ currency, walletAddress, amountNumber }) {
+  // Optional, conservative check on destination (you can disable if not needed)
   if (currency !== 'XLM') return { ok: true, reason: '' };
   try {
     const bal = await fetchXlmNativeBalance(walletAddress);
@@ -106,7 +115,6 @@ async function hasSufficientBalance({ currency, walletAddress, amountNumber }) {
   }
 }
 const sleep = (ms) => new Promise(res => setTimeout(res, ms));
-
 const shorten = (s, head=10, tail=6) => {
   if (!s) return '';
   const str = String(s);
@@ -128,6 +136,13 @@ const SubmissionForm = () => {
   const [buyerWalletAddress, setBuyerWalletAddress] = useState('');
   const [buyerMemoTag, setBuyerMemoTag] = useState('');
 
+  // Receiving (seller) wallet fields shown if missing in profile
+  const [profileWalletAddress, setProfileWalletAddress] = useState('');
+  const [profileWalletMemo, setProfileWalletMemo] = useState('');
+  const [needReceivingWallet, setNeedReceivingWallet] = useState(false);
+  const [receivingWalletAddress, setReceivingWalletAddress] = useState('');
+  const [receivingWalletMemo, setReceivingWalletMemo] = useState('');
+
   // Show escrow TXID after submit
   const [lastEscrowTxId, setLastEscrowTxId] = useState('');
 
@@ -135,23 +150,33 @@ const SubmissionForm = () => {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        try {
-          const snap = await getDoc(doc(db, 'users', currentUser.uid));
-          if (snap.exists()) {
-            const d = snap.data();
-            if (d.currency) setCurrency(d.currency);
-            if (d.buyerWalletAddress && !buyerWalletAddress) setBuyerWalletAddress(d.buyerWalletAddress);
-            if (d.buyerMemoTag && !buyerMemoTag) setBuyerMemoTag(d.buyerMemoTag);
-          }
-        } catch (e) {
-          console.warn('Prefill failed:', e);
-        }
-      } else {
+      if (!currentUser) {
         setUser(null);
         setMessage('User not authenticated. Redirecting to login...');
         setTimeout(() => navigate('/login'), 1500);
+        return;
+      }
+      setUser(currentUser);
+
+      try {
+        const snap = await getDoc(doc(db, 'users', currentUser.uid));
+        if (snap.exists()) {
+          const d = snap.data();
+          if (d.currency) setCurrency(d.currency);
+
+          // Buyer defaults (optional)
+          if (d.buyerWalletAddress && !buyerWalletAddress) setBuyerWalletAddress(d.buyerWalletAddress);
+          if (d.buyerMemoTag && !buyerMemoTag) setBuyerMemoTag(d.buyerMemoTag);
+
+          // Receiving (seller) destination from profile
+          const wa = d.walletAddress || '';
+          const wm = d.walletMemo || '';
+          setProfileWalletAddress(wa);
+          setProfileWalletMemo(wm);
+          setNeedReceivingWallet(!wa); // ask only if not saved on profile
+        }
+      } catch (e) {
+        console.warn('Prefill failed:', e);
       }
     });
     return () => unsubscribe();
@@ -159,7 +184,7 @@ const SubmissionForm = () => {
 
   const handleFileChange = (e) => setContractFile(e.target.files[0]);
 
-  // Detect a matching tx on YOUR receiving Stellar address by memo
+  // Detect a matching tx on YOUR receiving Stellar address by memo (for auto mode)
   const fetchRealTxHash = async (walletAddress, walletMemo) => {
     try {
       const response = await axios.get(
@@ -202,39 +227,56 @@ const SubmissionForm = () => {
       return setMessage('Please enter a TXID.');
     }
 
-    // Validate buyer wallet if provided (optional fallback to what Payment page captured)
-    let buyerAddr = buyerWalletAddress?.trim() || '';
-    let buyerTag = buyerMemoTag?.trim() || '';
+    // -----------------------------
+    // 1) Determine receiving (seller) destination
+    // -----------------------------
+    let receiverAddress = profileWalletAddress;
+    let receiverMemo = profileWalletMemo;
 
-    // Pull receiver wallet (saved by Payment page after validation)
-    const userSnap = await getDoc(doc(db, 'users', user.uid));
-    const userData = userSnap.exists() ? userSnap.data() : {};
-    const receiverAddress = userData.walletAddress || '';
-    const receiverMemo = userData.walletMemo || '';
-
+    // If profile missing, require user to enter it inline (free pilot)
     if (!receiverAddress) {
-      return setMessage('No destination wallet found on your profile. Please complete payment first.');
+      if (!receivingWalletAddress.trim()) {
+        return setMessage('Please enter your receiving wallet address (where funds are released).');
+      }
+      if (!isValidWalletAddress(receivingWalletAddress.trim(), currency)) {
+        return setMessage(`Please enter a valid ${currency} receiving wallet address.`);
+      }
+      receiverAddress = receivingWalletAddress.trim();
+      receiverMemo = receivingWalletMemo.trim(); // optional; for custodials typically required
     }
 
-    // If Payment page already captured buyer address and user didn’t type one, use it
-    if (!buyerAddr && userData.buyerWalletAddress) buyerAddr = userData.buyerWalletAddress;
-    if (!buyerTag && userData.buyerMemoTag) buyerTag = userData.buyerMemoTag;
-
-    if (buyerAddr && !isValidWallet(buyerAddr, currency)) {
-      return setMessage(`Please enter a valid ${currency} wallet address.`);
+    // -----------------------------
+    // 2) Buyer wallet (optional; for traceability)
+    // -----------------------------
+    let buyerAddr = (buyerWalletAddress || '').trim();
+    let buyerTag = (buyerMemoTag || '').trim();
+    if (buyerAddr && !isValidWalletAddress(buyerAddr, currency)) {
+      return setMessage(`Please enter a valid ${currency} buyer wallet address.`);
     }
 
     try {
       setChecking(true);
 
-      // Optional receiver-balance check (leaving original behavior)
+      // If we collected receiving wallet inline, persist it to user profile now
+      if (needReceivingWallet && receiverAddress) {
+        await updateDoc(doc(db, 'users', user.uid), {
+          walletAddress: receiverAddress,
+          walletMemo: receiverMemo || null,
+          updatedAt: Timestamp.now()
+        });
+        setNeedReceivingWallet(false);
+        setProfileWalletAddress(receiverAddress);
+        setProfileWalletMemo(receiverMemo);
+      }
+
+      // Optional destination balance check (XLM only)
       const pre = await hasSufficientBalance({ currency, walletAddress: receiverAddress, amountNumber });
       if (!pre.ok) {
         setChecking(false);
         return setMessage(`Cannot submit: ${pre.reason}`);
       }
 
-      // Upload contract file (optional)
+      // Upload contract (optional)
       let contractURL = '';
       if (contractFile) {
         const safeName = contractFile.name.replace(/\s+/g, '_');
@@ -243,7 +285,7 @@ const SubmissionForm = () => {
         contractURL = await getDownloadURL(snapshot.ref);
       }
 
-      // Determine TXID used for LOOKUP (Escrow TXID)
+      // Determine Escrow TXID (used for Lookup)
       let finalTxId = txId.trim();
       let validated = false;
 
@@ -253,8 +295,7 @@ const SubmissionForm = () => {
           finalTxId = realTxHash;
           validated = true;
         } else {
-          // unique escrow reference for lookup until on-chain match appears
-          finalTxId = `auto_${user.uid}_${Date.now()}`;
+          finalTxId = `auto_${user.uid}_${Date.now()}`; // temporary escrow reference
         }
       }
 
@@ -265,38 +306,39 @@ const SubmissionForm = () => {
         amount,
         notes,
         contractURL,
-        transactionId: finalTxId,     // <-- LOOKUP / Escrow TXID
+        transactionId: finalTxId,   // <-- Escrow TXID for Lookup
         txValidated: validated,
-        // receiver (your) wallet
+        // receiving (seller) destination
         walletAddress: receiverAddress,
-        walletMemo: receiverMemo,
-        // buyer wallet (from Payment page auto-capture or from this form)
+        walletMemo: receiverMemo || null,
+        // buyer (optional)
         buyerWalletAddress: buyerAddr || null,
         buyerMemoTag: buyerTag || null,
         buyerWalletCurrency: currency,
         createdAt: Timestamp.now()
       });
 
-      // Persist buyer wallet on the user doc if newly provided
+      // Save buyer wallet to profile if newly provided
       const updates = {};
-      if (buyerAddr && buyerAddr !== userData.buyerWalletAddress) updates.buyerWalletAddress = buyerAddr;
-      if (buyerTag && buyerTag !== userData.buyerMemoTag) updates.buyerMemoTag = buyerTag;
+      if (buyerAddr && buyerAddr !== buyerWalletAddress) updates.buyerWalletAddress = buyerAddr;
+      if (buyerTag && buyerTag !== buyerMemoTag) updates.buyerMemoTag = buyerTag;
       if (Object.keys(updates).length) {
-        await updateDoc(doc(db, 'users', user.uid), updates);
+        await updateDoc(doc(db, 'users', user.uid), { ...updates, updatedAt: Timestamp.now() });
       }
 
-      setMessage(`Transaction submitted ${validated ? 'and verified' : '(awaiting chain match)'}.`);
-      setLastEscrowTxId(finalTxId);  // <-- show inline hint + success card
+      setMessage(`Transaction submitted ${validated ? 'and verified' : '(awaiting chain match)'}.
+Save your Escrow TXID for Buyer Transaction Lookup.`);
+      setLastEscrowTxId(finalTxId);
       setChecking(false);
 
       // Lightweight poll to upgrade to verified (XLM/USDC)
-      if (!validated && submissionMode === 'auto' && (currency === 'XLM' || currency === 'USDC') && receiverAddress && receiverMemo) {
+      if (!validated && submissionMode === 'auto' && (currency === 'XLM' || currency === 'USDC')) {
         for (let i = 0; i < 10; i++) {
           await sleep(7000);
           const real = await fetchRealTxHash(receiverAddress, receiverMemo);
           if (real) {
             await updateDoc(txRef, { transactionId: real, txValidated: true, verifiedAt: Timestamp.now() });
-            setLastEscrowTxId(real); // update inline hint + success card with real hash
+            setLastEscrowTxId(real);
             setMessage('Transaction submitted and verified.');
             break;
           }
@@ -339,6 +381,14 @@ const SubmissionForm = () => {
         </div>
       </div>
 
+      {/* Free pilot banner if receiving wallet is missing */}
+      {needReceivingWallet && (
+        <div style={styles.pilot}>
+          <strong>Free Pilot:</strong> Please enter your <em>receiving</em> wallet (where escrow releases funds to you).
+          We’ll save it to your profile for next time.
+        </div>
+      )}
+
       {/* Success panel with full TXID + buttons */}
       {lastEscrowTxId && (
         <div style={styles.successCard} role="status" aria-live="polite">
@@ -367,7 +417,32 @@ const SubmissionForm = () => {
           <option value="USDC">USDC</option>
         </select>
 
-        {/* Buyer wallet fields (optional if auto-captured) */}
+        {/* Receiving wallet (only if missing in profile) */}
+        {needReceivingWallet && (
+          <>
+            <label style={styles.label} htmlFor="recvWallet">Your Receiving Wallet Address</label>
+            <input
+              id="recvWallet"
+              type="text"
+              value={receivingWalletAddress}
+              onChange={(e) => setReceivingWalletAddress(e.target.value)}
+              style={styles.input}
+              placeholder={addressPlaceholder}
+              required
+            />
+            <label style={styles.label} htmlFor="recvMemo">Your Memo / Destination Tag (optional)</label>
+            <input
+              id="recvMemo"
+              type="text"
+              value={receivingWalletMemo}
+              onChange={(e) => setReceivingWalletMemo(e.target.value)}
+              style={styles.input}
+              placeholder={memoHint}
+            />
+          </>
+        )}
+
+        {/* Buyer wallet fields (optional for traceability) */}
         <label style={styles.label} htmlFor="buyerWallet">Your Wallet Address (the one you paid from)</label>
         <input
           id="buyerWallet"
@@ -495,3 +570,4 @@ const SubmissionForm = () => {
 };
 
 export default SubmissionForm;
+
