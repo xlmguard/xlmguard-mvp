@@ -23,7 +23,7 @@ import InstructionsPage from './InstructionsPage.js';
 // Freight page
 import FreightForwardersPage from './FreightForwardersPage.jsx';
 
-// ✅ New legal pages
+// New legal pages
 import TermsPage from './TermsPage.js';
 import PrivacyPolicyPage from './PrivacyPolicyPage.js';
 
@@ -42,7 +42,7 @@ function App() {
 
         if (snap.exists()) {
           const data = snap.data();
-          setHasPaid(data.hasPaid || false);
+          setHasPaid(Boolean(data.hasPaid));
           setTrialCredits(data.trialCredits ?? 0);
           setRole(data.role || null);
         } else {
@@ -68,32 +68,32 @@ function App() {
 
   if (loading) return <div>Loading...</div>;
 
+  const orgJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "XLMGuard",
+    "url": "https://xlmguard.com",
+    "logo": "https://xlmguard.com/logo.png",
+    "description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
+    "areaServed": {
+      "@type": "GeoCircle",
+      "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 0, "longitude": 0 },
+      "geoRadius": 20040000
+    },
+    "serviceType": "Blockchain escrow and crypto transaction verification",
+    "location": {
+      "@type": "Place",
+      "address": { "@type": "PostalAddress", "addressLocality": "Charlotte", "addressRegion": "NC", "addressCountry": "US" }
+    },
+    "sameAs": ["https://twitter.com/xlmguard", "https://linkedin.com/company/xlmguard"],
+    "founder": { "@type": "Person", "name": "Paul Pazzaglini" }
+  };
+
   return (
     <Router>
       <Helmet>
         <script type="application/ld+json">
-          {`
-            {
-              "@context": "https://schema.org",
-              "@type": "Organization",
-              "name": "XLMGuard",
-              "url": "https://xlmguard.com",
-              "logo": "https://xlmguard.com/logo.png",
-              "description": "A global blockchain-based escrow and crypto transaction verification platform for XLM and XRP.",
-              "areaServed": {
-                "@type": "GeoCircle",
-                "geoMidpoint": { "@type": "GeoCoordinates", "latitude": 0, "longitude": 0 },
-                "geoRadius": 20040000
-              },
-              "serviceType": "Blockchain escrow and crypto transaction verification",
-              "location": {
-                "@type": "Place",
-                "address": { "@type": "PostalAddress", "addressLocality": "Charlotte", "addressRegion": "NC", "addressCountry": "US" }
-              },
-              "sameAs": ["https://twitter.com/xlmguard", "https://linkedin.com/company/xlmguard"],
-              "founder": { "@type": "Person", "name": "Paul Pazzaglini" }
-            }
-          `}
+          {JSON.stringify(orgJsonLd)}
         </script>
       </Helmet>
 
@@ -101,7 +101,6 @@ function App() {
         {/* Public */}
         <Route path="/" element={<HomePage />} />
         <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
-        {/* ✅ New public legal pages */}
         <Route path="/terms" element={<TermsPage />} />
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
@@ -140,4 +139,22 @@ function App() {
         />
 
         {/* Authenticated utilities */}
-        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate t
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
+        <Route path="/transaction-lookup" element={<TransactionLookup />} />
+
+        {/* Admin */}
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
+
+        {/* Info */}
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/instructions" element={<InstructionsPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
+
