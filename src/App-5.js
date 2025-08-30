@@ -23,14 +23,10 @@ import InstructionsPage from './InstructionsPage.js';
 // Freight page
 import FreightForwardersPage from './FreightForwardersPage.jsx';
 
-// ✅ New legal pages
-import TermsPage from './TermsPage.js';
-import PrivacyPolicyPage from './PrivacyPolicyPage.js';
-
 function App() {
   const [user, setUser] = useState(null);
   const [hasPaid, setHasPaid] = useState(false);
-  const [trialCredits, setTrialCredits] = useState(0);
+  const [trialCredits, setTrialCredits] = useState(0);   // 👈 NEW
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -43,10 +39,10 @@ function App() {
         if (snap.exists()) {
           const data = snap.data();
           setHasPaid(data.hasPaid || false);
-          setTrialCredits(data.trialCredits ?? 0);
+          setTrialCredits(data.trialCredits ?? 0);       // 👈 NEW
           setRole(data.role || null);
         } else {
-          await setDoc(userRef, { hasPaid: false, trialCredits: 0 }, { merge: true });
+          await setDoc(userRef, { hasPaid: false, trialCredits: 0 }, { merge: true }); // 👈 init credit field
           setHasPaid(false);
           setTrialCredits(0);
           setRole(null);
@@ -56,7 +52,7 @@ function App() {
       } else {
         setUser(null);
         setHasPaid(false);
-        setTrialCredits(0);
+        setTrialCredits(0);                              // 👈 reset
         setRole(null);
       }
 
@@ -98,14 +94,8 @@ function App() {
       </Helmet>
 
       <Routes>
-        {/* Public */}
         <Route path="/" element={<HomePage />} />
-        <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
-        {/* ✅ New public legal pages */}
-        <Route path="/terms" element={<TermsPage />} />
-        <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
-        {/* Auth */}
         <Route
           path="/register"
           element={!user ? <RegisterPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
@@ -115,7 +105,6 @@ function App() {
           element={!user ? <LoginPage /> : <Navigate to={role === 'seller' ? '/seller-confirm' : '/'} />}
         />
 
-        {/* Buyer payment gate */}
         <Route
           path="/payment"
           element={
@@ -127,7 +116,7 @@ function App() {
           }
         />
 
-        {/* Submit allowed if paid OR has trial credit */}
+        {/* 👇 Allow Submit if hasPaid OR has trialCredits > 0 */}
         <Route
           path="/submit"
           element={
@@ -139,5 +128,23 @@ function App() {
           }
         />
 
-        {/* Authenticated utilities */}
-        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate t
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/login" />} />
+        <Route path="/admin" element={<AdminLogin />} />
+        <Route path="/admin-panel" element={<AdminPanel />} />
+        <Route path="/seller-confirm" element={<SellerConfirmationPanel />} />
+        <Route path="/transaction-lookup" element={<TransactionLookup />} />
+        <Route path="/faq" element={<FAQPage />} />
+        <Route path="/contact" element={<ContactPage />} />
+        <Route path="/instructions" element={<InstructionsPage />} />
+
+        {/* Public landing */}
+        <Route path="/freight-forwarders" element={<FreightForwardersPage />} />
+      </Routes>
+    </Router>
+  );
+}
+
+export default App;
+
+
+
