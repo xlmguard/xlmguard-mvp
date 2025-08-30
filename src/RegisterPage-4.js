@@ -2,11 +2,9 @@
 
 import React, { useState } from 'react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from './firebase.js';
 import { useNavigate, useLocation } from 'react-router-dom';
-
-const TERMS_VERSION = 'v1.0-2025-08-30';
 
 const RegisterPage = () => {
   const [formData, setFormData] = useState({
@@ -15,7 +13,6 @@ const RegisterPage = () => {
     password: '',
     role: 'buyer',
   });
-  const [sanctionsConsent, setSanctionsConsent] = useState(false);
 
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -47,17 +44,13 @@ const RegisterPage = () => {
         email,
         role,
         ...(role === 'buyer' && { hasPaid: false }),
-        // ✅ Store consent + versioning for audit
-        sanctionsConsent: !!sanctionsConsent,
-        consentTimestamp: serverTimestamp(),
-        termsVersion: TERMS_VERSION,
       };
 
       // Grant one free pilot credit if they came from the freight landing
       if (role === 'buyer' && isFreightPilot) {
         payload.trialCredits = 1;
-        payload.plan = 'pilot';
-        payload.pilotSource = 'freight';
+        payload.plan = 'pilot';           // optional metadata
+        payload.pilotSource = 'freight';  // optional metadata
       } else if (role === 'buyer') {
         payload.trialCredits = 0;
       }
@@ -70,7 +63,8 @@ const RegisterPage = () => {
       } else {
         // Buyer
         if (isFreightPilot) {
-          navigate('/submit'); // 1 free credit path
+          // They have 1 free credit — let them submit immediately
+          navigate('/submit');
         } else {
           navigate('/payment');
         }
@@ -132,32 +126,7 @@ const RegisterPage = () => {
           <option value="buyer">Buyer</option>
           <option value="seller">Seller</option>
         </select>
-
-        {/* ✅ Small-print sanctions notice + required consent */}
-        <div style={{ marginTop: 14, padding: 12, background: '#f8fafc', borderRadius: 8 }}>
-          <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
-            <input
-              type="checkbox"
-              required
-              checked={sanctionsConsent}
-              onChange={(e) => setSanctionsConsent(e.target.checked)}
-              style={{ marginTop: 2 }}
-            />
-            <span style={{ fontSize: 12, color: '#374151', lineHeight: 1.4 }}>
-              I certify I am not subject to sanctions and I consent to XLMGuard conducting sanctions
-              screening and related compliance reviews.
-            </span>
-          </label>
-          <p style={{ fontSize: 12, color: '#6b7280', marginTop: 8 }}>
-            XLMGuard screens all customers and trade-document parties against global sanctions lists
-            (OFAC, UN, EU, UK). Transactions that match or appear to match may be paused or declined
-            pending review. By registering you agree to our&nbsp;
-            <a href="/terms" style={{ color: '#2563eb' }}>Terms</a> and&nbsp;
-            <a href="/privacy" style={{ color: '#2563eb' }}>Privacy Policy</a>.
-          </p>
-        </div>
-
-        <button type="submit" style={{ marginTop: 12 }}>Register</button>
+        <button type="submit">Register</button>
       </form>
 
       {error && <p style={{ color: 'red' }}>{error}</p>}
