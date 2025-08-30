@@ -465,6 +465,7 @@ function HomePage() {
           <Link to="/instructions" style={{ margin: '0.25rem 0', color: '#fff' }}>
             User Instructions
           </Link>
+          {/* (No Terms/Privacy here per your request) */}
         </div>
         {currentUser && (
           <div
@@ -557,9 +558,15 @@ function HomePage() {
       >
         &copy; {new Date().getFullYear()} XLMGuard.com – All rights reserved. <br />
         <em>Patent Pending</em>
+        {/* ✅ Small-print legal links (footer only) */}
+        <div style={{ marginTop: '8px' }}>
+          <Link to="/terms" style={{ color: '#555', marginRight: 12 }}>Terms</Link>
+          <Link to="/privacy" style={{ color: '#555' }}>Privacy</Link>
+        </div>
       </footer>
     </div>
   );
 }
 
 export default HomePage;
+
